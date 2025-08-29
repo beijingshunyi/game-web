@@ -1,0 +1,198 @@
+echo * { > style.css
+echo     margin: 0; >> style.css
+echo     padding: 0; >> style.css
+echo     box-sizing: border-box; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo body { >> style.css
+echo     font-family: 'Arial', sans-serif; >> style.css
+echo     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); >> style.css
+echo     min-height: 100vh; >> style.css
+echo     display: flex; >> style.css
+echo     justify-content: center; >> style.css
+echo     align-items: center; >> style.css
+echo     color: #333; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .game-container { >> style.css
+echo     background: rgba(255, 255, 255, 0.95); >> style.css
+echo     border-radius: 20px; >> style.css
+echo     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); >> style.css
+echo     padding: 20px; >> style.css
+echo     max-width: 600px; >> style.css
+echo     width: 100%; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .game-header { >> style.css
+echo     text-align: center; >> style.css
+echo     margin-bottom: 20px; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .game-title { >> style.css
+echo     font-size: 28px; >> style.css
+echo     color: #764ba2; >> style.css
+echo     margin-bottom: 10px; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .game-info { >> style.css
+echo     display: flex; >> style.css
+echo     justify-content: space-between; >> style.css
+echo     margin-bottom: 20px; >> style.css
+echo     padding: 10px; >> style.css
+echo     background: #f8f9fa; >> style.css
+echo     border-radius: 10px; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .info-item { >> style.css
+echo     text-align: center; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .info-label { >> style.css
+echo     font-size: 14px; >> style.css
+echo     color: #666; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .info-value { >> style.css
+echo     font-size: 18px; >> style.css
+echo     font-weight: bold; >> style.css
+echo     color: #764ba2; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .game-board { >> style.css
+echo     display: grid; >> style.css
+echo     gap: 4px; >> style.css
+echo     margin: 0 auto 20px; >> style.css
+echo     background: #f0f0f0; >> style.css
+echo     padding: 10px; >> style.css
+echo     border-radius: 10px; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .tile { >> style.css
+echo     aspect-ratio: 1; >> style.css
+echo     border-radius: 8px; >> style.css
+echo     cursor: pointer; >> style.css
+echo     display: flex; >> style.css
+echo     justify-content: center; >> style.css
+echo     align-items: center; >> style.css
+echo     font-size: 24px; >> style.css
+echo     transition: all 0.3s ease; >> style.css
+echo     user-select: none; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .tile:hover { >> style.css
+echo     transform: scale(1.05); >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .tile.selected { >> style.css
+echo     border: 3px solid #333; >> style.css
+echo     transform: scale(1.1); >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .tile.matched { >> style.css
+echo     animation: matchAnimation 0.5s ease; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo @keyframes matchAnimation { >> style.css
+echo     0% { transform: scale(1); } >> style.css
+echo     50% { transform: scale(1.3); opacity: 0.7; } >> style.css
+echo     100% { transform: scale(0); opacity: 0; } >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .tile.falling { >> style.css
+echo     animation: fallAnimation 0.5s ease; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo @keyframes fallAnimation { >> style.css
+echo     0% { transform: translateY(-100%); opacity: 0; } >> style.css
+echo     100% { transform: translateY(0); opacity: 1; } >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .game-controls { >> style.css
+echo     display: flex; >> style.css
+echo     justify-content: center; >> style.css
+echo     gap: 10px; >> style.css
+echo     margin-bottom: 20px; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .btn { >> style.css
+echo     padding: 10px 20px; >> style.css
+echo     background: #764ba2; >> style.css
+echo     color: white; >> style.css
+echo     border: none; >> style.css
+echo     border-radius: 8px; >> style.css
+echo     cursor: pointer; >> style.css
+echo     font-size: 16px; >> style.css
+echo     transition: background 0.3s ease; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .btn:hover { >> style.css
+echo     background: #5a3785; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .btn:disabled { >> style.css
+echo     background: #ccc; >> style.css
+echo     cursor: not-allowed; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .game-footer { >> style.css
+echo     text-align: center; >> style.css
+echo     font-size: 12px; >> style.css
+echo     color: #666; >> style.css
+echo     margin-top: 20px; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .modal { >> style.css
+echo     display: none; >> style.css
+echo     position: fixed; >> style.css
+echo     top: 0; >> style.css
+echo     left: 0; >> style.css
+echo     width: 100%; >> style.css
+echo     height: 100%; >> style.css
+echo     background: rgba(0, 0, 0, 0.5); >> style.css
+echo     justify-content: center; >> style.css
+echo     align-items: center; >> style.css
+echo     z-index: 1000; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .modal-content { >> style.css
+echo     background: white; >> style.css
+echo     padding: 20px; >> style.css
+echo     border-radius: 10px; >> style.css
+echo     max-width: 400px; >> style.css
+echo     width: 90%; >> style.css
+echo     text-align: center; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .modal-title { >> style.css
+echo     font-size: 24px; >> style.css
+echo     margin-bottom: 15px; >> style.css
+echo     color: #764ba2; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .modal-message { >> style.css
+echo     margin-bottom: 20px; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .close-modal { >> style.css
+echo     padding: 8px 16px; >> style.css
+echo     background: #764ba2; >> style.css
+echo     color: white; >> style.css
+echo     border: none; >> style.css
+echo     border-radius: 5px; >> style.css
+echo     cursor: pointer; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .ad-container { >> style.css
+echo     margin: 20px 0; >> style.css
+echo     padding: 10px; >> style.css
+echo     background: #f8f9fa; >> style.css
+echo     border-radius: 10px; >> style.css
+echo     text-align: center; >> style.css
+echo } >> style.css
+echo  >> style.css
+echo .color-1 { background-color: #FF6B6B; } >> style.css
+echo .color-2 { background-color: #4ECDC4; } >> style.css
+echo .color-3 { background-color: #FFD166; } >> style.css
+echo .color-4 { background-color: #6A0572; } >> style.css
+echo .color-5 { background-color: #1A936F; } >> style.css
+echo .color-6 { background-color: #114B5F; } >> style.css
