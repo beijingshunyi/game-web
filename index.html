@@ -1,0 +1,77 @@
+echo <!DOCTYPE html> > index.html
+echo <html lang="zh-CN"> >> index.html
+echo <head> >> index.html
+echo     <meta charset="UTF-8"> >> index.html
+echo     <meta name="viewport" content="width=device-width, initial-scale=1.0"> >> index.html
+echo     <title>万花楼消消乐</title> >> index.html
+echo     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> >> index.html
+echo     <link rel="stylesheet" href="style.css"> >> index.html
+echo </head> >> index.html
+echo <body> >> index.html
+echo     <div class="game-container"> >> index.html
+echo         <div class="game-header"> >> index.html
+echo             <h1 class="game-title">万花楼消消乐</h1> >> index.html
+echo         </div> >> index.html
+echo         <div class="game-info"> >> index.html
+echo             <div class="info-item"> >> index.html
+echo                 <div class="info-label">分数</div> >> index.html
+echo                 <div class="info-value" id="score">0</div> >> index.html
+echo             </div> >> index.html
+echo             <div class="info-item"> >> index.html
+echo                 <div class="info-label">金币</div> >> index.html
+echo                 <div class="info-value" id="coins">0</div> >> index.html
+echo             </div> >> index.html
+echo             <div class="info-item"> >> index.html
+echo                 <div class="info-label">步数</div> >> index.html
+echo                 <div class="info-value" id="moves">0</div> >> index.html
+echo             </div> >> index.html
+echo             <div class="info-item"> >> index.html
+echo                 <div class="info-label">等级</div> >> index.html
+echo                 <div class="info-value" id="level">1</div> >> index.html
+echo             </div> >> index.html
+echo         </div> >> index.html
+echo         <div class="game-board" id="gameBoard"></div> >> index.html
+echo         <div class="game-controls"> >> index.html
+echo             <button class="btn" id="shuffleBtn">重新排列</button> >> index.html
+echo             <button class="btn" id="hintBtn">提示</button> >> index.html
+echo             <button class="btn" id="backBtn">返回</button> >> index.html
+echo         </div> >> index.html
+echo         <div class="ad-container" id="adContainer"> >> index.html
+echo             <p>观看广告获取额外游戏次数或金币</p> >> index.html
+echo             <button class="btn" id="watchAdBtn">观看广告</button> >> index.html
+echo         </div> >> index.html
+echo         <div class="game-footer"> >> index.html
+echo             本游戏由：北京修车【万花楼】赞助 开发由@bjxc010 >> index.html
+echo         </div> >> index.html
+echo     </div> >> index.html
+echo     <div class="modal" id="gameOverModal"> >> index.html
+echo         <div class="modal-content"> >> index.html
+echo             <h2 class="modal-title">游戏结束</h2> >> index.html
+echo             <p class="modal-message" id="gameOverMessage"></p> >> index.html
+echo             <button class="close-modal" id="closeGameOverModal">确定</button> >> index.html
+echo         </div> >> index.html
+echo     </div> >> index.html
+echo     <div class="modal" id="adModal"> >> index.html
+echo         <div class="modal-content"> >> index.html
+echo             <h2 class="modal-title">观看广告</h2> >> index.html
+echo             <div class="modal-message" id="adContent"> >> index.html
+echo                 <p>观看广告可获得奖励</p> >> index.html
+echo                 <div> >> index.html
+echo                     <input type="radio" id="adRewardCoins" name="adReward" value="coins" checked> >> index.html
+echo                     <label for="adRewardCoins">获得50金币</label> >> index.html
+echo                 </div> >> index.html
+echo                 <div> >> index.html
+echo                     <input type="radio" id="adRewardPlays" name="adReward" value="plays"> >> index.html
+echo                     <label for="adRewardPlays">获得1次游戏机会</label> >> index.html
+echo                 </div> >> index.html
+echo             </div> >> index.html
+echo             <div style="margin-top: 20px;"> >> index.html
+echo                 <button class="btn" id="confirmWatchAd">确定观看</button> >> index.html
+echo                 <button class="close-modal" id="closeAdModal">取消</button> >> index.html
+echo             </div> >> index.html
+echo         </div> >> index.html
+echo     </div> >> index.html
+echo     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script> >> index.html
+echo     <script src="script.js"></script> >> index.html
+echo </body> >> index.html
+echo </html> >> index.html
