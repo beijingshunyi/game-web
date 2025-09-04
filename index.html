@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>万花消消乐 - Telegram小游戏</title>
+    <title>万花消消乐 - 休闲小游戏</title>
+    <!-- 生产环境中应替换为本地安装的Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,14 +14,14 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#8B5CF6', // 主色调：紫色
-                        secondary: '#EC4899', // 辅助色：粉色
-                        accent: '#F59E0B', // 强调色：橙色
-                        background: '#FEF3C7', // 背景色：浅黄色
-                        board: '#FFFBEB', // 棋盘背景色
+                        primary: '#6C5CE7', // 主色调：紫色
+                        secondary: '#FD79A8', // 辅助色：粉色
+                        accent: '#FDCB6E', // 强调色：金色
+                        dark: '#2D3436', // 深色
+                        light: '#F8F9FA', // 浅色
                     },
                     fontFamily: {
-                        game: ['"Comic Sans MS"', '"Marker Felt"', 'sans-serif'],
+                        game: ['"Fredoka One"', '"Comic Sans MS"', 'cursive'],
                     },
                 }
             }
@@ -31,45 +32,31 @@
             .content-auto {
                 content-visibility: auto;
             }
-            .game-shadow {
-                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
-            .tile-shadow {
-                box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            .game-tile {
+                transition: all 0.2s ease;
+            }
+            .game-tile:hover {
+                transform: scale(1.05);
+            }
+            .animate-clear {
+                animation: clear 0.4s ease-out forwards;
+            }
+            .animate-drop {
+                animation: drop 0.5s ease-out forwards;
             }
             .animate-pop {
                 animation: pop 0.3s ease-out;
             }
-            .animate-clear {
-                animation: clear 0.5s ease-in-out;
-            }
-            .animate-fall {
-                transition: transform 0.5s ease-out;
-            }
-            .prize-badge {
-                position: relative;
-            }
-            .prize-badge::after {
-                content: attr(data-prize);
-                position: absolute;
-                top: -5px;
-                right: -5px;
-                background-color: #EC4899;
-                color: white;
-                border-radius: 50%;
-                width: 18px;
-                height: 18px;
-                font-size: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-        }
-
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
         }
 
         @keyframes clear {
@@ -77,61 +64,82 @@
             50% { transform: scale(1.2); opacity: 0.8; }
             100% { transform: scale(0); opacity: 0; }
         }
+
+        @keyframes drop {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
     </style>
+    <!-- 添加Google字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
 </head>
-<body class="bg-background min-h-screen font-game text-gray-800 overflow-x-hidden">
+<body class="bg-gradient-to-br from-light to-gray-100 min-h-screen font-game text-dark overflow-x-hidden">
     <!-- 顶部导航 -->
     <header class="bg-gradient-to-r from-primary to-secondary text-white shadow-lg">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fa fa-gamepad text-2xl"></i>
-                <h1 class="text-xl md:text-2xl font-bold">万花消消乐</h1>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-1">
-                    <i class="fa fa-diamond text-accent"></i>
-                    <span id="coin-count" class="font-bold">0</span>
-                    <span>个"万花币"</span>
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-diamond text-accent text-2xl"></i>
+                    <h1 class="text-xl md:text-2xl font-bold text-shadow">万花消消乐</h1>
                 </div>
-                <div class="flex items-center space-x-1">
-                    <i class="fa fa-play-circle"></i>
-                    <span id="game-attempts">剩余次数: 6</span>
+                
+                <div class="flex flex-wrap justify-center items-center gap-3 md:gap-6">
+                    <div class="flex items-center space-x-1 bg-white/20 px-3 py-1 rounded-full">
+                        <i class="fa fa-diamond text-accent"></i>
+                        <span id="coin-count" class="font-bold">0</span>
+                        <span class="text-sm">个"万花币"</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-1 bg-white/20 px-3 py-1 rounded-full">
+                        <i class="fa fa-play-circle"></i>
+                        <span id="game-attempts" class="font-bold">剩余: 6</span>
+                        <span class="text-sm">次</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-1 bg-white/20 px-3 py-1 rounded-full">
+                        <i class="fa fa-signal"></i>
+                        <span id="level-display" class="font-bold">关卡: 1</span>
+                    </div>
+                    
+                    <button id="user-btn" class="bg-white/20 hover:bg-white/30 rounded-full w-9 h-9 flex items-center justify-center transition-all">
+                        <i class="fa fa-user"></i>
+                    </button>
                 </div>
-                <div class="flex items-center space-x-1">
-                    <i class="fa fa-map-signs"></i>
-                    <span id="level-display">关卡: 1</span>
-                </div>
-                <button id="user-btn" class="bg-white/20 hover:bg-white/30 rounded-full w-8 h-8 flex items-center justify-center transition-all">
-                    <i class="fa fa-user"></i>
-                </button>
             </div>
         </div>
     </header>
 
     <!-- 每日签到 -->
-    <div class="container mx-auto px-4 py-2">
-        <div class="bg-white rounded-xl p-3 game-shadow flex items-center justify-between">
+    <div class="container mx-auto px-4 py-3">
+        <div class="bg-white rounded-xl p-3 shadow-md flex items-center justify-between card-hover">
             <div class="flex items-center">
                 <i class="fa fa-calendar-check-o text-accent text-xl mr-2"></i>
-                <span>每日签到</span>
+                <span class="font-medium">每日签到</span>
             </div>
-            <div class="flex items-center space-x-2">
-                <span id="checkin-reward" class="text-sm text-gray-600">今日可领: 15个"万花币"</span>
-                <button id="checkin-btn" class="bg-primary hover:bg-primary/90 text-white px-3 py-1 rounded-lg text-sm transition-all">
+            <div class="flex items-center space-x-3">
+                <span id="checkin-reward" class="text-sm text-gray-600">奖励: 15个"万花币"</span>
+                <button id="checkin-btn" class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded-lg text-sm transition-all shadow-sm">
                     签到
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- 游戏状态区 -->
-    <div class="container mx-auto px-4 py-4">
-        <div class="bg-white rounded-xl p-4 game-shadow mb-4">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-3 md:mb-0">
-                    <h2 class="text-lg font-bold">目标: 获得 <span id="target-score" class="text-accent">500</span> 分</h2>
+    <!-- 游戏主区域 -->
+    <main class="container mx-auto px-4 py-5">
+        <!-- 游戏状态区 -->
+        <div class="bg-white rounded-xl p-4 shadow-md mb-5">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+                <div>
+                    <h2 class="text-lg font-bold">目标: 获得 <span id="target-score" class="text-primary">500</span> 分</h2>
                 </div>
-                <div class="flex space-x-6">
+                <div class="flex gap-6">
                     <div class="text-center">
                         <div class="text-sm opacity-70">当前得分</div>
                         <div id="current-score" class="text-2xl font-bold text-primary">0</div>
@@ -144,169 +152,192 @@
             </div>
         </div>
 
-        <!-- 游戏主区域 -->
-        <div class="flex flex-col md:flex-row gap-4">
+        <!-- 游戏区和侧边栏 -->
+        <div class="flex flex-col lg:flex-row gap-5">
             <!-- 游戏棋盘 -->
-            <div class="flex-1">
-                <div class="relative bg-board rounded-xl p-4 md:p-6 game-shadow aspect-square max-w-md mx-auto">
-                    <div id="game-board" class="grid grid-cols-5 gap-1 w-full h-full">
-                        <!-- 游戏方块将通过JS动态生成 -->
-                    </div>
-                    
-                    <!-- 游戏结束遮罩 -->
-                    <div id="game-over" class="absolute inset-0 bg-black/70 rounded-xl flex flex-col items-center justify-center hidden">
-                        <h2 id="game-over-title" class="text-white text-3xl font-bold mb-4"></h2>
-                        <p id="game-over-message" class="text-white text-xl mb-6"></p>
-                        <div class="flex space-x-3">
-                            <button id="retry-btn" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-all">
-                                重试
-                            </button>
-                            <button id="next-level-btn" class="bg-secondary hover:bg-secondary/90 text-white px-6 py-2 rounded-lg transition-all hidden">
-                                下一关
-                            </button>
+            <div class="flex-1 order-2 lg:order-1">
+                <div class="bg-white rounded-xl p-4 md:p-6 shadow-lg">
+                    <div class="aspect-square max-w-md mx-auto relative">
+                        <!-- 游戏棋盘 -->
+                        <div id="game-board" class="grid grid-cols-5 gap-1 w-full h-full">
+                            <!-- 游戏方块将通过JS动态生成 -->
                         </div>
-                    </div>
-                    
-                    <!-- 次数用完遮罩 -->
-                    <div id="no-attempts" class="absolute inset-0 bg-black/70 rounded-xl flex flex-col items-center justify-center hidden">
-                        <h2 class="text-white text-2xl font-bold mb-4">游戏次数已用完</h2>
-                        <p class="text-white mb-6">今日剩余次数: <span id="remaining-attempts">0</span>/6</p>
-                        <div class="flex flex-col space-y-3 w-3/4">
-                            <button id="watch-ad-btn" class="bg-accent hover:bg-accent/90 text-white px-6 py-2 rounded-lg transition-all flex items-center justify-center">
-                                <i class="fa fa-play-circle mr-2"></i>观看广告获得1次机会
-                            </button>
-                            <button id="share-game-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-all flex items-center justify-center">
-                                <i class="fa fa-share-alt mr-2"></i>分享游戏获得1次机会
-                            </button>
+                        
+                        <!-- 游戏结束遮罩 -->
+                        <div id="game-over" class="absolute inset-0 bg-black/70 rounded-xl flex flex-col items-center justify-center hidden">
+                            <h2 id="game-over-title" class="text-white text-3xl font-bold mb-4"></h2>
+                            <p id="game-over-message" class="text-white text-xl mb-6 text-center px-6"></p>
+                            <div class="flex flex-wrap gap-3 justify-center">
+                                <button id="retry-btn" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-all shadow-md">
+                                    再玩一次
+                                </button>
+                                <button id="next-level-btn" class="bg-secondary hover:bg-secondary/90 text-white px-6 py-2 rounded-lg transition-all shadow-md hidden">
+                                    下一关
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 次数用完遮罩 -->
+                        <div id="no-attempts" class="absolute inset-0 bg-black/70 rounded-xl flex flex-col items-center justify-center hidden">
+                            <h2 class="text-white text-2xl font-bold mb-4">游戏次数已用完</h2>
+                            <p class="text-white mb-6">今日剩余次数: <span id="remaining-attempts">0</span>/6</p>
+                            <div class="flex flex-col gap-3 w-3/4 max-w-xs">
+                                <button id="watch-ad-btn" class="bg-accent hover:bg-accent/90 text-dark px-6 py-2.5 rounded-lg transition-all flex items-center justify-center font-medium shadow-md">
+                                    <i class="fa fa-play-circle mr-2"></i>观看广告获得1次机会
+                                </button>
+                                <button id="share-game-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg transition-all flex items-center justify-center font-medium shadow-md">
+                                    <i class="fa fa-share-alt mr-2"></i>分享游戏获得1次机会
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- 侧边栏 -->
-            <div class="w-full md:w-64 space-y-4">
+            <div class="w-full lg:w-80 space-y-5 order-1 lg:order-2">
                 <!-- 提现按钮 -->
-                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 game-shadow text-white">
+                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 shadow-md text-white card-hover">
                     <h3 class="text-lg font-bold mb-2 flex items-center">
-                        <i class="fa fa-money mr-2"></i>提现
+                        <i class="fa fa-money mr-2"></i>提现中心
                     </h3>
                     <p class="text-sm opacity-90 mb-3">10000个"万花币" = 10元人民币</p>
-                    <button id="withdraw-btn" class="w-full bg-white text-green-600 hover:bg-green-50 rounded-lg py-2 font-bold transition-all">
+                    <div class="bg-white/20 rounded-lg p-2 mb-3 text-sm">
+                        <div class="flex justify-between">
+                            <span>可提现金额:</span>
+                            <span id="withdrawable-amount" class="font-bold">0.00元</span>
+                        </div>
+                        <div class="flex justify-between text-xs mt-1">
+                            <span>可兑换"万花币":</span>
+                            <span id="withdrawable-coins">0</span>
+                        </div>
+                    </div>
+                    <button id="withdraw-btn" class="w-full bg-white text-green-600 hover:bg-green-50 rounded-lg py-2 font-bold transition-all shadow-sm">
                         立即提现
                     </button>
                 </div>
                 
                 <!-- 道具区 -->
-                <div class="bg-white rounded-xl p-4 game-shadow">
+                <div class="bg-white rounded-xl p-4 shadow-md card-hover">
                     <h3 class="text-lg font-bold mb-3 flex items-center">
-                        <i class="fa fa-magic text-accent mr-2"></i>道具
+                        <i class="fa fa-magic text-accent mr-2"></i>游戏道具
                     </h3>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button class="prop-btn flex flex-col items-center p-2 rounded-lg border border-gray-200 hover:border-primary transition-all" data-prop="shuffle">
-                            <i class="fa fa-refresh text-xl mb-1"></i>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button class="prop-btn flex flex-col items-center p-3 rounded-lg border border-gray-200 hover:border-primary hover:bg-primary/5 transition-all" data-prop="shuffle">
+                            <i class="fa fa-refresh text-xl mb-1 text-primary"></i>
                             <span class="text-xs">洗牌</span>
-                            <span class="text-xs text-primary">30</span>
+                            <span class="text-xs font-bold text-primary mt-1">30</span>
                         </button>
-                        <button class="prop-btn flex flex-col items-center p-2 rounded-lg border border-gray-200 hover:border-primary transition-all" data-prop="boom">
-                            <i class="fa fa-bomb text-xl mb-1"></i>
+                        <button class="prop-btn flex flex-col items-center p-3 rounded-lg border border-gray-200 hover:border-primary hover:bg-primary/5 transition-all" data-prop="boom">
+                            <i class="fa fa-bomb text-xl mb-1 text-primary"></i>
                             <span class="text-xs">爆炸</span>
-                            <span class="text-xs text-primary">60</span>
+                            <span class="text-xs font-bold text-primary mt-1">60</span>
                         </button>
-                        <button class="prop-btn flex flex-col items-center p-2 rounded-lg border border-gray-200 hover:border-primary transition-all" data-prop="add_step">
-                            <i class="fa fa-plus-circle text-xl mb-1"></i>
+                        <button class="prop-btn flex flex-col items-center p-3 rounded-lg border border-gray-200 hover:border-primary hover:bg-primary/5 transition-all" data-prop="add_step">
+                            <i class="fa fa-plus-circle text-xl mb-1 text-primary"></i>
                             <span class="text-xs">加步</span>
-                            <span class="text-xs text-primary">40</span>
+                            <span class="text-xs font-bold text-primary mt-1">40</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- 全服排行榜 -->
-                <div class="bg-white rounded-xl p-4 game-shadow">
+                <div class="bg-white rounded-xl p-4 shadow-md card-hover">
                     <h3 class="text-lg font-bold mb-3 flex items-center">
                         <i class="fa fa-trophy text-accent mr-2"></i>全服排行
                     </h3>
-                    <ul class="space-y-2">
-                        <li class="flex items-center prize-badge" data-prize="¥50">
-                            <div class="w-6 h-6 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-xs font-bold mr-2">1</div>
-                            <span class="flex-1" id="rank-1">加载中...</span>
-                            <span class="font-bold" id="rank-1-score">--分</span>
+                    <div class="text-xs text-gray-500 mb-2 flex justify-between">
+                        <span>排名</span>
+                        <span>玩家</span>
+                        <span>分数</span>
+                    </div>
+                    <ul class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                        <li class="flex items-center p-2 bg-yellow-50 rounded-lg">
+                            <div class="w-6 h-6 bg-yellow-400 text-dark rounded-full flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0">1</div>
+                            <span class="flex-1 truncate" id="rank-1">加载中...</span>
+                            <span class="font-bold" id="rank-1-score">--</span>
+                            <span class="ml-2 text-green-600 text-xs font-bold">¥50</span>
                         </li>
-                        <li class="flex items-center prize-badge" data-prize="¥30">
-                            <div class="w-6 h-6 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center text-xs font-bold mr-2">2</div>
-                            <span class="flex-1" id="rank-2">加载中...</span>
-                            <span class="font-bold" id="rank-2-score">--分</span>
+                        <li class="flex items-center p-2 bg-gray-50 rounded-lg">
+                            <div class="w-6 h-6 bg-gray-300 text-dark rounded-full flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0">2</div>
+                            <span class="flex-1 truncate" id="rank-2">加载中...</span>
+                            <span class="font-bold" id="rank-2-score">--</span>
+                            <span class="ml-2 text-green-600 text-xs font-bold">¥30</span>
                         </li>
-                        <li class="flex items-center prize-badge" data-prize="¥20">
-                            <div class="w-6 h-6 bg-amber-700 text-white rounded-full flex items-center justify-center text-xs font-bold mr-2">3</div>
-                            <span class="flex-1" id="rank-3">加载中...</span>
-                            <span class="font-bold" id="rank-3-score">--分</span>
+                        <li class="flex items-center p-2 bg-amber-50 rounded-lg">
+                            <div class="w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0">3</div>
+                            <span class="flex-1 truncate" id="rank-3">加载中...</span>
+                            <span class="font-bold" id="rank-3-score">--</span>
+                            <span class="ml-2 text-green-600 text-xs font-bold">¥20</span>
                         </li>
-                        <li class="flex items-center prize-badge" data-prize="¥10">
-                            <div class="w-6 h-6 bg-gray-400 text-white rounded-full flex items-center justify-center text-xs font-bold mr-2">4</div>
-                            <span class="flex-1" id="rank-4">加载中...</span>
-                            <span class="font-bold" id="rank-4-score">--分</span>
+                        <li class="flex items-center p-2 bg-gray-50 rounded-lg">
+                            <div class="w-6 h-6 bg-gray-400 text-white rounded-full flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0">4</div>
+                            <span class="flex-1 truncate" id="rank-4">加载中...</span>
+                            <span class="font-bold" id="rank-4-score">--</span>
+                            <span class="ml-2 text-green-600 text-xs font-bold">¥10</span>
                         </li>
-                        <li class="flex items-center prize-badge" data-prize="¥5">
-                            <div class="w-6 h-6 bg-gray-400 text-white rounded-full flex items-center justify-center text-xs font-bold mr-2">5</div>
-                            <span class="flex-1" id="rank-5">加载中...</span>
-                            <span class="font-bold" id="rank-5-score">--分</span>
+                        <li class="flex items-center p-2 bg-gray-50 rounded-lg">
+                            <div class="w-6 h-6 bg-gray-400 text-white rounded-full flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0">5</div>
+                            <span class="flex-1 truncate" id="rank-5">加载中...</span>
+                            <span class="font-bold" id="rank-5-score">--</span>
+                            <span class="ml-2 text-green-600 text-xs font-bold">¥5</span>
                         </li>
                     </ul>
-                    <button id="claim-rank-reward" class="mt-3 w-full bg-primary/10 hover:bg-primary/20 text-primary rounded-lg py-1 text-sm transition-all hidden">
+                    <button id="claim-rank-reward" class="mt-3 w-full bg-primary/10 hover:bg-primary/20 text-primary rounded-lg py-1.5 text-sm transition-all hidden">
                         领取排名奖励
                     </button>
                 </div>
 
                 <!-- 每日任务 -->
-                <div class="bg-white rounded-xl p-4 game-shadow">
+                <div class="bg-white rounded-xl p-4 shadow-md card-hover">
                     <h3 class="text-lg font-bold mb-3 flex items-center">
                         <i class="fa fa-tasks text-accent mr-2"></i>每日任务
                     </h3>
                     <ul class="space-y-2 text-sm">
-                        <li class="flex items-center">
+                        <li class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors">
                             <i class="fa fa-check-circle text-green-500 mr-2"></i>
-                            <span>完成3局游戏</span>
-                            <span class="ml-auto text-primary">+30个"万花币"</span>
+                            <span class="flex-1">完成3局游戏</span>
+                            <span class="text-primary font-medium">+30个"万花币"</span>
                         </li>
-                        <li class="flex items-center">
+                        <li class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors">
                             <i class="fa fa-circle-o text-gray-300 mr-2"></i>
-                            <span>合成1个十字特效</span>
-                            <span class="ml-auto text-primary">+25个"万花币"</span>
+                            <span class="flex-1">合成1个十字特效</span>
+                            <span class="text-primary font-medium">+25个"万花币"</span>
                         </li>
-                        <li class="flex items-center">
+                        <li class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors">
                             <i class="fa fa-circle-o text-gray-300 mr-2"></i>
-                            <span>获得1000分</span>
-                            <span class="ml-auto text-primary">+40个"万花币"</span>
+                            <span class="flex-1">获得1000分</span>
+                            <span class="text-primary font-medium">+40个"万花币"</span>
                         </li>
-                        <li class="flex items-center">
+                        <li class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors">
                             <i class="fa fa-circle-o text-gray-300 mr-2"></i>
-                            <span>分享游戏1次</span>
-                            <span class="ml-auto text-primary">+20个"万花币"</span>
+                            <span class="flex-1">分享游戏1次</span>
+                            <span class="text-primary font-medium">+20个"万花币"</span>
                         </li>
                     </ul>
-                    <button class="mt-3 w-full bg-primary/10 hover:bg-primary/20 text-primary rounded-lg py-1 text-sm transition-all">
+                    <button class="mt-3 w-full bg-primary/10 hover:bg-primary/20 text-primary rounded-lg py-1.5 text-sm transition-all">
                         领取奖励
                     </button>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- 底部信息 -->
     <footer class="mt-8 bg-white py-4 border-t">
         <div class="container mx-auto px-4 text-center">
-            <p class="text-gray-600">
+            <p class="text-gray-600 text-sm">
                 本游戏由北京修车【万花楼】赞助 
                 由 <a href="https://t.me/bjxc010" target="_blank" class="text-primary hover:underline">@bjxc010</a> 开发
             </p>
-            <div class="flex justify-center space-x-4 mt-2">
-                <button class="text-gray-500 hover:text-primary transition-colors">
+            <div class="flex justify-center gap-4 mt-3">
+                <button class="text-gray-500 hover:text-primary transition-colors text-sm flex items-center">
                     <i class="fa fa-share-alt mr-1"></i>分享游戏
                 </button>
-                <button class="text-gray-500 hover:text-primary transition-colors">
-                    <i class="fa fa-question-circle mr-1"></i>帮助
+                <button class="text-gray-500 hover:text-primary transition-colors text-sm flex items-center">
+                    <i class="fa fa-question-circle mr-1"></i>帮助中心
                 </button>
-                <button class="text-gray-500 hover:text-primary transition-colors">
+                <button class="text-gray-500 hover:text-primary transition-colors text-sm flex items-center">
                     <i class="fa fa-cog mr-1"></i>设置
                 </button>
             </div>
@@ -315,10 +346,10 @@
 
     <!-- 登录模态框 -->
     <div id="login-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-xl p-6 w-full max-w-md game-shadow">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl transform transition-all">
             <h3 class="text-xl font-bold mb-4">登录游戏</h3>
-            <p class="text-gray-600 mb-6">通过Telegram账号登录，同步你的游戏进度</p>
-            <button id="telegram-login" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg flex items-center justify-center transition-all">
+            <p class="text-gray-600 mb-6">通过Telegram账号登录，同步你的游戏进度和"万花币"</p>
+            <button id="telegram-login" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg flex items-center justify-center transition-all shadow-md">
                 <i class="fa fa-telegram text-2xl mr-2"></i>
                 用Telegram登录
             </button>
@@ -330,15 +361,15 @@
 
     <!-- 提现模态框 -->
     <div id="withdraw-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-xl p-6 w-full max-w-md game-shadow">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl transform transition-all">
             <h3 class="text-xl font-bold mb-4">提现到支付宝</h3>
             <p class="text-gray-600 mb-4">10000个"万花币" = 10元人民币，提现后12小时内到账</p>
             
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">可提现金额</label>
                 <div class="bg-gray-100 p-2 rounded-lg">
-                    <span id="withdrawable-amount">0.00元</span>
-                    <span class="text-gray-500 text-sm ml-2">(<span id="withdrawable-coins">0</span>个"万花币")</span>
+                    <span id="withdrawable-amount-modal" class="font-bold">0.00元</span>
+                    <span class="text-gray-500 text-sm ml-2">(<span id="withdrawable-coins-modal">0</span>个"万花币")</span>
                 </div>
             </div>
             
@@ -352,8 +383,8 @@
                 <input type="text" id="alipay-account" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入支付宝账号">
             </div>
             
-            <div class="flex space-x-3">
-                <button id="confirm-withdraw" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg transition-all">
+            <div class="flex gap-3">
+                <button id="confirm-withdraw" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg transition-all shadow-sm">
                     确认提现
                 </button>
                 <button id="close-withdraw" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg transition-all">
@@ -369,7 +400,7 @@
 
     <!-- 提现成功模态框 -->
     <div id="withdraw-success" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-xl p-6 w-full max-w-md game-shadow text-center">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl text-center transform transition-all">
             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fa fa-check text-green-500 text-2xl"></i>
             </div>
@@ -377,7 +408,7 @@
             <p class="text-gray-600 mb-6">
                 你的提现申请已提交，我们将在12小时内处理并转账到你的支付宝账户
             </p>
-            <button id="close-success" class="w-full bg-primary hover:bg-primary/90 text-white py-2 rounded-lg transition-all">
+            <button id="close-success" class="w-full bg-primary hover:bg-primary/90 text-white py-2 rounded-lg transition-all shadow-sm">
                 确定
             </button>
         </div>
@@ -418,7 +449,7 @@
         // 初始化Supabase
         const supabaseUrl = 'https://ylnfjlltesnlfanrxfoy.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDc0MjMsImV4cCI6MjA3MTY4MzQyM30.czuQwYoFd7Ew9f-PBaojhsWJkXrBEtkqTRdhfX-DWFk';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // Telegram配置
         const BOT_TOKEN = "7058588982:AAGaWY3tDT7np7-rwAp350i6gBhC0d_UxjI";
@@ -455,6 +486,8 @@
         const alipayAccountEl = document.getElementById('alipay-account');
         const withdrawableAmountEl = document.getElementById('withdrawable-amount');
         const withdrawableCoinsEl = document.getElementById('withdrawable-coins');
+        const withdrawableAmountModalEl = document.getElementById('withdrawable-amount-modal');
+        const withdrawableCoinsModalEl = document.getElementById('withdrawable-coins-modal');
         const withdrawSuccessEl = document.getElementById('withdraw-success');
         const closeSuccessBtn = document.getElementById('close-success');
         const checkinBtn = document.getElementById('checkin-btn');
@@ -557,7 +590,7 @@
                 for (let col = 0; col < gameConfig.gridSize; col++) {
                     const element = gameState.board[row][col];
                     const tile = document.createElement('div');
-                    tile.className = `tile bg-white rounded-lg flex items-center justify-center tile-shadow cursor-pointer hover:scale-105 transition-transform`;
+                    tile.className = `game-tile bg-white rounded-lg flex items-center justify-center shadow-sm cursor-pointer`;
                     tile.dataset.row = row;
                     tile.dataset.col = col;
                     
@@ -609,14 +642,14 @@
 
         // 高亮选中的方块
         function highlightSelectedTile(row, col) {
-            const tiles = document.querySelectorAll('.tile');
+            const tiles = document.querySelectorAll('.game-tile');
             const index = row * gameConfig.gridSize + col;
             tiles[index].classList.add('ring-4', 'ring-accent', 'scale-110');
         }
 
         // 移除所有高亮
         function removeHighlights() {
-            const tiles = document.querySelectorAll('.tile');
+            const tiles = document.querySelectorAll('.game-tile');
             tiles.forEach(tile => {
                 tile.classList.remove('ring-4', 'ring-accent', 'scale-110');
             });
@@ -656,7 +689,7 @@
                     renderBoard();
                     
                     // 添加动画效果表示无效交换
-                    const tiles = document.querySelectorAll('.tile');
+                    const tiles = document.querySelectorAll('.game-tile');
                     const index1 = row1 * gameConfig.gridSize + col1;
                     const index2 = row2 * gameConfig.gridSize + col2;
                     tiles[index1].classList.add('animate-shake');
@@ -755,7 +788,7 @@
                     const center = gameState.board[row][col];
                     if (!center) continue;
                     
-                    // 检查T型匹配
+                    // 检查十字匹配
                     if (center === gameState.board[row-1][col] && 
                         center === gameState.board[row+1][col] && 
                         center === gameState.board[row][col-1] && 
@@ -842,7 +875,7 @@
             updateScore();
             
             // 添加消除动画
-            const tiles = document.querySelectorAll('.tile');
+            const tiles = document.querySelectorAll('.game-tile');
             matches.forEach(match => {
                 const index = match.row * gameConfig.gridSize + match.col;
                 tiles[index].classList.add('animate-clear');
@@ -970,6 +1003,19 @@
             }
             
             renderBoard();
+            
+            // 添加下落动画
+            const tiles = document.querySelectorAll('.game-tile');
+            tiles.forEach((tile, index) => {
+                const row = Math.floor(index / gameConfig.gridSize);
+                const col = index % gameConfig.gridSize;
+                if (gameState.board[row][col] !== null) {
+                    tile.classList.add('animate-drop');
+                    setTimeout(() => {
+                        tile.classList.remove('animate-drop');
+                    }, 500);
+                }
+            });
         }
 
         // 填充空白位置
@@ -985,6 +1031,16 @@
             }
             
             renderBoard();
+            
+            // 添加出现动画
+            const tiles = document.querySelectorAll('.game-tile');
+            tiles.forEach((tile, index) => {
+                tile.classList.add('animate-drop');
+                setTimeout(() => {
+                    tile.classList.remove('animate-drop');
+                    gameState.isProcessing = false;
+                }, 500);
+            });
         }
 
         // 更新分数
@@ -1012,7 +1068,7 @@
 
         // 更新游戏次数显示
         function updateGameAttempts() {
-            gameAttemptsEl.textContent = `剩余次数: ${gameState.remainingAttempts}`;
+            gameAttemptsEl.textContent = `剩余: ${gameState.remainingAttempts}`;
             remainingAttemptsEl.textContent = gameState.remainingAttempts;
         }
 
@@ -1297,6 +1353,7 @@
                         gameState.props[propType]++;
                         coinCountEl.textContent = gameState.coins;
                         saveCoins();
+                        updatePropDisplay();
                     } else {
                         return;
                     }
@@ -1343,7 +1400,7 @@
         function updatePropDisplay() {
             propBtns.forEach(btn => {
                 const propType = btn.dataset.prop;
-                const costEl = btn.querySelector('.text-primary');
+                const costEl = btn.querySelector('.text-primary.font-bold');
                 // 显示拥有的数量/成本
                 costEl.textContent = gameState.props[propType] > 0 ? gameState.props[propType] : getPropCost(propType);
             });
@@ -1380,7 +1437,7 @@
             alert('请点击要爆炸的位置');
             
             // 为所有方块添加爆炸点击事件
-            const tiles = document.querySelectorAll('.tile');
+            const tiles = document.querySelectorAll('.game-tile');
             tiles.forEach(tile => {
                 tile.classList.add('cursor-crosshair', 'hover:bg-red-100');
                 
@@ -1434,6 +1491,10 @@
             }
             
             updateWithdrawableAmount();
+            // 同步模态框中的金额显示
+            withdrawableAmountModalEl.textContent = withdrawableAmountEl.textContent;
+            withdrawableCoinsModalEl.textContent = withdrawableCoinsEl.textContent;
+            
             withdrawModal.classList.remove('hidden');
         }
 
@@ -1521,6 +1582,9 @@
                 // 清空表单
                 alipayNameEl.value = '';
                 alipayAccountEl.value = '';
+                
+                // 更新可提现金额显示
+                updateWithdrawableAmount();
                 
             } catch (error) {
                 console.error('提现失败:', error);
@@ -1805,6 +1869,20 @@
             }, 1000);
         }
 
+        // 添加额外的动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+            .animate-shake {
+                animation: shake 0.5s ease-in-out;
+            }
+        `;
+        document.head.appendChild(style);
+
         // 事件监听
         retryBtn.addEventListener('click', initGame);
         nextLevelBtn.addEventListener('click', nextLevel);
@@ -1836,20 +1914,6 @@
             });
         });
 
-        // 添加动画样式
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-5px); }
-                75% { transform: translateX(5px); }
-            }
-            .animate-shake {
-                animation: shake 0.5s ease-in-out;
-            }
-        `;
-        document.head.appendChild(style);
-
         // 初始化
         window.addEventListener('DOMContentLoaded', () => {
             // 检查本地存储的最大关卡
@@ -1863,12 +1927,15 @@
             
             // 加载用户数据
             loadUserData().then(() => {
-                // 初始化游戏
+                // 初始化游戏 - 修复游戏盘不显示的问题
                 initGame();
                 // 加载排行榜
                 fetchLeaderboard();
+                // 更新道具显示
+                updatePropDisplay();
             });
         });
     </script>
 </body>
 </html>
+    
