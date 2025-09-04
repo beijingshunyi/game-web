@@ -4,21 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>万花消消乐 - 休闲小游戏</title>
-    <!-- 生产环境中应替换为本地安装的Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // 配置Tailwind自定义主题
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#6C5CE7', // 主色调：紫色
-                        secondary: '#FD79A8', // 辅助色：粉色
-                        accent: '#FDCB6E', // 强调色：金色
-                        dark: '#2D3436', // 深色
-                        light: '#F8F9FA', // 浅色
+                        primary: '#6C5CE7',
+                        secondary: '#FD79A8',
+                        accent: '#FDCB6E',
+                        dark: '#2D3436',
+                        light: '#F8F9FA',
                     },
                     fontFamily: {
                         game: ['"Fredoka One"', '"Comic Sans MS"', 'cursive'],
@@ -91,7 +89,6 @@
             animation: shake 0.5s ease-in-out;
         }
     </style>
-    <!-- 添加Google字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gradient-to-br from-light to-gray-100 min-h-screen font-game text-dark overflow-x-hidden">
@@ -737,7 +734,7 @@
                 for (let col = 0; col < gameConfig.gridSize; col++) {
                     const element = gameState.board[row][col];
                     const tile = document.createElement('div');
-                    tile.className = `game-tile bg-white rounded-lg flex items-center justify-center shadow-sm cursor-pointer`;
+                    tile.className = 'game-tile bg-white rounded-lg flex items-center justify-center shadow-sm cursor-pointer';
                     tile.dataset.row = row;
                     tile.dataset.col = col;
                     
