@@ -70,6 +70,18 @@
 
     <!-- 主游戏区域 -->
     <main class="flex-1 relative overflow-hidden">
+        <!-- 登录提示遮罩 -->
+        <div id="login-overlay" class="absolute inset-0 bg-black/80 backdrop-blur flex flex-col items-center justify-center p-4 z-50">
+            <div class="text-center max-w-xs">
+                <i class="fa fa-telegram text-5xl text-blue-500 mb-4"></i>
+                <h2 class="text-2xl font-bold mb-2">请登录游戏</h2>
+                <p id="login-message" class="text-gray-300 mb-6">正在通过Telegram登录...</p>
+                <button id="retry-login-btn" class="bg-primary hover:bg-primary/80 text-white font-bold py-2 px-6 rounded-full transition-all hidden">
+                    重试登录
+                </button>
+            </div>
+        </div>
+        
         <!-- 游戏画布容器 -->
         <div id="game-container" class="absolute inset-0 flex items-center justify-center">
             <canvas id="game-canvas" class="border-2 border-gray-700 rounded-lg bg-gray-800/50" width="400" height="600"></canvas>
@@ -372,10 +384,6 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDc0MjMsImV4cCI6MjA3MTY4MzQyM30.czuQwYoFd7Ew9f-PBaojhsWJkXrBEtkqTRdhfX-DWFk";
         const SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjEwNzQyMywiZXhwIjoyMDcxNjgzNDIzfQ.7Z0oPczZntIWHiO0CucqVIZMP5xTY9x_wlCiFGbE-ew";
         
-        // 初始化Supabase客户端（使用CDN方式，避免import语法）
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const supabaseServiceRole = window.supabase.createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-        
         // 全局变量
         let canvas, ctx;
         let player = {
@@ -399,12 +407,28 @@
         let gameProgress = {};
         let isRevived = false;
         let userId = null;
+        let supabase, supabaseServiceRole;
         
         // 初始化函数
         function init() {
+            // 显示登录遮罩
+            document.getElementById('login-overlay').classList.remove('hidden');
+            
             // 获取画布和上下文
             canvas = document.getElementById('game-canvas');
             ctx = canvas.getContext('2d');
+            
+            // 初始化Supabase客户端
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                supabaseServiceRole = window.supabase.createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+                console.log('Supabase初始化成功');
+            } catch (error) {
+                console.error('Supabase初始化失败:', error);
+                updateLoginMessage('服务初始化失败，请刷新页面重试');
+                showRetryLoginButton();
+                return;
+            }
             
             // 初始化事件监听
             initEventListeners();
@@ -415,43 +439,85 @@
         
         // 初始化Telegram Web App
         function initTelegramApp() {
-            if (window.Telegram && window.Telegram.WebApp) {
+            // 检查Telegram环境
+            if (typeof window.Telegram === 'undefined' || typeof window.Telegram.WebApp === 'undefined') {
+                console.error('未检测到Telegram Web App环境');
+                updateLoginMessage('请在Telegram中打开本游戏以登录');
+                showRetryLoginButton();
+                return;
+            }
+            
+            try {
                 const tg = window.Telegram.WebApp;
+                
+                // 监听Telegram初始化完成事件
+                tg.onEvent('ready', () => {
+                    console.log('Telegram Web App已准备就绪');
+                    updateLoginMessage('正在获取用户信息...');
+                    
+                    // 设置UI样式
+                    tg.setHeaderColor('#1F2937');
+                    tg.setBackgroundColor('#111827');
+                    
+                    // 获取用户信息
+                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                        userId = tg.initDataUnsafe.user.id;
+                        console.log('获取到Telegram用户ID:', userId);
+                        authenticateUser(tg.initDataUnsafe.user);
+                    } else {
+                        console.error('无法获取用户信息，initDataUnsafe.user不存在');
+                        updateLoginMessage('无法获取用户信息，请确保已登录Telegram');
+                        showRetryLoginButton();
+                    }
+                });
+                
+                // 初始化Telegram Web App
                 tg.ready();
                 
-                // 深色模式
-                tg.setHeaderColor('#1F2937');
-                tg.setBackgroundColor('#111827');
+                // 5秒后检查是否仍未初始化成功
+                setTimeout(() => {
+                    if (!userId && document.getElementById('login-overlay').classList.contains('hidden') === false) {
+                        console.warn('Telegram初始化超时');
+                        updateLoginMessage('连接超时，请重试');
+                        showRetryLoginButton();
+                    }
+                }, 5000);
                 
-                // 获取用户信息
-                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                    userId = tg.initDataUnsafe.user.id;
-                    authenticateUser(tg.initDataUnsafe.user);
-                } else {
-                    showToast('请在Telegram中打开本游戏');
-                }
-            } else {
-                showToast('请在Telegram中打开本游戏');
-                // 开发环境下使用模拟数据
-                if (window.location.hostname === 'localhost') {
-                    console.log('开发环境：使用模拟用户数据');
-                    userId = 'dev_user_123';
-                    userData = {
-                        nickname: '测试用户',
-                        game_plays: 5,
-                        kaleido_coins: 1000,
-                        high_score: 45,
-                        is_new: true,
-                        total_time: 0
-                    };
-                    updateUIWithUserData();
-                }
+            } catch (error) {
+                console.error('Telegram Web App初始化失败:', error);
+                updateLoginMessage('登录失败: ' + error.message);
+                showRetryLoginButton();
             }
+        }
+        
+        // 更新登录消息
+        function updateLoginMessage(message) {
+            document.getElementById('login-message').textContent = message;
+        }
+        
+        // 显示重试登录按钮
+        function showRetryLoginButton() {
+            document.getElementById('retry-login-btn').classList.remove('hidden');
+        }
+        
+        // 重试登录
+        function retryLogin() {
+            updateLoginMessage('正在重新尝试登录...');
+            document.getElementById('retry-login-btn').classList.add('hidden');
+            initTelegramApp();
         }
         
         // 用户认证
         async function authenticateUser(telegramUser) {
+            if (!userId) {
+                updateLoginMessage('用户ID不存在，登录失败');
+                showRetryLoginButton();
+                return;
+            }
+            
             try {
+                updateLoginMessage('正在验证用户信息...');
+                
                 // 检查用户是否已存在
                 let { data: existingUser, error: fetchError } = await supabase
                     .from('users')
@@ -496,9 +562,12 @@
                     
                     userData = data[0];
                     isNewUser = true;
-                    showToast('欢迎新用户！赠送5次游戏机会');
                 }
                 
+                // 登录成功，隐藏登录遮罩
+                document.getElementById('login-overlay').classList.add('hidden');
+                
+                // 更新UI
                 updateUIWithUserData();
                 
                 // 检查每日奖励
@@ -507,9 +576,17 @@
                 // 获取游戏进度
                 await fetchGameProgress();
                 
+                // 显示欢迎消息
+                if (isNewUser) {
+                    showToast(`欢迎新用户${userData.nickname}！赠送5次游戏机会`);
+                } else {
+                    showToast(`欢迎回来，${userData.nickname}！`);
+                }
+                
             } catch (error) {
                 console.error('认证失败:', error);
-                showToast('用户认证失败，请重试');
+                updateLoginMessage(`认证失败: ${error.message || '请重试'}`);
+                showRetryLoginButton();
             }
         }
         
@@ -573,11 +650,6 @@
             document.getElementById('profile-coin-count').textContent = userData.kaleido_coins;
             document.getElementById('profile-play-count').textContent = userData.game_plays;
             document.getElementById('profile-total-time').textContent = `${Math.floor(userData.total_time / 60)}分钟`;
-            
-            // 新手提示
-            if (isNewUser) {
-                showToast('欢迎新手！前3局游戏难度降低50%');
-            }
         }
         
         // 获取游戏进度
@@ -653,6 +725,9 @@
         
         // 初始化事件监听
         function initEventListeners() {
+            // 登录相关
+            document.getElementById('retry-login-btn').addEventListener('click', retryLogin);
+            
             // 画布鼠标/触摸事件
             canvas.addEventListener('mousedown', startDrag);
             canvas.addEventListener('mousemove', drag);
@@ -776,8 +851,13 @@
         
         // 检查游戏次数并开始游戏
         async function checkGamePlaysAndStart() {
+            // 检查是否已登录
             if (!userId || !userData) {
                 showToast('请先登录');
+                // 显示登录遮罩
+                document.getElementById('login-overlay').classList.remove('hidden');
+                updateLoginMessage('会话已过期，请重新登录');
+                showRetryLoginButton();
                 return false;
             }
             
@@ -1347,6 +1427,12 @@
         
         // 显示排行榜
         async function showLeaderboard() {
+            // 检查登录状态
+            if (!userId || !userData) {
+                showToast('请先登录');
+                return;
+            }
+            
             document.getElementById('start-menu').classList.add('hidden');
             document.getElementById('leaderboard-menu').classList.remove('hidden');
             
@@ -1456,6 +1542,12 @@
         
         // 显示商店
         function showShop() {
+            // 检查登录状态
+            if (!userId || !userData) {
+                showToast('请先登录');
+                return;
+            }
+            
             document.getElementById('start-menu').classList.add('hidden');
             document.getElementById('shop-menu').classList.remove('hidden');
         }
@@ -1468,6 +1560,12 @@
         
         // 显示提现界面
         async function showWithdraw() {
+            // 检查登录状态
+            if (!userId || !userData) {
+                showToast('请先登录');
+                return;
+            }
+            
             document.getElementById('start-menu').classList.add('hidden');
             document.getElementById('withdraw-menu').classList.remove('hidden');
             
@@ -1539,6 +1637,12 @@
         
         // 显示个人资料
         function showProfile() {
+            // 检查登录状态
+            if (!userId || !userData) {
+                showToast('请先登录');
+                return;
+            }
+            
             document.getElementById('start-menu').classList.add('hidden');
             document.getElementById('profile-menu').classList.remove('hidden');
         }
@@ -1854,4 +1958,3 @@
     </script>
 </body>
 </html>
-    
