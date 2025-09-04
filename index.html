@@ -79,7 +79,10 @@
                 <button id="retry-login-btn" class="bg-primary hover:bg-primary/80 text-white font-bold py-2 px-6 rounded-full transition-all hidden">
                     重试登录
                 </button>
-                <div id="debug-info" class="text-xs text-gray-400 mt-4 hidden">
+                <div id="offline-mode-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full transition-all mt-3 hidden">
+                    离线模式体验
+                </div>
+                <div id="debug-info" class="text-xs text-gray-400 mt-4">
                     调试信息: 初始化中...
                 </div>
             </div>
@@ -379,7 +382,7 @@
     </footer>
 
     <script>
-        // 配置信息 - 使用提供的实际数据
+        // 配置信息
         const BOT_TOKEN = "7058588982:AAGaWY3tDT7np7-rwAp350i6gBhC0d_UxjI";
         const BOT_USERNAME = "bjxcwhljiluBot";
         const ADMIN_ID = 8392100400;
@@ -413,6 +416,9 @@
         let supabase, supabaseServiceRole;
         let telegramInitTimeout; // 用于存储超时计时器ID
         let isTelegramReady = false; // 标记Telegram是否准备就绪
+        let loginRetryCount = 0; // 登录重试计数
+        const MAX_RETRY_COUNT = 3; // 最大重试次数
+        let isOfflineMode = false; // 是否离线模式
         
         // 初始化函数
         function init() {
@@ -437,6 +443,7 @@
                 updateLoginMessage('服务初始化失败，请刷新页面重试');
                 updateDebugInfo(`Supabase初始化失败: ${error.message}`);
                 showRetryLoginButton();
+                showOfflineModeButton(); // 显示离线模式选项
                 return;
             }
             
@@ -473,7 +480,7 @@
                 
                 // 尝试重新检测Telegram环境，增加检测次数和间隔
                 let checkCount = 0;
-                const maxChecks = 30; // 检查30次（30秒）
+                const maxChecks = 60; // 检查60次（60秒）- 增加超时时间
                 const checkInterval = setInterval(() => {
                     checkCount++;
                     updateDebugInfo(`等待Telegram环境加载...(${checkCount}/${maxChecks})`);
@@ -482,11 +489,12 @@
                         clearInterval(checkInterval);
                         updateDebugInfo('检测到Telegram环境，重新初始化');
                         initTelegramApp(); // 重新初始化
-                    } else if (checkCount >= maxChecks) { // 检查30次后放弃
+                    } else if (checkCount >= maxChecks) { // 检查60次后放弃
                         clearInterval(checkInterval);
                         updateLoginMessage('无法连接到Telegram，请确保在Telegram中打开');
                         updateDebugInfo('超过最大检查次数，未检测到Telegram环境');
                         showRetryLoginButton();
+                        showOfflineModeButton(); // 显示离线模式选项
                     }
                 }, 1000);
                 
@@ -511,10 +519,10 @@
                 updateDebugInfo('调用tg.ready()');
                 tg.ready();
                 
-                // 延长超时时间至30秒，并提供更详细的状态更新
+                // 延长超时时间至60秒，并提供更详细的状态更新
                 updateLoginMessage('正在连接到Telegram...');
                 let timeoutCounter = 0;
-                const maxTimeout = 30; // 30秒超时
+                const maxTimeout = 60; // 60秒超时 - 增加超时时间
                 
                 telegramInitTimeout = setInterval(() => {
                     timeoutCounter++;
@@ -524,13 +532,14 @@
                         return;
                     }
                     
-                    if (timeoutCounter >= maxTimeout) { // 30秒超时
+                    if (timeoutCounter >= maxTimeout) { // 60秒超时
                         clearInterval(telegramInitTimeout);
                         if (!userId) {
                             console.warn('Telegram初始化超时');
                             updateLoginMessage('连接超时，请检查网络后重试');
                             updateDebugInfo(`Telegram初始化超时(${maxTimeout}秒)`);
                             showRetryLoginButton();
+                            showOfflineModeButton(); // 显示离线模式选项
                         }
                     } else {
                         // 更新登录状态信息，让用户知道系统仍在尝试
@@ -548,6 +557,7 @@
                 updateLoginMessage('登录失败: ' + error.message);
                 updateDebugInfo(`Telegram初始化失败: ${error.message}`);
                 showRetryLoginButton();
+                showOfflineModeButton(); // 显示离线模式选项
             }
         }
         
@@ -577,13 +587,26 @@
                 authenticateUser(tg.initDataUnsafe.user);
             } else {
                 updateDebugInfo('tg.initDataUnsafe中没有用户信息，等待user事件...');
-                // 主动请求用户数据
-                setTimeout(() => {
-                    if (!userId && isTelegramReady) {
-                        updateDebugInfo('主动触发获取用户信息...');
+                // 主动请求用户数据，增加重试机制
+                const requestUserData = (attempt = 1) => {
+                    if (userId || attempt > 5) return;
+                    
+                    updateDebugInfo(`第${attempt}次主动请求用户信息...`);
+                    try {
                         tg.sendData('get_user_data');
+                        
+                        // 2秒后再次尝试
+                        setTimeout(() => {
+                            if (!userId) {
+                                requestUserData(attempt + 1);
+                            }
+                        }, 2000);
+                    } catch (error) {
+                        updateDebugInfo(`请求用户信息失败: ${error.message}`);
                     }
-                }, 2000);
+                };
+                
+                requestUserData();
             }
         }
         
@@ -609,8 +632,21 @@
             document.getElementById('retry-login-btn').classList.remove('hidden');
         }
         
+        // 显示离线模式按钮
+        function showOfflineModeButton() {
+            document.getElementById('offline-mode-btn').classList.remove('hidden');
+        }
+        
         // 重试登录
         function retryLogin() {
+            // 检查是否已达到最大重试次数
+            loginRetryCount++;
+            if (loginRetryCount >= MAX_RETRY_COUNT) {
+                updateLoginMessage(`已尝试${MAX_RETRY_COUNT}次仍无法连接，建议使用离线模式`);
+                showOfflineModeButton();
+                return;
+            }
+            
             // 重置用户ID和数据
             userId = null;
             userData = null;
@@ -618,10 +654,30 @@
             
             updateLoginMessage('正在重新尝试登录...');
             document.getElementById('retry-login-btn').classList.add('hidden');
-            updateDebugInfo('用户点击重试登录');
+            document.getElementById('offline-mode-btn').classList.add('hidden');
+            updateDebugInfo(`用户点击重试登录 (第${loginRetryCount}次)`);
             
             // 完全重新初始化Telegram连接
             initTelegramApp();
+        }
+        
+        // 进入离线模式
+        function enterOfflineMode() {
+            isOfflineMode = true;
+            updateDebugInfo('进入离线模式');
+            document.getElementById('login-overlay').classList.add('hidden');
+            
+            // 创建模拟用户数据
+            userData = {
+                nickname: '离线玩家',
+                game_plays: 5,
+                kaleido_coins: 1000,
+                high_score: 0,
+                total_time: 0
+            };
+            
+            updateUIWithUserData();
+            showToast('已进入离线模式，数据不会被保存');
         }
         
         // 用户认证
@@ -635,6 +691,7 @@
                 updateLoginMessage('用户ID不存在，登录失败');
                 updateDebugInfo('用户ID不存在');
                 showRetryLoginButton();
+                showOfflineModeButton();
                 return;
             }
             
@@ -714,11 +771,15 @@
                 updateLoginMessage(`认证失败: ${error.message || '请重试'}`);
                 updateDebugInfo(`认证失败: ${error.message}`);
                 showRetryLoginButton();
+                showOfflineModeButton();
             }
         }
         
         // 检查每日奖励
         async function checkDailyReward() {
+            // 离线模式不检查每日奖励
+            if (isOfflineMode) return;
+            
             if (!userId) return;
             
             try {
@@ -766,6 +827,10 @@
             } catch (error) {
                 console.error('检查每日奖励失败:', error);
                 updateDebugInfo(`检查每日奖励失败: ${error.message}`);
+                // 仅在非离线模式下显示错误
+                if (!isOfflineMode) {
+                    showToast('获取每日奖励失败，但不影响游戏体验');
+                }
             }
         }
         
@@ -786,6 +851,9 @@
         
         // 获取游戏进度
         async function fetchGameProgress() {
+            // 离线模式不获取游戏进度
+            if (isOfflineMode) return;
+            
             if (!userId) return;
             
             try {
@@ -810,12 +878,16 @@
             } catch (error) {
                 console.error('获取游戏进度失败:', error);
                 updateDebugInfo(`获取游戏进度失败: ${error.message}`);
+                showToast('获取游戏进度失败，但不影响新游戏');
             }
         }
         
         // 保存游戏进度
         async function saveGameProgress() {
-            if (!userId || gameState !== 'playing') return;
+            // 离线模式不保存游戏进度
+            if (isOfflineMode || gameState !== 'playing') return;
+            
+            if (!userId) return;
             
             try {
                 const progressData = {
@@ -855,6 +927,7 @@
             } catch (error) {
                 console.error('保存游戏进度失败:', error);
                 updateDebugInfo(`保存游戏进度失败: ${error.message}`);
+                // 不显示错误提示，避免干扰游戏
             }
         }
         
@@ -862,6 +935,7 @@
         function initEventListeners() {
             // 登录相关
             document.getElementById('retry-login-btn').addEventListener('click', retryLogin);
+            document.getElementById('offline-mode-btn').addEventListener('click', enterOfflineMode);
             
             // 画布鼠标/触摸事件
             canvas.addEventListener('mousedown', startDrag);
@@ -986,13 +1060,14 @@
         
         // 检查游戏次数并开始游戏
         async function checkGamePlaysAndStart() {
-            // 检查是否已登录
-            if (!userId || !userData) {
+            // 检查是否已登录或处于离线模式
+            if (!isOfflineMode && (!userId || !userData)) {
                 showToast('请先登录');
                 // 显示登录遮罩
                 document.getElementById('login-overlay').classList.remove('hidden');
                 updateLoginMessage('会话已过期，请重新登录');
                 showRetryLoginButton();
+                showOfflineModeButton();
                 return false;
             }
             
@@ -1001,21 +1076,23 @@
                 return false;
             }
             
-            // 减少一次游戏机会
-            try {
-                await supabase
-                    .from('users')
-                    .update({ game_plays: userData.game_plays - 1 })
-                    .eq('telegram_id', userId);
-                
-                userData.game_plays -= 1;
-                updateUIWithUserData();
-                return true;
-            } catch (error) {
-                console.error('更新游戏次数失败:', error);
-                showToast('检查游戏次数失败');
-                return false;
+            // 非离线模式下减少游戏次数
+            if (!isOfflineMode) {
+                try {
+                    await supabase
+                        .from('users')
+                        .update({ game_plays: userData.game_plays - 1 })
+                        .eq('telegram_id', userId);
+                } catch (error) {
+                    console.error('更新游戏次数失败:', error);
+                    showToast('更新游戏次数失败，但仍可继续游戏');
+                }
             }
+            
+            // 无论是否离线都更新本地数据
+            userData.game_plays -= 1;
+            updateUIWithUserData();
+            return true;
         }
         
         // 开始游戏
@@ -1030,8 +1107,8 @@
             // 重置游戏状态
             resetGame();
             
-            // 如果有保存的进度，使用保存的进度
-            if (Object.keys(gameProgress).length > 0) {
+            // 如果有保存的进度，使用保存的进度（仅在线模式）
+            if (!isOfflineMode && Object.keys(gameProgress).length > 0) {
                 gameTime = gameProgress.gameTime;
                 player.x = gameProgress.player.x;
                 player.y = gameProgress.player.y;
@@ -1048,8 +1125,10 @@
             // 开始游戏循环
             gameTimer = setInterval(updateGame, 16); // 约60fps
             
-            // 每30秒保存一次游戏进度
-            setInterval(saveGameProgress, 30000);
+            // 每30秒保存一次游戏进度（仅在线模式）
+            if (!isOfflineMode) {
+                setInterval(saveGameProgress, 30000);
+            }
         }
         
         // 重置游戏
@@ -1115,8 +1194,8 @@
             // 停止游戏循环
             clearInterval(gameTimer);
             
-            // 保存游戏进度
-            if (gameState === 'playing') {
+            // 保存游戏进度（仅在线模式）
+            if (!isOfflineMode && gameState === 'playing') {
                 saveGameProgress();
             }
             
@@ -1131,6 +1210,12 @@
         
         // 玩家复活
         async function revivePlayer() {
+            // 离线模式不支持复活功能
+            if (isOfflineMode) {
+                showToast('离线模式不支持复活功能');
+                return;
+            }
+            
             if (!userId || !userData) {
                 showToast('请先登录');
                 return;
@@ -1370,11 +1455,21 @@
             document.getElementById('coins-earned').textContent = `获得万花币: ${coinsEarned}`;
             document.getElementById('game-over-overlay').classList.remove('hidden');
             
-            // 提交游戏结果
-            submitGameResult(score, coinsEarned);
+            // 提交游戏结果（仅在线模式）
+            if (!isOfflineMode) {
+                submitGameResult(score, coinsEarned);
+            } else {
+                // 离线模式下仅更新本地数据
+                userData.kaleido_coins += coinsEarned;
+                if (score > userData.high_score) {
+                    userData.high_score = score;
+                }
+                updateUIWithUserData();
+                showToast('游戏结束（离线模式，数据未保存）');
+            }
             
-            // 清除保存的进度
-            if (userId) {
+            // 清除保存的进度（仅在线模式）
+            if (!isOfflineMode && userId) {
                 clearGameProgress();
             }
         }
@@ -1445,6 +1540,7 @@
                 }
             } catch (error) {
                 console.error('提交游戏结果失败:', error);
+                showToast('提交游戏结果失败，但不影响游戏体验');
             }
         }
         
@@ -1562,6 +1658,12 @@
         
         // 显示排行榜
         async function showLeaderboard() {
+            // 离线模式不支持排行榜
+            if (isOfflineMode) {
+                showToast('离线模式不支持排行榜功能');
+                return;
+            }
+            
             // 检查登录状态
             if (!userId || !userData) {
                 showToast('请先登录');
@@ -1677,6 +1779,12 @@
         
         // 显示商店
         function showShop() {
+            // 离线模式不支持商店功能
+            if (isOfflineMode) {
+                showToast('离线模式不支持商店功能');
+                return;
+            }
+            
             // 检查登录状态
             if (!userId || !userData) {
                 showToast('请先登录');
@@ -1695,6 +1803,12 @@
         
         // 显示提现界面
         async function showWithdraw() {
+            // 离线模式不支持提现功能
+            if (isOfflineMode) {
+                showToast('离线模式不支持提现功能');
+                return;
+            }
+            
             // 检查登录状态
             if (!userId || !userData) {
                 showToast('请先登录');
@@ -1718,6 +1832,7 @@
                     updateWithdrawHistoryUI(withdrawals || []);
                 } catch (error) {
                     console.error('获取提现历史失败:', error);
+                    showToast('获取提现历史失败');
                 }
             }
         }
@@ -1800,6 +1915,12 @@
         
         // 购买游戏次数
         async function buyGamePlays(count) {
+            // 离线模式不支持购买功能
+            if (isOfflineMode) {
+                showToast('离线模式不支持购买功能');
+                return;
+            }
+            
             if (!userId || !userData) {
                 showToast('请先登录');
                 return;
@@ -1845,6 +1966,12 @@
         
         // 购买护盾
         async function buyShield() {
+            // 离线模式不支持购买功能
+            if (isOfflineMode) {
+                showToast('离线模式不支持购买功能');
+                return;
+            }
+            
             if (!userId || !userData) {
                 showToast('请先登录');
                 return;
@@ -1890,6 +2017,12 @@
         
         // 观看广告获取奖励
         async function watchAdForReward() {
+            // 离线模式不支持广告奖励
+            if (isOfflineMode) {
+                showToast('离线模式不支持广告奖励');
+                return;
+            }
+            
             if (!userId || !userData) {
                 showToast('请先登录');
                 return;
@@ -1935,6 +2068,12 @@
         
         // 分享游戏
         async function shareGame() {
+            // 离线模式不支持分享奖励
+            if (isOfflineMode) {
+                showToast('离线模式不支持分享奖励');
+                return;
+            }
+            
             if (!userId || !userData) {
                 showToast('请先登录');
                 return;
@@ -1981,6 +2120,12 @@
         // 处理提现提交
         async function handleWithdrawSubmit(e) {
             e.preventDefault();
+            
+            // 离线模式不支持提现功能
+            if (isOfflineMode) {
+                showToast('离线模式不支持提现功能');
+                return;
+            }
             
             if (!userId || !userData) {
                 showToast('请先登录');
