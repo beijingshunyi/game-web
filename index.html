@@ -3,1459 +3,1911 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>万花消消乐 - 豪华版</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #ffa500 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .container {
-            width: 100%;
-            max-width: 480px;
-            min-height: 100vh;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            animation: rotate 30s linear infinite;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .header {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
-            color: white;
-            padding: 25px 20px;
-            text-align: center;
-            position: relative;
-            z-index: 10;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .header h1 {
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 15px;
-            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(45deg, #fff, #ffd700);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .user-stats {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            gap: 15px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            padding: 12px 20px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            flex: 1;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-card i {
-            font-size: 20px;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-top: 2px;
-        }
-
-        .game-info {
-            background: rgba(255, 255, 255, 0.9);
-            margin: 20px 15px;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-
-        .game-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .game-stat-item {
-            text-align: center;
-            padding: 15px;
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-radius: 15px;
-            border: 1px solid rgba(102, 126, 234, 0.2);
-        }
-
-        .game-stat-item h3 {
-            color: #667eea;
-            font-size: 14px;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .game-stat-value {
-            font-size: 28px;
-            font-weight: 800;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .game-board {
-            width: calc(100% - 30px);
-            height: 320px;
-            margin: 0 15px 20px;
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            grid-template-rows: repeat(6, 1fr);
-            gap: 3px;
-            padding: 12px;
-            position: relative;
-            z-index: 10;
-            border: 2px solid rgba(102, 126, 234, 0.1);
-        }
-
-        .game-cell {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            user-select: none;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .game-cell::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.6s;
-        }
-
-        .game-cell:hover::before {
-            transform: translateX(100%);
-        }
-
-        .game-cell:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .game-cell.selected {
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            transform: scale(1.1);
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
-            border-color: #ffa500;
-        }
-
-        .game-cell.flower { 
-            background: linear-gradient(135deg, #ff69b4, #ff1493);
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .game-cell.star { 
-            background: linear-gradient(135deg, #ffd700, #ffb347);
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .game-cell.moon { 
-            background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .game-cell.sun { 
-            background: linear-gradient(135deg, #ffa500, #ff8c00);
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .game-cell.gem { 
-            background: linear-gradient(135deg, #9370db, #8a2be2);
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .game-cell.bell { 
-            background: linear-gradient(135deg, #32cd32, #228b22);
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .controls-section {
-            padding: 0 15px;
-            margin-bottom: 20px;
-        }
-
-        .controls-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .btn {
-            padding: 15px 20px;
-            border: none;
-            border-radius: 15px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            position: relative;
-            overflow: hidden;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn:active {
-            transform: translateY(-1px);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #56ab2f, #a8e6cf);
-            color: white;
-            box-shadow: 0 4px 15px rgba(86, 171, 47, 0.3);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            color: white;
-            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
-        }
-
-        .btn-info {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            color: white;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
-        }
-
-        .btn-gold {
-            background: linear-gradient(135deg, #ffd700, #ffb347);
-            color: white;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-        }
-
-        .bonus-section {
-            margin: 20px 15px;
-            padding: 20px;
-            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 165, 0, 0.1));
-            border-radius: 20px;
-            border: 2px solid rgba(255, 165, 0, 0.2);
-            text-align: center;
-        }
-
-        .bonus-section h3 {
-            color: #ff6b6b;
-            font-size: 18px;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .bonus-section p {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 30px;
-            cursor: pointer;
-            color: #666;
-            transition: color 0.3s ease;
-        }
-
-        .close:hover {
-            color: #ff6b6b;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 700;
-            color: #333;
-            font-size: 14px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .leaderboard-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .leaderboard-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-radius: 15px;
-            border-left: 4px solid #667eea;
-            transition: all 0.3s ease;
-        }
-
-        .leaderboard-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .leaderboard-item.top-1 {
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            border-left-color: #ffd700;
-            color: #333;
-        }
-
-        .leaderboard-item.top-2 {
-            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
-            border-left-color: #c0c0c0;
-            color: #333;
-        }
-
-        .leaderboard-item.top-3 {
-            background: linear-gradient(135deg, #cd7f32, #e4a853);
-            border-left-color: #cd7f32;
-            color: white;
-        }
-
-        .rank {
-            font-weight: 800;
-            font-size: 20px;
-            color: #667eea;
-            min-width: 30px;
-        }
-
-        .player-info {
-            flex: 1;
-            margin: 0 15px;
-        }
-
-        .player-name {
-            font-weight: 700;
-            margin-bottom: 3px;
-            font-size: 16px;
-        }
-
-        .player-score {
-            color: #666;
-            font-size: 13px;
-        }
-
-        .footer {
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-            color: white;
-            text-align: center;
-            padding: 25px 20px;
-            margin-top: auto;
-            position: relative;
-            z-index: 10;
-        }
-
-        .footer p {
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .footer a {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-
-        .footer a:hover {
-            color: #5dade2;
-        }
-
-        .reward-notification {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #56ab2f, #a8e6cf);
-            color: white;
-            padding: 20px 40px;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: 700;
-            z-index: 2000;
-            display: none;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-            animation: bounceIn 0.5s ease;
-        }
-
-        @keyframes bounceIn {
-            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            70% { transform: translate(-50%, -50%) scale(0.9); }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-
-        .props-grid {
-            display: grid;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .prop-card {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            text-align: center;
-        }
-
-        .prop-card h4 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .prop-card p {
-            color: #666;
-            font-size: 13px;
-            margin-bottom: 15px;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                max-width: 100%;
-                border-radius: 0;
+    <title>万花消消乐</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B5CF6', // 主色调：紫色
+                        secondary: '#EC4899', // 辅助色：粉色
+                        accent: '#F59E0B', // 强调色：橙色
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444'
+                    },
+                    fontFamily: {
+                        game: ['"Comic Sans MS"', '"Marker Felt"', 'sans-serif']
+                    }
+                }
             }
-            
-            .game-board {
-                height: 280px;
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
             }
-            
-            .controls-grid {
-                grid-template-columns: 1fr;
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
-            
-            .btn {
-                font-size: 13px;
-                padding: 12px 16px;
+            .game-shadow {
+                box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3);
+            }
+            .btn-bounce {
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .btn-bounce:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 7px 14px rgba(139, 92, 246, 0.3);
+            }
+            .btn-bounce:active {
+                transform: translateY(1px);
+            }
+            .tile-transition {
+                transition: all 0.3s ease;
+            }
+            .pulse-effect {
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            .game-tile {
+                background: linear-gradient(145deg, #ffffff, #e6e6e6);
+                box-shadow: 5px 5px 10px #d1d1d1, -5px -5px 10px #ffffff;
+            }
+            .game-tile:active {
+                box-shadow: inset 5px 5px 10px #d1d1d1, inset -5px -5px 10px #ffffff;
+            }
+            .timer-warning {
+                animation: timerWarning 1s infinite;
+            }
+            @keyframes timerWarning {
+                0% { color: inherit; }
+                50% { color: #EF4444; }
+                100% { color: inherit; }
             }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-gem"></i> 万花消消乐 <i class="fas fa-star"></i></h1>
-            <div class="user-stats">
-                <div class="stat-card">
-                    <i class="fas fa-coins"></i>
-                    <div class="stat-value" id="coins">0</div>
-                    <div class="stat-label">"万花币"</div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-heart"></i>
-                    <div class="stat-value" id="lives">6</div>
-                    <div class="stat-label">游戏次数</div>
-                </div>
+<body class="bg-gradient-to-br from-purple-100 to-pink-100 min-h-screen font-game text-dark overflow-x-hidden">
+    <!-- 加载屏幕 -->
+    <div id="loading-screen" class="fixed inset-0 bg-gradient-to-r from-primary to-secondary/90 z-50 flex flex-col items-center justify-center">
+        <div class="w-24 h-24 border-4 border-white border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h2 class="text-white text-2xl font-bold">加载中...</h2>
+        <p class="text-white/80 mt-2">万花消消乐即将开始</p>
+    </div>
+    
+    <!-- 开始游戏界面 -->
+    <div id="start-screen" class="fixed inset-0 bg-gradient-to-br from-purple-100 to-pink-100 min-h-screen flex flex-col items-center justify-center px-4 hidden">
+        <div class="max-w-md w-full">
+            <div class="text-center mb-8">
+                <h1 class="text-5xl font-bold text-primary mb-2 text-shadow">万花消消乐</h1>
+                <p class="text-lg text-gray-600">消除三个或更多相同图案，获得高分！</p>
             </div>
-        </div>
-
-        <div class="game-info">
-            <div class="game-stats">
-                <div class="game-stat-item">
-                    <h3><i class="fas fa-trophy"></i> 当前得分</h3>
-                    <div class="game-stat-value" id="current-score">0</div>
+            
+            <div class="bg-white rounded-2xl p-6 shadow-xl game-shadow mb-6">
+                <div class="flex justify-center mb-6">
+                    <div class="w-32 h-32 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+                        <i class="fa fa-gamepad text-white text-5xl"></i>
+                    </div>
                 </div>
-                <div class="game-stat-item">
-                    <h3><i class="fas fa-shoe-prints"></i> 剩余步数</h3>
-                    <div class="game-stat-value" id="remaining-moves">20</div>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="flex items-center">
+                        <i class="fa fa-clock text-primary text-xl mr-3"></i>
+                        <p>每步限时<span class="font-bold text-accent">15秒</span>，超时将失败</p>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fa fa-trophy text-warning text-xl mr-3"></i>
+                        <p>完成关卡可获得<span class="font-bold text-accent">"万花币"</span>奖励</p>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fa fa-gift text-success text-xl mr-3"></i>
+                        <p>每日签到和分享可获得额外奖励</p>
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="game-board" id="gameBoard">
-            <!-- 游戏格子将通过JavaScript动态生成 -->
-        </div>
-
-        <div class="controls-section">
-            <div class="controls-grid">
-                <button class="btn btn-primary" onclick="startGame()">
-                    <i class="fas fa-play"></i> 开始游戏
-                </button>
-                <button class="btn btn-success" onclick="showSignin()">
-                    <i class="fas fa-calendar-check"></i> 每日签到
-                </button>
-                <button class="btn btn-warning" onclick="showLeaderboard()">
-                    <i class="fas fa-crown"></i> 排行榜
-                </button>
-                <button class="btn btn-info" onclick="showWithdraw()">
-                    <i class="fas fa-money-bill-wave"></i> 提现
+                
+                <button id="start-game-btn" class="w-full bg-gradient-to-r from-primary to-secondary text-white py-4 rounded-xl font-bold text-lg btn-bounce">
+                    开始游戏
                 </button>
             </div>
             
-            <div class="controls-grid">
-                <button class="btn btn-gold" onclick="watchAd()">
-                    <i class="fas fa-ad"></i> 看广告+1次
-                </button>
-                <button class="btn btn-primary" onclick="shareGame()">
-                    <i class="fas fa-share-alt"></i> 分享游戏+1次
-                </button>
-                <button class="btn btn-success" onclick="showProps()">
-                    <i class="fas fa-magic"></i> 我的道具
-                </button>
-                <button class="btn btn-warning" onclick="showProfile()">
-                    <i class="fas fa-user"></i> 个人中心
-                </button>
-            </div>
-        </div>
-
-        <div class="bonus-section">
-            <h3><i class="fas fa-gift"></i> 每日签到奖励</h3>
-            <p>每日签到可获得15"万花币"，连续7天额外获得100"万花币"！</p>
-        </div>
-
-        <div class="bonus-section">
-            <h3><i class="fas fa-bullhorn"></i> 获得更多游戏机会</h3>
-            <p>观看广告或分享游戏，每天最多可获得6次游戏机会！</p>
-        </div>
-
-        <div class="footer">
-            <p><i class="fas fa-building"></i> 本游戏由北京修车【万花楼】赞助</p>
-            <p><i class="fas fa-code"></i> 由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+            <footer class="text-center text-sm text-gray-500">
+                <p>本游戏由北京修车【万花楼】赞助</p>
+                <p class="mt-1">由 <a href="https://t.me/bjxc010" target="_blank" class="text-primary hover:underline">@bjxc010</a> 开发</p>
+            </footer>
         </div>
     </div>
-
-    <!-- 签到模态框 -->
-    <div id="signinModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('signinModal')">&times;</span>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
-                <i class="fas fa-calendar-check text-green-500"></i> 每日签到
-            </h2>
-            <div id="signinContent" class="text-center">
-                <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white p-6 rounded-lg mb-6">
-                    <i class="fas fa-coins text-4xl mb-4"></i>
-                    <p class="text-xl font-bold mb-2">点击签到获得15"万花币"！</p>
-                    <p class="text-sm opacity-90">连续签到7天额外获得100"万花币"</p>
+    
+    <!-- 主容器 -->
+    <div id="app" class="max-w-md mx-auto px-4 py-6 hidden">
+        <!-- 顶部导航 -->
+        <header class="flex justify-between items-center mb-6">
+            <div class="flex items-center">
+                <i class="fa fa-gamepad text-primary text-2xl mr-2"></i>
+                <h1 class="text-[clamp(1.5rem,5vw,2rem)] font-bold text-primary">万花消消乐</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="user-menu-btn" class="relative">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <i class="fa fa-user"></i>
+                    </div>
+                    <span id="coin-display" class="absolute -top-2 -right-2 bg-accent text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold">0</span>
+                </button>
+            </div>
+        </header>
+        
+        <!-- 用户菜单 (默认隐藏) -->
+        <div id="user-menu" class="fixed top-20 right-4 bg-white rounded-lg shadow-lg p-4 w-56 hidden z-40">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold">我的账户</h3>
+                <button id="close-user-menu"><i class="fa fa-times text-gray-500"></i></button>
+            </div>
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+                    <i class="fa fa-user text-xl"></i>
                 </div>
-                <button class="btn btn-success w-full" onclick="dailySignin()">
-                    <i class="fas fa-gift"></i> 立即签到
+                <div>
+                    <p id="user-nickname" class="font-medium">游客</p>
+                    <p class="text-sm text-gray-500" id="user-level">关卡: 1</p>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <button id="checkin-btn" class="w-full flex items-center justify-between p-2 hover:bg-gray-100 rounded">
+                    <span><i class="fa fa-calendar-check-o mr-2 text-accent"></i>每日签到</span>
+                    <span id="checkin-status" class="text-xs bg-gray-200 px-2 py-1 rounded">未签到</span>
+                </button>
+                <button id="withdraw-btn" class="w-full flex items-center justify-between p-2 hover:bg-gray-100 rounded">
+                    <span><i class="fa fa-money mr-2 text-success"></i>提现</span>
+                    <i class="fa fa-chevron-right text-gray-400 text-xs"></i>
+                </button>
+                <button id="leaderboard-btn" class="w-full flex items-center justify-between p-2 hover:bg-gray-100 rounded">
+                    <span><i class="fa fa-trophy mr-2 text-warning"></i>排行榜</span>
+                    <i class="fa fa-chevron-right text-gray-400 text-xs"></i>
+                </button>
+                <button id="inventory-btn" class="w-full flex items-center justify-between p-2 hover:bg-gray-100 rounded">
+                    <span><i class="fa fa-briefcase mr-2 text-blue-500"></i>道具背包</span>
+                    <i class="fa fa-chevron-right text-gray-400 text-xs"></i>
                 </button>
             </div>
         </div>
-    </div>
-
-    <!-- 排行榜模态框 -->
-    <div id="leaderboardModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('leaderboardModal')">&times;</span>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
-                <i class="fas fa-crown text-yellow-500"></i> 全服排行榜
-            </h2>
-            <ul class="leaderboard-list" id="leaderboardList">
-                <!-- 排行榜数据将通过JavaScript动态生成 -->
-            </ul>
-        </div>
-    </div>
-
-    <!-- 提现模态框 -->
-    <div id="withdrawModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('withdrawModal')">&times;</span>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
-                <i class="fas fa-money-bill-wave text-green-500"></i> 提现
-            </h2>
-            <div class="bg-blue-50 p-4 rounded-lg mb-6">
-                <p class="text-sm text-gray-600 mb-2">
-                    <i class="fas fa-info-circle"></i> 提现规则
-                </p>
-                <ul class="text-xs text-gray-600 space-y-1">
-                    <li>• 10000"万花币" = 10元人民币</li>
-                    <li>• 扣除10%手续费</li>
-                    <li>• 12小时内到账</li>
-                    <li>• 仅支持支付宝提现</li>
-                </ul>
+        
+        <!-- 游戏次数提示 -->
+        <div class="bg-white rounded-lg p-3 shadow-sm mb-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fa fa-heart text-secondary mr-2"></i>
+                <span>今日剩余游戏次数: <span id="remaining-plays" class="font-bold text-accent">6</span>/6</span>
             </div>
-            <div class="form-group">
-                <label><i class="fas fa-alipay"></i> 支付宝账号</label>
-                <input type="text" id="alipayAccount" placeholder="请输入支付宝账号">
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-user"></i> 真实姓名</label>
-                <input type="text" id="realName" placeholder="请输入真实姓名">
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-coins"></i> 提现金额</label>
-                <input type="number" id="withdrawAmount" placeholder="最少10000"万花币"" min="10000">
-            </div>
-            <button class="btn btn-warning w-full" onclick="submitWithdraw()">
-                <i class="fas fa-paper-plane"></i> 申请提现
+            <button id="get-more-plays" class="text-xs bg-primary text-white px-3 py-1 rounded-full btn-bounce">
+                <i class="fa fa-plus-circle mr-1"></i>获取次数
             </button>
         </div>
-    </div>
-
-    <!-- 道具模态框 -->
-    <div id="propsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('propsModal')">&times;</span>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
-                <i class="fas fa-magic text-purple-500"></i> 我的道具
-            </h2>
-            <div id="propsContent" class="props-grid">
-                <!-- 道具列表将通过JavaScript动态生成 -->
+        
+        <!-- 主游戏界面 -->
+        <div id="game-container" class="bg-white rounded-xl p-4 shadow-lg game-shadow mb-6">
+            <!-- 关卡信息 -->
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="font-bold text-lg">关卡 <span id="current-level">1</span></h2>
+                    <div class="flex items-center mt-1">
+                        <i class="fa fa-star text-yellow-400"></i>
+                        <i class="fa fa-star text-gray-300"></i>
+                        <i class="fa fa-star text-gray-300"></i>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p>目标: <span id="level-target" class="font-bold">500分</span></p>
+                    <p>步数: <span id="remaining-steps" class="font-bold">不限</span></p>
+                </div>
+            </div>
+            
+            <!-- 进度条 -->
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                <div id="progress-bar" class="bg-gradient-to-r from-primary to-secondary h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+            
+            <!-- 计时器 -->
+            <div class="flex justify-center mb-4">
+                <div class="bg-gray-100 rounded-lg px-4 py-2 flex items-center">
+                    <i class="fa fa-clock text-primary mr-2"></i>
+                    <span class="text-sm text-gray-600 mr-2">剩余时间:</span>
+                    <span id="timer" class="font-bold text-lg">15</span>
+                    <span class="text-sm text-gray-600 ml-1">秒</span>
+                </div>
+            </div>
+            
+            <!-- 游戏棋盘 -->
+            <div id="game-board" class="grid grid-cols-5 gap-2 aspect-square w-full mx-auto mb-4">
+                <!-- 游戏格子将通过JS动态生成 -->
+            </div>
+            
+            <!-- 分数显示 -->
+            <div class="flex justify-between items-center">
+                <div class="bg-gray-100 rounded-lg px-3 py-2">
+                    <p class="text-sm text-gray-500">当前得分</p>
+                    <p id="current-score" class="text-xl font-bold text-primary">0</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="shuffle-btn" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full flex items-center justify-center" title="洗牌">
+                        <i class="fa fa-refresh text-gray-700"></i>
+                        <span class="ml-1 text-xs">30</span>
+                    </button>
+                    <button id="boom-btn" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full flex items-center justify-center" title="爆炸">
+                        <i class="fa fa-bomb text-gray-700"></i>
+                        <span class="ml-1 text-xs">60</span>
+                    </button>
+                    <button id="add-step-btn" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full flex items-center justify-center" title="增加步数">
+                        <i class="fa fa-plus text-gray-700"></i>
+                        <span class="ml-1 text-xs">40</span>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-
-    <!-- 个人中心模态框 -->
-    <div id="profileModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('profileModal')">&times;</span>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
-                <i class="fas fa-user-circle text-blue-500"></i> 个人中心
-            </h2>
-            <div class="text-center mb-6">
-                <div class="w-20 h-20 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <i class="fas fa-user text-white text-3xl"></i>
-                </div>
-                <h3 class="text-lg font-bold text-gray-800">玩家 #<span id="userIdDisplay">0000</span></h3>
-            </div>
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white p-4 rounded-lg text-center">
-                    <i class="fas fa-trophy text-2xl mb-2"></i>
-                    <p class="text-sm">最高得分</p>
-                    <p class="text-xl font-bold" id="highScore">0</p>
-                </div>
-                <div class="bg-gradient-to-r from-purple-400 to-pink-500 text-white p-4 rounded-lg text-center">
-                    <i class="fas fa-gamepad text-2xl mb-2"></i>
-                    <p class="text-sm">游戏次数</p>
-                    <p class="text-xl font-bold" id="totalGames">0</p>
-                </div>
-            </div>
-            <button class="btn btn-danger w-full" onclick="resetGame()">
-                <i class="fas fa-redo"></i> 重置游戏数据
+        
+        <!-- 功能按钮 -->
+        <div class="grid grid-cols-4 gap-3 mb-8">
+            <button id="home-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-3 shadow-sm btn-bounce">
+                <i class="fa fa-home text-primary text-xl mb-1"></i>
+                <span class="text-xs">主页</span>
+            </button>
+            <button id="levels-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-3 shadow-sm btn-bounce">
+                <i class="fa fa-th-large text-secondary text-xl mb-1"></i>
+                <span class="text-xs">关卡</span>
+            </button>
+            <button id="share-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-3 shadow-sm btn-bounce">
+                <i class="fa fa-share-alt text-accent text-xl mb-1"></i>
+                <span class="text-xs">分享</span>
+            </button>
+            <button id="settings-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-3 shadow-sm btn-bounce">
+                <i class="fa fa-cog text-blue-500 text-xl mb-1"></i>
+                <span class="text-xs">设置</span>
             </button>
         </div>
+        
+        <!-- 赞助商信息 -->
+        <footer class="text-center text-sm text-gray-500 py-4 border-t border-gray-200">
+            <p>本游戏由北京修车【万花楼】赞助</p>
+            <p class="mt-1">由 <a href="https://t.me/bjxc010" target="_blank" class="text-primary hover:underline">@bjxc010</a> 开发</p>
+        </footer>
     </div>
-
-    <!-- 奖励通知 -->
-    <div id="rewardNotification" class="reward-notification"></div>
+    
+    <!-- 提现模态框 (默认隐藏) -->
+    <div id="withdraw-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">提现</h3>
+                <button id="close-withdraw-modal"><i class="fa fa-times text-gray-500"></i></button>
+            </div>
+            <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600">当前可提现: <span id="withdrawable-coins" class="font-bold text-primary">"万花币"</span></p>
+                <p class="text-sm text-gray-500 mt-1">10000个"万花币" = 10元人民币</p>
+            </div>
+            <form id="withdraw-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">支付宝账号</label>
+                    <input type="text" id="alipay-account" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入支付宝账号" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">真实姓名</label>
+                    <input type="text" id="real-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入真实姓名" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">提现数量 ("万花币")</label>
+                    <input type="number" id="withdraw-amount" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" min="10000" step="10000" placeholder="最低10000" required>
+                </div>
+                <p class="text-xs text-gray-500">* 提现后12小时内到账，将收取10%手续费</p>
+                <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-medium btn-bounce">提交提现申请</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 排行榜模态框 (默认隐藏) -->
+    <div id="leaderboard-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">全服排行榜</h3>
+                <button id="close-leaderboard-modal"><i class="fa fa-times text-gray-500"></i></button>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">排行前5的玩家每日可领取现金奖励</p>
+            
+            <div id="leaderboard-list" class="space-y-3">
+                <!-- 排行榜数据将通过JS动态生成 -->
+                <div class="animate-pulse">
+                    <div class="h-12 bg-gray-200 rounded-lg mb-2"></div>
+                    <div class="h-12 bg-gray-200 rounded-lg mb-2"></div>
+                    <div class="h-12 bg-gray-200 rounded-lg"></div>
+                </div>
+            </div>
+            
+            <div class="mt-6 p-3 bg-primary/10 rounded-lg">
+                <p class="font-medium text-center">我的排名</p>
+                <div id="my-rank" class="flex items-center justify-between mt-2">
+                    <div class="flex items-center">
+                        <span class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center mr-3">?</span>
+                        <span id="my-rank-name">加载中...</span>
+                    </div>
+                    <span id="my-rank-score" class="font-bold">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 获取更多游戏次数模态框 (默认隐藏) -->
+    <div id="get-plays-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">获取更多游戏次数</h3>
+                <button id="close-plays-modal"><i class="fa fa-times text-gray-500"></i></button>
+            </div>
+            <div class="space-y-4">
+                <button id="watch-ad-btn" class="w-full flex items-center justify-center bg-secondary text-white py-3 rounded-lg font-medium btn-bounce">
+                    <i class="fa fa-play-circle mr-2"></i>观看广告 (+1次)
+                </button>
+                <button id="share-game-btn" class="w-full flex items-center justify-center bg-accent text-white py-3 rounded-lg font-medium btn-bounce">
+                    <i class="fa fa-share-alt mr-2"></i>分享游戏 (+2次)
+                </button>
+                <p class="text-xs text-gray-500 text-center">每日最多可额外获取6次游戏机会</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 关卡选择模态框 (默认隐藏) -->
+    <div id="levels-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">选择关卡</h3>
+                <button id="close-levels-modal"><i class="fa fa-times text-gray-500"></i></button>
+            </div>
+            <div id="levels-grid" class="grid grid-cols-5 gap-2">
+                <!-- 关卡按钮将通过JS动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 胜利弹窗 (默认隐藏) -->
+    <div id="victory-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md text-center">
+            <div class="text-5xl text-yellow-500 mb-4 pulse-effect">
+                <i class="fa fa-trophy"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-2">恭喜过关!</h3>
+            <p class="text-gray-600 mb-4">你获得了 <span id="victory-coins" class="font-bold text-primary">20</span> 个"万花币"</p>
+            <div class="flex justify-center mb-6">
+                <i class="fa fa-star text-yellow-400 text-2xl"></i>
+                <i class="fa fa-star text-yellow-400 text-2xl"></i>
+                <i class="fa fa-star text-yellow-400 text-2xl"></i>
+            </div>
+            <button id="next-level-btn" class="w-full bg-primary text-white py-3 rounded-lg font-medium mb-2 btn-bounce">下一关</button>
+            <button id="close-victory-modal" class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-medium btn-bounce">返回主页</button>
+        </div>
+    </div>
+    
+    <!-- 失败弹窗 (默认隐藏) -->
+    <div id="defeat-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md text-center">
+            <div class="text-5xl text-gray-500 mb-4">
+                <i class="fa fa-times-circle"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-2">挑战失败</h3>
+            <p class="text-gray-600 mb-6">再接再厉，继续努力哦！</p>
+            <button id="watch-ad-reset-btn" class="w-full bg-secondary text-white py-3 rounded-lg font-medium mb-2 btn-bounce">
+                <i class="fa fa-play-circle mr-2"></i>观看广告复活
+            </button>
+            <button id="use-coins-reset-btn" class="w-full bg-accent text-white py-3 rounded-lg font-medium mb-2 btn-bounce">
+                <i class="fa fa-money mr-2"></i>消耗50"万花币"重试
+            </button>
+            <button id="close-defeat-modal" class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-medium btn-bounce">返回主页</button>
+        </div>
+    </div>
 
     <script>
-        // 游戏配置
-        const GAME_CONFIG = {
-            boardSize: 6,
-            elementTypes: ['flower', 'star', 'moon', 'sun', 'gem', 'bell'],
-            elementSymbols: {
-                flower: '🌸',
-                star: '⭐',
-                moon: '🌙',
-                sun: '☀️',
-                gem: '💎',
-                bell: '🔔'
-            },
-            movesLimit: 20,
-            scorePerMatch: 20
-        };
-
+        // 初始化Supabase
+        const supabaseUrl = 'https://ylnfjlltesnlfanrxfoy.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDc0MjMsImV4cCI6MjA3MTY4MzQyM30.czuQwYoFd7Ew9f-PBaojhsWJkXrBEtkqTRdhfX-DWFk';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // Telegram配置
+        const BOT_TOKEN = "7058588982:AAGaWY3tDT7np7-rwAp350i6gBhC0d_UxjI";
+        const BOT_USERNAME = "bjxcwhljiluBot";
+        const ADMIN_ID = "8392100400";
+        
         // 游戏状态
-        let gameState = {
+        const gameState = {
             board: [],
+            rows: 5,
+            cols: 5,
             score: 0,
-            moves: GAME_CONFIG.movesLimit,
-            selectedCell: null,
-            isPlaying: false,
-            userCoins: 0,
-            userLives: 6,
-            userId: null,
-            totalGames: 0,
-            highScore: 0
+            target: 500,
+            steps: Infinity, // 无限步数
+            currentLevel: 1,
+            selectedTile: null,
+            isProcessing: false,
+            elements: [
+                { type: 'flower', icon: 'fa-spa', color: 'text-green-500' },
+                { type: 'star', icon: 'fa-star', color: 'text-yellow-400' },
+                { type: 'moon', icon: 'fa-moon', color: 'text-indigo-400' },
+                { type: 'sun', icon: 'fa-sun', color: 'text-orange-500' },
+                { type: 'gem', icon: 'fa-gem', color: 'text-purple-500' },
+                { type: 'bell', icon: 'fa-bell', color: 'text-red-400' }
+            ],
+            specialTiles: {
+                line: { icon: 'fa-arrows-alt-h', color: 'text-blue-500' },
+                boom: { icon: 'fa-bomb', color: 'text-red-500' },
+                cross: { icon: 'fa-plus', color: 'text-green-500' }
+            },
+            user: null,
+            props: {
+                shuffle: 0,
+                boom: 0,
+                add_step: 0,
+                skip_obstacle: 0
+            },
+            timer: 15, // 每步限时15秒
+            timerInterval: null,
+            gameStarted: false
         };
-
+        
+        // DOM元素
+        const elements = {
+            loadingScreen: document.getElementById('loading-screen'),
+            startScreen: document.getElementById('start-screen'),
+            app: document.getElementById('app'),
+            gameBoard: document.getElementById('game-board'),
+            currentScore: document.getElementById('current-score'),
+            remainingSteps: document.getElementById('remaining-steps'),
+            currentLevel: document.getElementById('current-level'),
+            levelTarget: document.getElementById('level-target'),
+            progressBar: document.getElementById('progress-bar'),
+            coinDisplay: document.getElementById('coin-display'),
+            remainingPlays: document.getElementById('remaining-plays'),
+            timer: document.getElementById('timer'),
+            
+            // 开始游戏按钮
+            startGameBtn: document.getElementById('start-game-btn'),
+            
+            // 菜单元素
+            userMenuBtn: document.getElementById('user-menu-btn'),
+            userMenu: document.getElementById('user-menu'),
+            closeUserMenu: document.getElementById('close-user-menu'),
+            userNickname: document.getElementById('user-nickname'),
+            userLevel: document.getElementById('user-level'),
+            
+            // 按钮
+            checkinBtn: document.getElementById('checkin-btn'),
+            checkinStatus: document.getElementById('checkin-status'),
+            withdrawBtn: document.getElementById('withdraw-btn'),
+            leaderboardBtn: document.getElementById('leaderboard-btn'),
+            inventoryBtn: document.getElementById('inventory-btn'),
+            getMorePlays: document.getElementById('get-more-plays'),
+            shuffleBtn: document.getElementById('shuffle-btn'),
+            boomBtn: document.getElementById('boom-btn'),
+            addStepBtn: document.getElementById('add-step-btn'),
+            homeBtn: document.getElementById('home-btn'),
+            levelsBtn: document.getElementById('levels-btn'),
+            shareBtn: document.getElementById('share-btn'),
+            settingsBtn: document.getElementById('settings-btn'),
+            
+            // 模态框
+            withdrawModal: document.getElementById('withdraw-modal'),
+            closeWithdrawModal: document.getElementById('close-withdraw-modal'),
+            withdrawForm: document.getElementById('withdraw-form'),
+            withdrawableCoins: document.getElementById('withdrawable-coins'),
+            alipayAccount: document.getElementById('alipay-account'),
+            realName: document.getElementById('real-name'),
+            withdrawAmount: document.getElementById('withdraw-amount'),
+            
+            leaderboardModal: document.getElementById('leaderboard-modal'),
+            closeLeaderboardModal: document.getElementById('close-leaderboard-modal'),
+            leaderboardList: document.getElementById('leaderboard-list'),
+            myRank: document.getElementById('my-rank'),
+            myRankName: document.getElementById('my-rank-name'),
+            myRankScore: document.getElementById('my-rank-score'),
+            
+            getPlaysModal: document.getElementById('get-plays-modal'),
+            closePlaysModal: document.getElementById('close-plays-modal'),
+            watchAdBtn: document.getElementById('watch-ad-btn'),
+            shareGameBtn: document.getElementById('share-game-btn'),
+            
+            levelsModal: document.getElementById('levels-modal'),
+            closeLevelsModal: document.getElementById('close-levels-modal'),
+            levelsGrid: document.getElementById('levels-grid'),
+            
+            // 游戏结果弹窗
+            victoryModal: document.getElementById('victory-modal'),
+            closeVictoryModal: document.getElementById('close-victory-modal'),
+            nextLevelBtn: document.getElementById('next-level-btn'),
+            victoryCoins: document.getElementById('victory-coins'),
+            
+            defeatModal: document.getElementById('defeat-modal'),
+            closeDefeatModal: document.getElementById('close-defeat-modal'),
+            watchAdResetBtn: document.getElementById('watch-ad-reset-btn'),
+            useCoinsResetBtn: document.getElementById('use-coins-reset-btn')
+        };
+        
         // 初始化游戏
-        function initGame() {
-            loadUserData();
-            createBoard();
-            updateDisplay();
-            updateProfile();
-        }
-
-        // 加载用户数据
-        function loadUserData() {
-            gameState.userCoins = parseInt(localStorage.getItem('userCoins') || '1000');
-            gameState.userLives = parseInt(localStorage.getItem('userLives') || '6');
-            gameState.userId = localStorage.getItem('userId') || 'user_' + Date.now();
-            gameState.totalGames = parseInt(localStorage.getItem('totalGames') || '0');
-            gameState.highScore = parseInt(localStorage.getItem('highScore') || '0');
-            
-            localStorage.setItem('userId', gameState.userId);
-        }
-
-        // 创建游戏棋盘
-        function createBoard() {
-            const board = document.getElementById('gameBoard');
-            board.innerHTML = '';
-            gameState.board = [];
-
-            for (let i = 0; i < GAME_CONFIG.boardSize * GAME_CONFIG.boardSize; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'game-cell';
-                cell.dataset.index = i;
-                cell.onclick = () => cellClick(i);
+        async function initGame() {
+            try {
+                // 检查用户是否存在，不存在则创建
+                await initUser();
                 
-                const elementType = GAME_CONFIG.elementTypes[Math.floor(Math.random() * GAME_CONFIG.elementTypes.length)];
-                const symbol = GAME_CONFIG.elementSymbols[elementType];
+                // 加载用户数据
+                await loadUserData();
                 
-                cell.textContent = symbol;
-                cell.classList.add(elementType);
-                board.appendChild(cell);
+                // 隐藏加载屏幕，显示开始界面
+                elements.loadingScreen.classList.add('hidden');
+                elements.startScreen.classList.remove('hidden');
                 
-                gameState.board.push(elementType);
+            } catch (error) {
+                console.error('初始化游戏失败:', error);
+                alert('游戏加载失败，请刷新页面重试');
             }
         }
-
-        // 处理格子点击
-        function cellClick(index) {
-            if (!gameState.isPlaying) return;
-
-            const cell = document.querySelector(`[data-index="${index}"]`);
-            
-            if (gameState.selectedCell === null) {
-                gameState.selectedCell = index;
-                cell.classList.add('selected');
-            } else if (gameState.selectedCell === index) {
-                gameState.selectedCell = null;
-                cell.classList.remove('selected');
-            } else {
-                // 尝试交换
-                if (isAdjacent(gameState.selectedCell, index)) {
-                    swapCells(gameState.selectedCell, index);
-                }
-                
-                // 清除选择
-                document.querySelectorAll('.game-cell').forEach(c => c.classList.remove('selected'));
-                gameState.selectedCell = null;
-            }
-        }
-
-        // 检查两个格子是否相邻
-        function isAdjacent(index1, index2) {
-            const row1 = Math.floor(index1 / GAME_CONFIG.boardSize);
-            const col1 = index1 % GAME_CONFIG.boardSize;
-            const row2 = Math.floor(index2 / GAME_CONFIG.boardSize);
-            const col2 = index2 % GAME_CONFIG.boardSize;
-            
-            return (Math.abs(row1 - row2) === 1 && col1 === col2) ||
-                   (Math.abs(col1 - col2) === 1 && row1 === row2);
-        }
-
-        // 交换两个格子
-        function swapCells(index1, index2) {
-            // 交换数据
-            const temp = gameState.board[index1];
-            gameState.board[index1] = gameState.board[index2];
-            gameState.board[index2] = temp;
-            
-            // 更新显示
-            updateBoardDisplay();
-            
-            // 检查匹配
-            setTimeout(() => {
-                const matches = findMatches();
-                if (matches.length > 0) {
-                    processMatches(matches);
-                    gameState.moves--;
-                    updateDisplay();
-                    
-                    if (gameState.moves <= 0) {
-                        endGame();
-                    }
-                } else {
-                    // 没有匹配，交换回来
-                    const temp = gameState.board[index1];
-                    gameState.board[index1] = gameState.board[index2];
-                    gameState.board[index2] = temp;
-                    updateBoardDisplay();
-                }
-            }, 300);
-        }
-
-        // 更新棋盘显示
-        function updateBoardDisplay() {
-            const cells = document.querySelectorAll('.game-cell');
-            cells.forEach((cell, index) => {
-                const elementType = gameState.board[index];
-                const symbol = GAME_CONFIG.elementSymbols[elementType];
-                cell.textContent = symbol;
-                cell.className = 'game-cell ' + elementType;
-            });
-        }
-
-        // 查找匹配
-        function findMatches() {
-            const matches = [];
-            
-            // 检查横向匹配
-            for (let row = 0; row < GAME_CONFIG.boardSize; row++) {
-                for (let col = 0; col < GAME_CONFIG.boardSize - 2; col++) {
-                    const index = row * GAME_CONFIG.boardSize + col;
-                    const type = gameState.board[index];
-                    
-                    if (type && type === gameState.board[index + 1] && type === gameState.board[index + 2]) {
-                        const match = [index, index + 1, index + 2];
-                        
-                        // 检查是否有更多匹配
-                        let k = col + 3;
-                        while (k < GAME_CONFIG.boardSize && gameState.board[row * GAME_CONFIG.boardSize + k] === type) {
-                            match.push(row * GAME_CONFIG.boardSize + k);
-                            k++;
-                        }
-                        
-                        matches.push(match);
-                        col = k - 1; // 跳过已匹配的
-                    }
-                }
-            }
-            
-            // 检查纵向匹配
-            for (let col = 0; col < GAME_CONFIG.boardSize; col++) {
-                for (let row = 0; row < GAME_CONFIG.boardSize - 2; row++) {
-                    const index = row * GAME_CONFIG.boardSize + col;
-                    const type = gameState.board[index];
-                    
-                    if (type && type === gameState.board[index + GAME_CONFIG.boardSize] && 
-                        type === gameState.board[index + 2 * GAME_CONFIG.boardSize]) {
-                        const match = [index, index + GAME_CONFIG.boardSize, index + 2 * GAME_CONFIG.boardSize];
-                        
-                        // 检查是否有更多匹配
-                        let k = row + 3;
-                        while (k < GAME_CONFIG.boardSize && gameState.board[k * GAME_CONFIG.boardSize + col] === type) {
-                            match.push(k * GAME_CONFIG.boardSize + col);
-                            k++;
-                        }
-                        
-                        matches.push(match);
-                        row = k - 1; // 跳过已匹配的
-                    }
-                }
-            }
-            
-            return matches;
-        }
-
-        // 处理匹配
-        function processMatches(matches) {
-            let totalScore = 0;
-            const allMatchedIndices = new Set();
-            
-            matches.forEach(match => {
-                match.forEach(index => allMatchedIndices.add(index));
-                totalScore += match.length * GAME_CONFIG.scorePerMatch;
-            });
-            
-            gameState.score += totalScore;
-            
-            // 移除匹配的元素
-            allMatchedIndices.forEach(index => {
-                gameState.board[index] = null;
-            });
-            
-            // 下落元素
-            dropElements();
-            
-            // 填充新元素
-            fillBoard();
-            
-            // 更新显示
-            updateBoardDisplay();
-            
-            // 检查新的匹配
-            setTimeout(() => {
-                const newMatches = findMatches();
-                if (newMatches.length > 0) {
-                    processMatches(newMatches);
-                }
-            }, 300);
-        }
-
-        // 元素下落
-        function dropElements() {
-            for (let col = 0; col < GAME_CONFIG.boardSize; col++) {
-                const column = [];
-                for (let row = GAME_CONFIG.boardSize - 1; row >= 0; row--) {
-                    const index = row * GAME_CONFIG.boardSize + col;
-                    if (gameState.board[index] !== null) {
-                        column.push(gameState.board[index]);
-                    }
-                }
-                
-                for (let row = GAME_CONFIG.boardSize - 1; row >= 0; row--) {
-                    const index = row * GAME_CONFIG.boardSize + col;
-                    if (column.length > 0) {
-                        gameState.board[index] = column.shift();
-                    } else {
-                        gameState.board[index] = null;
-                    }
-                }
-            }
-        }
-
-        // 填充棋盘
-        function fillBoard() {
-            for (let i = 0; i < gameState.board.length; i++) {
-                if (gameState.board[i] === null) {
-                    gameState.board[i] = GAME_CONFIG.elementTypes[
-                        Math.floor(Math.random() * GAME_CONFIG.elementTypes.length)
-                    ];
-                }
-            }
-        }
-
+        
         // 开始游戏
         function startGame() {
-            if (gameState.userLives <= 0) {
-                showNotification('游戏次数不足，请观看广告或分享游戏获得次数！', 'warning');
-                return;
+            elements.startScreen.classList.add('hidden');
+            elements.app.classList.remove('hidden');
+            
+            // 初始化关卡
+            initLevel(gameState.currentLevel);
+            gameState.gameStarted = true;
+        }
+        
+        // 初始化用户
+        async function initUser() {
+            // 尝试从localStorage获取用户ID
+            let userId = localStorage.getItem('kaleido_user_id');
+            
+            if (userId) {
+                // 检查用户是否存在
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .single();
+                    
+                if (data) {
+                    gameState.user = data;
+                    return;
+                }
             }
             
-            gameState.isPlaying = true;
+            // 创建新用户
+            const { data, error } = await supabase
+                .from('users')
+                .insert([{ nickname: `玩家${Math.floor(Math.random() * 10000)}` }])
+                .select();
+                
+            if (error) throw error;
+            
+            gameState.user = data[0];
+            localStorage.setItem('kaleido_user_id', gameState.user.user_id);
+            
+            // 初始化道具
+            await supabase
+                .from('props')
+                .insert([{ user_id: gameState.user.user_id }]);
+        }
+        
+        // 加载用户数据
+        async function loadUserData() {
+            if (!gameState.user) return;
+            
+            // 更新显示
+            elements.userNickname.textContent = gameState.user.nickname;
+            elements.userLevel.textContent = `关卡: ${gameState.user.max_level}`;
+            elements.coinDisplay.textContent = gameState.user["万花币"];
+            
+            // 检查今日游戏次数
+            const today = new Date().toISOString().split('T')[0];
+            if (gameState.user.last_play_date !== today) {
+                // 重置每日游戏次数
+                await supabase
+                    .from('users')
+                    .update({ 
+                        daily_play_count: 0,
+                        last_play_date: today
+                    })
+                    .eq('user_id', gameState.user.user_id);
+                
+                gameState.user.daily_play_count = 0;
+            }
+            
+            elements.remainingPlays.textContent = 6 - gameState.user.daily_play_count;
+            
+            // 检查签到状态
+            const { data: checkinData } = await supabase
+                .from('daily_checkin')
+                .select('*')
+                .eq('user_id', gameState.user.user_id)
+                .eq('checkin_date', today)
+                .single();
+                
+            if (checkinData && checkinData.reward_claimed) {
+                elements.checkinStatus.textContent = '已签到';
+                elements.checkinStatus.classList.remove('bg-gray-200');
+                elements.checkinStatus.classList.add('bg-green-100', 'text-green-700');
+            }
+            
+            // 加载道具
+            const { data: propsData } = await supabase
+                .from('props')
+                .select('*')
+                .eq('user_id', gameState.user.user_id)
+                .single();
+                
+            if (propsData) {
+                gameState.props = propsData;
+            }
+            
+            // 加载关卡进度
+            const { data: levelData } = await supabase
+                .from('levels')
+                .select('*')
+                .eq('user_id', gameState.user.user_id)
+                .order('level_id', { ascending: true });
+                
+            if (levelData && levelData.length > 0) {
+                // 找到最高已完成关卡
+                const completedLevels = levelData.filter(level => level.is_completed);
+                if (completedLevels.length > 0) {
+                    const maxCompleted = Math.max(...completedLevels.map(level => level.level_id));
+                    gameState.currentLevel = maxCompleted + 1;
+                }
+            }
+        }
+        
+        // 初始化关卡
+        function initLevel(level) {
+            gameState.currentLevel = level;
             gameState.score = 0;
-            gameState.moves = GAME_CONFIG.movesLimit;
-            gameState.userLives--;
-            gameState.totalGames++;
+            gameState.isProcessing = false;
+            gameState.timer = 15;
             
-            createBoard();
-            updateDisplay();
-            saveUserData();
-            
-            showNotification('游戏开始！祝你好运！', 'success');
-        }
-
-        // 结束游戏
-        function endGame() {
-            gameState.isPlaying = false;
-            
-            // 更新最高分
-            if (gameState.score > gameState.highScore) {
-                gameState.highScore = gameState.score;
+            // 清除之前的计时器
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
             }
             
-            // 计算奖励
-            const coinsEarned = Math.floor(gameState.score / 10);
-            gameState.userCoins += coinsEarned;
-            
-            saveUserData();
-            updateDisplay();
-            updateProfile();
-            
-            showNotification(`游戏结束！获得${coinsEarned}"万花币"！`, 'success');
-        }
-
-        // 更新显示
-        function updateDisplay() {
-            document.getElementById('coins').textContent = gameState.userCoins;
-            document.getElementById('lives').textContent = gameState.userLives;
-            document.getElementById('current-score').textContent = gameState.score;
-            document.getElementById('remaining-moves').textContent = gameState.moves;
-        }
-
-        // 更新个人中心
-        function updateProfile() {
-            document.getElementById('userIdDisplay').textContent = gameState.userId.slice(-4);
-            document.getElementById('highScore').textContent = gameState.highScore;
-            document.getElementById('totalGames').textContent = gameState.totalGames;
-        }
-
-        // 保存用户数据
-        function saveUserData() {
-            localStorage.setItem('userCoins', gameState.userCoins.toString());
-            localStorage.setItem('userLives', gameState.userLives.toString());
-            localStorage.setItem('totalGames', gameState.totalGames.toString());
-            localStorage.setItem('highScore', gameState.highScore.toString());
-        }
-
-        // 每日签到
-        function dailySignin() {
-            const today = new Date().toDateString();
-            const lastSignin = localStorage.getItem('lastSignin');
-            
-            if (lastSignin === today) {
-                showNotification('今天已经签到过了！', 'warning');
-                return;
-            }
-            
-            const coins = 15;
-            gameState.userCoins += coins;
-            
-            localStorage.setItem('lastSignin', today);
-            saveUserData();
-            updateDisplay();
-            
-            showNotification(`签到成功！获得${coins}"万花币"！`, 'success');
-            closeModal('signinModal');
-        }
-
-        // 观看广告
-        function watchAd() {
-            const today = new Date().toDateString();
-            const adCount = parseInt(localStorage.getItem('adCount_' + today) || '0');
-            
-            if (adCount >= 3) {
-                showNotification('今日观看广告次数已达上限！', 'warning');
-                return;
-            }
-            
-            // 模拟观看广告
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="loading-spinner"></span> 观看中...';
-            btn.disabled = true;
-            
-            setTimeout(() => {
-                gameState.userLives++;
-                localStorage.setItem('adCount_' + today, (adCount + 1).toString());
-                saveUserData();
-                updateDisplay();
-                
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                
-                showNotification('观看广告成功！获得1次游戏机会！', 'success');
-            }, 2000);
-        }
-
-        // 分享游戏
-        function shareGame() {
-            const today = new Date().toDateString();
-            const shareCount = parseInt(localStorage.getItem('shareCount_' + today) || '0');
-            
-            if (shareCount >= 3) {
-                showNotification('今日分享次数已达上限！', 'warning');
-                return;
-            }
-            
-            // 模拟分享
-            if (navigator.share) {
-                navigator.share({
-                    title: '万花消消乐',
-                    text: '快来和我一起玩万花消消乐吧！',
-                    url: window.location.href
-                }).then(() => {
-                    gameState.userLives++;
-                    localStorage.setItem('shareCount_' + today, (shareCount + 1).toString());
-                    saveUserData();
-                    updateDisplay();
-                    showNotification('分享成功！获得1次游戏机会！', 'success');
-                });
+            // 根据关卡设置不同参数
+            if (level <= 10) {
+                // 新手关卡
+                gameState.rows = 5;
+                gameState.cols = 5;
+                gameState.target = 500 + (level - 1) * 100;
+                gameState.steps = Infinity; // 无限步数
+            } else if (level <= 20) {
+                // 基础关卡
+                gameState.rows = 5;
+                gameState.cols = 5;
+                gameState.target = 1500 + (level - 11) * 200;
+                gameState.steps = 25 - Math.floor((level - 11) / 2);
+            } else if (level <= 40) {
+                // 进阶关卡
+                gameState.rows = level > 20 ? 6 : 5;
+                gameState.cols = level > 20 ? 6 : 5;
+                gameState.target = 3500 + (level - 21) * 250;
+                gameState.steps = 20 - Math.floor((level - 21) / 3);
             } else {
-                // 复制链接到剪贴板
-                navigator.clipboard.writeText(window.location.href).then(() => {
-                    gameState.userLives++;
-                    localStorage.setItem('shareCount_' + today, (shareCount + 1).toString());
-                    saveUserData();
-                    updateDisplay();
-                    showNotification('链接已复制！获得1次游戏机会！', 'success');
-                });
+                // 挑战关卡
+                gameState.rows = 6;
+                gameState.cols = 6;
+                gameState.target = 8500 + (level - 41) * 300;
+                gameState.steps = 15 - Math.floor((level - 41) / 5);
+            }
+            
+            // 更新UI
+            elements.currentLevel.textContent = level;
+            elements.currentScore.textContent = gameState.score;
+            elements.levelTarget.textContent = `${gameState.target}分`;
+            elements.remainingSteps.textContent = gameState.steps === Infinity ? '不限' : gameState.steps;
+            elements.progressBar.style.width = '0%';
+            elements.timer.textContent = gameState.timer;
+            elements.timer.classList.remove('timer-warning');
+            
+            // 生成游戏板
+            generateBoard();
+            
+            // 开始计时
+            startTimer();
+        }
+        
+        // 开始计时器
+        function startTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.timer--;
+                elements.timer.textContent = gameState.timer;
+                
+                // 当时间少于5秒时，添加警告效果
+                if (gameState.timer <= 5) {
+                    elements.timer.classList.add('timer-warning');
+                }
+                
+                // 时间到，游戏失败
+                if (gameState.timer <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    gameState.timerInterval = null;
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+        
+        // 处理超时
+        function handleTimeout() {
+            gameState.isProcessing = true;
+            elements.defeatModal.classList.remove('hidden');
+        }
+        
+        // 重置计时器
+        function resetTimer() {
+            gameState.timer = 15;
+            elements.timer.textContent = gameState.timer;
+            elements.timer.classList.remove('timer-warning');
+            
+            // 如果游戏正在进行，重新开始计时
+            if (gameState.gameStarted && !gameState.timerInterval) {
+                startTimer();
             }
         }
-
-        // 显示排行榜
-        function showLeaderboard() {
-            // 模拟排行榜数据
-            const leaderboardData = [
-                { name: '王者玩家', score: 50000, rank: 1 },
-                { name: '钻石玩家', score: 45000, rank: 2 },
-                { name: '黄金玩家', score: 40000, rank: 3 },
-                { name: '白银玩家', score: 35000, rank: 4 },
-                { name: '青铜玩家', score: 30000, rank: 5 }
-            ];
+        
+        // 生成游戏板
+        function generateBoard() {
+            gameState.board = [];
             
-            const list = document.getElementById('leaderboardList');
-            list.innerHTML = '';
+            // 创建空棋盘
+            for (let i = 0; i < gameState.rows; i++) {
+                gameState.board.push([]);
+                for (let j = 0; j < gameState.cols; j++) {
+                    gameState.board[i].push(null);
+                }
+            }
             
-            leaderboardData.forEach(player => {
-                const item = document.createElement('li');
-                item.className = `leaderboard-item top-${player.rank}`;
-                item.innerHTML = `
-                    <div class="rank">#${player.rank}</div>
-                    <div class="player-info">
-                        <div class="player-name">${player.name}</div>
-                        <div class="player-score">${player.score} "万花币"</div>
-                    </div>
-                    <div class="reward">
-                        ${player.rank <= 5 ? `🏆 ${6-player.rank * 10}元` : ''}
-                    </div>
-                `;
-                list.appendChild(item);
+            // 填充元素
+            fillBoard();
+            
+            // 渲染棋盘
+            renderBoard();
+        }
+        
+        // 填充棋盘元素
+        function fillBoard() {
+            // 填充随机元素
+            for (let i = 0; i < gameState.rows; i++) {
+                for (let j = 0; j < gameState.cols; j++) {
+                    if (!gameState.board[i][j]) {
+                        let validElements = [...Array(gameState.elements.length).keys()];
+                        
+                        // 避免初始就有可消除的组合
+                        if (j >= 2) {
+                            const left1 = gameState.board[i][j-1]?.type;
+                            const left2 = gameState.board[i][j-2]?.type;
+                            if (left1 && left2 && left1 === left2) {
+                                validElements = validElements.filter(idx => gameState.elements[idx].type !== left1);
+                            }
+                        }
+                        
+                        if (i >= 2) {
+                            const up1 = gameState.board[i-1][j]?.type;
+                            const up2 = gameState.board[i-2][j]?.type;
+                            if (up1 && up2 && up1 === up2) {
+                                validElements = validElements.filter(idx => gameState.elements[idx].type !== up1);
+                            }
+                        }
+                        
+                        // 随机选择一个有效元素
+                        const randomIdx = validElements[Math.floor(Math.random() * validElements.length)];
+                        gameState.board[i][j] = {
+                            ...gameState.elements[randomIdx],
+                            special: null
+                        };
+                    }
+                }
+            }
+            
+            // 检查是否有可消除的组合，如果没有则重新洗牌
+            if (checkElimination().length === 0) {
+                shuffleBoard();
+            }
+        }
+        
+        // 渲染棋盘
+        function renderBoard() {
+            elements.gameBoard.innerHTML = '';
+            elements.gameBoard.style.gridTemplateColumns = `repeat(${gameState.cols}, 1fr)`;
+            
+            for (let i = 0; i < gameState.rows; i++) {
+                for (let j = 0; j < gameState.cols; j++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'game-tile rounded-lg flex items-center justify-center cursor-pointer tile-transition aspect-square';
+                    tile.dataset.row = i;
+                    tile.dataset.col = j;
+                    
+                    const tileData = gameState.board[i][j];
+                    if (tileData) {
+                        const icon = document.createElement('i');
+                        
+                        if (tileData.special) {
+                            // 特殊元素
+                            const specialData = gameState.specialTiles[tileData.special];
+                            icon.className = `fa ${specialData.icon} ${specialData.color} text-3xl`;
+                            tile.classList.add('ring-2', 'ring-primary/50');
+                        } else {
+                            // 普通元素
+                            icon.className = `fa ${tileData.icon} ${tileData.color} text-3xl`;
+                        }
+                        
+                        tile.appendChild(icon);
+                    }
+                    
+                    // 添加点击事件
+                    tile.addEventListener('click', () => handleTileClick(i, j));
+                    
+                    elements.gameBoard.appendChild(tile);
+                }
+            }
+        }
+        
+        // 处理方块点击
+        function handleTileClick(row, col) {
+            if (gameState.isProcessing) return;
+            
+            // 如果没有选中的方块，选中当前方块
+            if (!gameState.selectedTile) {
+                gameState.selectedTile = { row, col };
+                highlightSelectedTile(row, col, true);
+                return;
+            }
+            
+            // 如果点击的是已经选中的方块，取消选中
+            if (gameState.selectedTile.row === row && gameState.selectedTile.col === col) {
+                highlightSelectedTile(row, col, false);
+                gameState.selectedTile = null;
+                return;
+            }
+            
+            // 检查是否相邻
+            const isAdjacent = 
+                (Math.abs(gameState.selectedTile.row - row) === 1 && gameState.selectedTile.col === col) ||
+                (Math.abs(gameState.selectedTile.col - col) === 1 && gameState.selectedTile.row === row);
+            
+            if (!isAdjacent) {
+                // 不相邻，取消之前的选中，选中新的方块
+                highlightSelectedTile(gameState.selectedTile.row, gameState.selectedTile.col, false);
+                gameState.selectedTile = { row, col };
+                highlightSelectedTile(row, col, true);
+                return;
+            }
+            
+            // 相邻，尝试交换
+            swapTiles(gameState.selectedTile.row, gameState.selectedTile.col, row, col);
+        }
+        
+        // 高亮选中的方块
+        function highlightSelectedTile(row, col, highlight) {
+            const tile = elements.gameBoard.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            if (highlight) {
+                tile.classList.add('bg-primary/30', 'ring-4', 'ring-primary');
+            } else {
+                tile.classList.remove('bg-primary/30', 'ring-4', 'ring-primary');
+            }
+        }
+        
+        // 交换方块
+        function swapTiles(row1, col1, row2, col2) {
+            gameState.isProcessing = true;
+            
+            // 交换数据
+            const temp = gameState.board[row1][col1];
+            gameState.board[row1][col1] = gameState.board[row2][col2];
+            gameState.board[row2][col2] = temp;
+            
+            // 重新渲染
+            renderBoard();
+            
+            // 检查是否有可消除的组合
+            setTimeout(() => {
+                const eliminationPositions = checkElimination();
+                
+                if (eliminationPositions.length > 0) {
+                    // 有可消除的组合，进行消除
+                    highlightSelectedTile(row1, col1, false);
+                    gameState.selectedTile = null;
+                    processElimination(eliminationPositions);
+                    
+                    // 重置计时器
+                    resetTimer();
+                    
+                    // 减少步数（如果不是无限步数）
+                    if (gameState.steps !== Infinity) {
+                        gameState.steps--;
+                        elements.remainingSteps.textContent = gameState.steps;
+                        
+                        // 检查步数是否用完
+                        if (gameState.steps <= 0) {
+                            setTimeout(checkGameOver, 1000);
+                        }
+                    }
+                } else {
+                    // 没有可消除的组合，交换回来
+                    const temp = gameState.board[row1][col1];
+                    gameState.board[row1][col1] = gameState.board[row2][col2];
+                    gameState.board[row2][col2] = temp;
+                    
+                    // 重新渲染
+                    renderBoard();
+                    gameState.isProcessing = false;
+                    
+                    // 取消选中
+                    highlightSelectedTile(row1, col1, false);
+                    gameState.selectedTile = null;
+                }
+            }, 300);
+        }
+        
+        // 检查可消除的方块
+        function checkElimination() {
+            const eliminationPositions = [];
+            const checked = new Set();
+            
+            // 检查横向
+            for (let i = 0; i < gameState.rows; i++) {
+                for (let j = 0; j < gameState.cols - 2; j++) {
+                    const current = gameState.board[i][j];
+                    const next1 = gameState.board[i][j+1];
+                    const next2 = gameState.board[i][j+2];
+                    
+                    if (current && next1 && next2 && 
+                        current.type === next1.type && 
+                        current.type === next2.type &&
+                        !current.special && !next1.special && !next2.special) {
+                        
+                        // 找到3连
+                        let count = 3;
+                        let k = j + 3;
+                        
+                        // 检查是否有更多连续的
+                        while (k < gameState.cols && gameState.board[i][k] && gameState.board[i][k].type === current.type && !gameState.board[i][k].special) {
+                            count++;
+                            k++;
+                        }
+                        
+                        // 添加到消除列表（去重）
+                        for (let l = j; l < j + count; l++) {
+                            const key = `${i},${l}`;
+                            if (!checked.has(key)) {
+                                checked.add(key);
+                                eliminationPositions.push({ row: i, col: l, count });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 检查纵向
+            for (let j = 0; j < gameState.cols; j++) {
+                for (let i = 0; i < gameState.rows - 2; i++) {
+                    const current = gameState.board[i][j];
+                    const next1 = gameState.board[i+1][j];
+                    const next2 = gameState.board[i+2][j];
+                    
+                    if (current && next1 && next2 && 
+                        current.type === next1.type && 
+                        current.type === next2.type &&
+                        !current.special && !next1.special && !next2.special) {
+                        
+                        // 找到3连
+                        let count = 3;
+                        let k = i + 3;
+                        
+                        // 检查是否有更多连续的
+                        while (k < gameState.rows && gameState.board[k][j] && gameState.board[k][j].type === current.type && !gameState.board[k][j].special) {
+                            count++;
+                            k++;
+                        }
+                        
+                        // 添加到消除列表（去重）
+                        for (let l = i; l < i + count; l++) {
+                            const key = `${l},${j}`;
+                            if (!checked.has(key)) {
+                                checked.add(key);
+                                eliminationPositions.push({ row: l, col: j, count });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 检查特殊元素的效果
+            // 这里简化处理，实际游戏中需要实现特殊元素的各种组合效果
+            
+            return eliminationPositions;
+        }
+        
+        // 处理消除
+        function processElimination(positions) {
+            if (positions.length === 0) {
+                gameState.isProcessing = false;
+                return;
+            }
+            
+            // 计算得分
+            let pointsEarned = 0;
+            positions.forEach(pos => {
+                // 3连得10分，每多连一个加5分
+                pointsEarned += 10 + (pos.count - 3) * 5;
             });
             
-            document.getElementById('leaderboardModal').style.display = 'flex';
+            gameState.score += pointsEarned;
+            elements.currentScore.textContent = gameState.score;
+            
+            // 更新进度条
+            const progress = Math.min(100, (gameState.score / gameState.target) * 100);
+            elements.progressBar.style.width = `${progress}%`;
+            
+            // 高亮要消除的方块
+            positions.forEach(pos => {
+                const tile = elements.gameBoard.querySelector(`[data-row="${pos.row}"][data-col="${pos.col}"]`);
+                tile.classList.add('scale-0', 'opacity-0');
+            });
+            
+            // 延迟后移除方块并填充新方块
+            setTimeout(() => {
+                // 移除消除的方块
+                positions.forEach(pos => {
+                    gameState.board[pos.row][pos.col] = null;
+                });
+                
+                // 下落动画
+                applyGravity();
+                
+                // 填充新方块
+                fillBoard();
+                
+                // 重新渲染
+                renderBoard();
+                
+                // 检查是否有新的可消除组合
+                setTimeout(() => {
+                    const newElimination = checkElimination();
+                    if (newElimination.length > 0) {
+                        processElimination(newElimination);
+                    } else {
+                        // 检查是否达成目标
+                        if (gameState.score >= gameState.target) {
+                            setTimeout(handleVictory, 500);
+                        } else {
+                            gameState.isProcessing = false;
+                        }
+                    }
+                }, 500);
+            }, 500);
         }
-
-        // 显示提现
-        function showWithdraw() {
-            document.getElementById('withdrawModal').style.display = 'flex';
+        
+        // 应用重力（让方块下落）
+        function applyGravity() {
+            for (let j = 0; j < gameState.cols; j++) {
+                // 从底部向上处理每一列
+                for (let i = gameState.rows - 1; i >= 0; i--) {
+                    if (!gameState.board[i][j]) {
+                        // 找到当前位置上方第一个非空方块
+                        for (let k = i - 1; k >= 0; k--) {
+                            if (gameState.board[k][j]) {
+                                // 下落
+                                gameState.board[i][j] = gameState.board[k][j];
+                                gameState.board[k][j] = null;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
-
-        // 提交提现
-        function submitWithdraw() {
-            const alipayAccount = document.getElementById('alipayAccount').value;
-            const realName = document.getElementById('realName').value;
-            const amount = parseInt(document.getElementById('withdrawAmount').value);
+        
+        // 洗牌
+        function shuffleBoard() {
+            if (gameState.props.shuffle <= 0) {
+                if (gameState.user["万花币"] >= 30) {
+                    // 询问是否购买
+                    if (confirm('是否消耗30个"万花币"使用洗牌道具？')) {
+                        buyAndUseShuffle();
+                    }
+                } else {
+                    alert('你的洗牌道具不足，且"万花币"不足！');
+                    return;
+                }
+            } else {
+                // 使用现有道具
+                useShuffle();
+            }
+        }
+        
+        // 使用洗牌道具
+        async function useShuffle() {
+            gameState.props.shuffle--;
+            
+            // 更新数据库
+            await supabase
+                .from('props')
+                .update({ shuffle: gameState.props.shuffle })
+                .eq('user_id', gameState.user.user_id);
+            
+            // 重新生成棋盘
+            generateBoard();
+            
+            // 重置计时器
+            resetTimer();
+        }
+        
+        // 购买并使用洗牌道具
+        async function buyAndUseShuffle() {
+            if (gameState.user["万花币"] < 30) return;
+            
+            // 扣减"万花币"
+            gameState.user["万花币"] -= 30;
+            gameState.props.shuffle++;
+            
+            // 更新数据库
+            await supabase
+                .from('users')
+                .update({ "万花币": gameState.user["万花币"] })
+                .eq('user_id', gameState.user.user_id);
+                
+            await supabase
+                .from('props')
+                .update({ shuffle: gameState.props.shuffle })
+                .eq('user_id', gameState.user.user_id);
+            
+            // 更新UI
+            elements.coinDisplay.textContent = gameState.user["万花币"];
+            
+            // 使用道具
+            useShuffle();
+        }
+        
+        // 使用爆炸道具
+        function useBoom() {
+            if (gameState.props.boom <= 0) {
+                if (gameState.user["万花币"] >= 60) {
+                    // 询问是否购买
+                    if (confirm('是否消耗60个"万花币"使用爆炸道具？')) {
+                        buyAndUseBoom();
+                    }
+                } else {
+                    alert('你的爆炸道具不足，且"万花币"不足！');
+                    return;
+                }
+            } else {
+                // 等待用户选择位置
+                alert('请点击要爆炸的位置');
+                // 这里简化处理，实际游戏中需要实现选择位置的逻辑
+                // 暂时随机选择一个位置
+                const row = Math.floor(Math.random() * gameState.rows);
+                const col = Math.floor(Math.random() * gameState.cols);
+                
+                // 处理爆炸
+                processBoom(row, col);
+            }
+        }
+        
+        // 处理爆炸
+        async function processBoom(row, col) {
+            gameState.props.boom--;
+            
+            // 更新数据库
+            await supabase
+                .from('props')
+                .update({ boom: gameState.props.boom })
+                .eq('user_id', gameState.user.user_id);
+            
+            // 爆炸3x3范围
+            const positions = [];
+            for (let i = Math.max(0, row - 1); i <= Math.min(gameState.rows - 1, row + 1); i++) {
+                for (let j = Math.max(0, col - 1); j <= Math.min(gameState.cols - 1, col + 1); j++) {
+                    positions.push({ row: i, col: j, count: 1 });
+                }
+            }
+            
+            // 处理消除
+            gameState.isProcessing = true;
+            processElimination(positions);
+            
+            // 重置计时器
+            resetTimer();
+        }
+        
+        // 购买并使用爆炸道具
+        async function buyAndUseBoom() {
+            if (gameState.user["万花币"] < 60) return;
+            
+            // 扣减"万花币"
+            gameState.user["万花币"] -= 60;
+            gameState.props.boom++;
+            
+            // 更新数据库
+            await supabase
+                .from('users')
+                .update({ "万花币": gameState.user["万花币"] })
+                .eq('user_id', gameState.user.user_id);
+                
+            await supabase
+                .from('props')
+                .update({ boom: gameState.props.boom })
+                .eq('user_id', gameState.user.user_id);
+            
+            // 更新UI
+            elements.coinDisplay.textContent = gameState.user["万花币"];
+            
+            // 使用道具
+            useBoom();
+        }
+        
+        // 增加步数
+        async function addSteps() {
+            if (gameState.steps === Infinity) {
+                alert('当前关卡步数不限，无需增加！');
+                return;
+            }
+            
+            if (gameState.props.add_step <= 0) {
+                if (gameState.user["万花币"] >= 40) {
+                    // 询问是否购买
+                    if (confirm('是否消耗40个"万花币"增加5步？')) {
+                        buyAndAddSteps();
+                    }
+                } else {
+                    alert('你的步数道具不足，且"万花币"不足！');
+                    return;
+                }
+            } else {
+                // 使用现有道具
+                gameState.props.add_step--;
+                gameState.steps += 5;
+                
+                // 更新数据库
+                await supabase
+                    .from('props')
+                    .update({ add_step: gameState.props.add_step })
+                    .eq('user_id', gameState.user.user_id);
+                
+                // 更新UI
+                elements.remainingSteps.textContent = gameState.steps;
+                
+                // 重置计时器
+                resetTimer();
+            }
+        }
+        
+        // 购买并增加步数
+        async function buyAndAddSteps() {
+            if (gameState.user["万花币"] < 40) return;
+            
+            // 扣减"万花币"
+            gameState.user["万花币"] -= 40;
+            gameState.props.add_step++;
+            gameState.steps += 5;
+            
+            // 更新数据库
+            await supabase
+                .from('users')
+                .update({ "万花币": gameState.user["万花币"] })
+                .eq('user_id', gameState.user.user_id);
+                
+            await supabase
+                .from('props')
+                .update({ add_step: gameState.props.add_step })
+                .eq('user_id', gameState.user.user_id);
+            
+            // 更新UI
+            elements.coinDisplay.textContent = gameState.user["万花币"];
+            elements.remainingSteps.textContent = gameState.steps;
+            
+            // 重置计时器
+            resetTimer();
+        }
+        
+        // 处理胜利
+        async function handleVictory() {
+            // 停止计时器
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+            
+            // 计算奖励"万花币"
+            const coinsEarned = 10 + gameState.currentLevel * 2;
+            gameState.user["万花币"] += coinsEarned;
+            
+            // 更新用户总得分
+            gameState.user.total_score += gameState.score;
+            
+            // 更新数据库
+            await supabase
+                .from('users')
+                .update({ 
+                    "万花币": gameState.user["万花币"],
+                    total_score: gameState.user.total_score,
+                    max_level: Math.max(gameState.user.max_level, gameState.currentLevel + 1)
+                })
+                .eq('user_id', gameState.user.user_id);
+            
+            // 更新关卡状态
+            const { data: levelData } = await supabase
+                .from('levels')
+                .select('*')
+                .eq('user_id', gameState.user.user_id)
+                .eq('level_id', gameState.currentLevel)
+                .single();
+                
+            if (levelData) {
+                // 更新现有关卡记录
+                await supabase
+                    .from('levels')
+                    .update({ 
+                        stars: 3, // 简化处理，默认三星
+                        is_completed: true,
+                        last_played: new Date()
+                    })
+                    .eq('user_id', gameState.user.user_id)
+                    .eq('level_id', gameState.currentLevel);
+            } else {
+                // 创建新关卡记录
+                await supabase
+                    .from('levels')
+                    .insert([{
+                        user_id: gameState.user.user_id,
+                        level_id: gameState.currentLevel,
+                        stars: 3,
+                        is_completed: true,
+                        last_played: new Date()
+                    }]);
+            }
+            
+            // 更新排行榜
+            const today = new Date().toISOString().split('T')[0];
+            const { data: rankData } = await supabase
+                .from('leaderboard')
+                .select('*')
+                .eq('user_id', gameState.user.user_id)
+                .eq('rank_date', today)
+                .single();
+                
+            if (rankData) {
+                await supabase
+                    .from('leaderboard')
+                    .update({ score: gameState.user.total_score })
+                    .eq('user_id', gameState.user.user_id)
+                    .eq('rank_date', today);
+            } else {
+                await supabase
+                    .from('leaderboard')
+                    .insert([{
+                        user_id: gameState.user.user_id,
+                        score: gameState.user.total_score,
+                        rank_date: today
+                    }]);
+            }
+            
+            // 更新UI
+            elements.coinDisplay.textContent = gameState.user["万花币"];
+            elements.userLevel.textContent = `关卡: ${gameState.user.max_level}`;
+            
+            // 显示胜利弹窗
+            elements.victoryCoins.textContent = coinsEarned;
+            elements.victoryModal.classList.remove('hidden');
+        }
+        
+        // 检查游戏结束
+        function checkGameOver() {
+            if (gameState.score >= gameState.target) {
+                handleVictory();
+            } else {
+                // 游戏结束，显示失败弹窗
+                elements.defeatModal.classList.remove('hidden');
+            }
+        }
+        
+        // 签到
+        async function checkin() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            // 检查是否已签到
+            const { data: checkinData } = await supabase
+                .from('daily_checkin')
+                .select('*')
+                .eq('user_id', gameState.user.user_id)
+                .eq('checkin_date', today)
+                .single();
+                
+            if (checkinData && checkinData.reward_claimed) {
+                alert('你今天已经签到过了！');
+                return;
+            }
+            
+            // 计算连续签到天数
+            let streakDays = 1;
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
+            const { data: yesterdayData } = await supabase
+                .from('daily_checkin')
+                .select('*')
+                .eq('user_id', gameState.user.user_id)
+                .eq('checkin_date', yesterdayStr)
+                .single();
+                
+            if (yesterdayData) {
+                streakDays = yesterdayData.streak_days + 1;
+            }
+            
+            // 计算奖励（连续签到天数越多，奖励越多）
+            const coinsReward = 15 + Math.min(50, streakDays * 5);
+            
+            // 更新签到状态
+            if (checkinData) {
+                await supabase
+                    .from('daily_checkin')
+                    .update({ 
+                        streak_days: streakDays,
+                        reward_claimed: true
+                    })
+                    .eq('user_id', gameState.user.user_id)
+                    .eq('checkin_date', today);
+            } else {
+                await supabase
+                    .from('daily_checkin')
+                    .insert([{
+                        user_id: gameState.user.user_id,
+                        checkin_date: today,
+                        streak_days: streakDays,
+                        reward_claimed: true
+                    }]);
+            }
+            
+            // 增加"万花币"
+            gameState.user["万花币"] += coinsReward;
+            await supabase
+                .from('users')
+                .update({ "万花币": gameState.user["万花币"] })
+                .eq('user_id', gameState.user.user_id);
+            
+            // 更新UI
+            elements.coinDisplay.textContent = gameState.user["万花币"];
+            elements.checkinStatus.textContent = '已签到';
+            elements.checkinStatus.classList.remove('bg-gray-200');
+            elements.checkinStatus.classList.add('bg-green-100', 'text-green-700');
+            
+            alert(`签到成功！获得${coinsReward}个"万花币"，已连续签到${streakDays}天`);
+        }
+        
+        // 显示提现模态框
+        function showWithdrawModal() {
+            elements.withdrawableCoins.textContent = gameState.user["万花币"];
+            elements.withdrawModal.classList.remove('hidden');
+        }
+        
+        // 提交提现申请
+        async function submitWithdraw(e) {
+            e.preventDefault();
+            
+            const alipayAccount = elements.alipayAccount.value.trim();
+            const realName = elements.realName.value.trim();
+            const amount = parseInt(elements.withdrawAmount.value);
             
             if (!alipayAccount || !realName || !amount) {
-                showNotification('请填写完整信息！', 'warning');
+                alert('请填写完整信息');
                 return;
             }
             
             if (amount < 10000) {
-                showNotification('最少需要10000"万花币"才能提现！', 'warning');
+                alert('最低提现金额为10000个"万花币"');
                 return;
             }
             
-            if (amount > gameState.userCoins) {
-                showNotification('"万花币"余额不足！', 'warning');
+            if (amount > gameState.user["万花币"]) {
+                alert('"万花币"不足');
                 return;
             }
             
-            // 计算实际到账金额
-            const rmbAmount = amount / 1000; // 10000万花币 = 10元
-            const fee = rmbAmount * 0.10;
-            const actualAmount = rmbAmount - fee;
-            
-            // 扣除万花币
-            gameState.userCoins -= amount;
-            saveUserData();
-            updateDisplay();
-            
-            // 清空表单
-            document.getElementById('alipayAccount').value = '';
-            document.getElementById('realName').value = '';
-            document.getElementById('withdrawAmount').value = '';
-            
-            showNotification(`提现申请成功！预计12小时内到账${actualAmount.toFixed(2)}元`, 'success');
-            closeModal('withdrawModal');
-        }
-
-        // 显示道具
-        function showProps() {
-            const propsContent = document.getElementById('propsContent');
-            propsContent.innerHTML = `
-                <div class="prop-card">
-                    <h4><i class="fas fa-random"></i> 洗牌道具</h4>
-                    <p>重新排列当前棋盘元素，每局限用2次</p>
-                    <p class="text-lg font-bold text-purple-600">数量: <span id="shuffleCount">0</span></p>
-                    <button class="btn btn-primary w-full" onclick="buyProp('shuffle')">
-                        <i class="fas fa-shopping-cart"></i> 购买 (30"万花币")
-                    </button>
-                </div>
-                <div class="prop-card">
-                    <h4><i class="fas fa-bomb"></i> 爆炸道具</h4>
-                    <p>手动选择1个元素触发爆炸特效，每局限用1次</p>
-                    <p class="text-lg font-bold text-red-600">数量: <span id="boomCount">0</span></p>
-                    <button class="btn btn-primary w-full" onclick="buyProp('boom')">
-                        <i class="fas fa-shopping-cart"></i> 购买 (60"万花币")
-                    </button>
-                </div>
-                <div class="prop-card">
-                    <h4><i class="fas fa-plus"></i> 步数道具</h4>
-                    <p>关卡内额外增加5步，每局限用1次</p>
-                    <p class="text-lg font-bold text-green-600">数量: <span id="addStepCount">0</span></p>
-                    <button class="btn btn-primary w-full" onclick="buyProp('addStep')">
-                        <i class="fas fa-shopping-cart"></i> 购买 (40"万花币")
-                    </button>
-                </div>
-            `;
-            
-            // 加载道具数量
-            const props = JSON.parse(localStorage.getItem('userProps') || '{}');
-            document.getElementById('shuffleCount').textContent = props.shuffle || 0;
-            document.getElementById('boomCount').textContent = props.boom || 0;
-            document.getElementById('addStepCount').textContent = props.addStep || 0;
-            
-            document.getElementById('propsModal').style.display = 'flex';
-        }
-
-        // 显示个人中心
-        function showProfile() {
-            updateProfile();
-            document.getElementById('profileModal').style.display = 'flex';
-        }
-
-        // 重置游戏数据
-        function resetGame() {
-            if (confirm('确定要重置所有游戏数据吗？此操作不可恢复！')) {
-                localStorage.clear();
-                gameState.userCoins = 1000;
-                gameState.userLives = 6;
-                gameState.totalGames = 0;
-                gameState.highScore = 0;
-                saveUserData();
-                updateDisplay();
-                updateProfile();
-                showNotification('游戏数据已重置！', 'success');
-                closeModal('profileModal');
-            }
-        }
-
-        // 购买道具
-        function buyProp(type) {
-            const prices = {
-                shuffle: 30,
-                boom: 60,
-                addStep: 40
-            };
-            
-            const price = prices[type];
-            if (gameState.userCoins < price) {
-                showNotification('"万花币"不足！', 'warning');
+            if (amount % 10000 !== 0) {
+                alert('提现金额必须是10000的倍数');
                 return;
             }
             
-            gameState.userCoins -= price;
+            // 计算手续费和实际到账金额
+            const fee = Math.floor(amount * 0.1);
+            const actualAmount = amount - fee;
             
-            // 更新道具数量
-            const props = JSON.parse(localStorage.getItem('userProps') || '{}');
-            props[type] = (props[type] || 0) + 1;
-            localStorage.setItem('userProps', JSON.stringify(props));
-            
-            saveUserData();
-            updateDisplay();
-            showProps(); // 刷新道具界面
-            showNotification(`购买成功！获得1个${type === 'shuffle' ? '洗牌' : type === 'boom' ? '爆炸' : '步数'}道具`, 'success');
-        }
-
-        // 显示签到界面
-        function showSignin() {
-            document.getElementById('signinModal').style.display = 'flex';
-        }
-
-        // 关闭模态框
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        // 显示通知
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('rewardNotification');
-            notification.textContent = message;
-            
-            // 根据类型设置颜色
-            const colors = {
-                success: 'linear-gradient(135deg, #56ab2f, #a8e6cf)',
-                warning: 'linear-gradient(135deg, #f093fb, #f5576c)',
-                error: 'linear-gradient(135deg, #ff6b6b, #ffa500)'
-            };
-            
-            notification.style.background = colors[type] || colors.success;
-            notification.style.display = 'block';
-            
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
-
-        // 每日重置广告和分享次数
-        function resetDailyCounts() {
-            const today = new Date().toDateString();
-            const lastReset = localStorage.getItem('lastReset');
-            
-            if (lastReset !== today) {
-                localStorage.setItem('lastReset', today);
-                // 重置游戏次数
-                gameState.userLives = 6;
-                saveUserData();
-                updateDisplay();
+            if (!confirm(`确认提现${amount}个"万花币"？手续费${fee}个，实际到账${actualAmount}个（约${actualAmount / 1000}元）`)) {
+                return;
             }
-        }
-
-        // 初始化游戏
-        document.addEventListener('DOMContentLoaded', function() {
-            initGame();
-            resetDailyCounts();
             
-            // 每分钟检查一次是否需要重置
-            setInterval(resetDailyCounts, 60000);
-        });
-
-        // 点击模态框外部关闭
-        window.onclick = function(event) {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
+            // 创建提现记录
+            const { data, error } = await supabase
+                .from('transactions')
+                .insert([{
+                    user_id: gameState.user.user_id,
+                    type: 'withdraw',
+                    amount: amount,
+                    status: 'pending',
+                    alipay_account: alipayAccount,
+                    real_name: realName
+                }])
+                .select();
+                
+            if (error) {
+                console.error('创建提现记录失败:', error);
+                alert('提现申请提交失败，请重试');
+                return;
+            }
+            
+            // 扣减"万花币"
+            gameState.user["万花币"] -= amount;
+            await supabase
+                .from('users')
+                .update({ "万花币": gameState.user["万花币"] })
+                .eq('user_id', gameState.user.user_id);
+            
+            // 更新UI
+            elements.coinDisplay.textContent = gameState.user["万花币"];
+            elements.withdrawModal.classList.add('hidden');
+            elements.withdrawForm.reset();
+            
+            alert('提现申请已提交，12小时内到账，请耐心等待');
+        }
+        
+        // 显示排行榜
+        async function showLeaderboard() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            // 获取排行榜数据
+            const { data: leaderboardData, error } = await supabase
+                .from('leaderboard')
+                .select(`
+                    *,
+                    users(nickname)
+                `)
+                .eq('rank_date', today)
+                .order('score', { ascending: false })
+                .limit(10);
+                
+            if (error || !leaderboardData) {
+                console.error('获取排行榜失败:', error);
+                alert('获取排行榜失败，请重试');
+                return;
+            }
+            
+            // 清空列表
+            elements.leaderboardList.innerHTML = '';
+            
+            // 渲染排行榜
+            leaderboardData.forEach((item, index) => {
+                const rankItem = document.createElement('div');
+                rankItem.className = 'flex items-center p-2 border-b border-gray-100';
+                
+                // 排名
+                const rankSpan = document.createElement('span');
+                rankSpan.className = `w-6 h-6 rounded-full flex items-center justify-center mr-3 text-xs font-bold ${
+                    index === 0 ? 'bg-yellow-100 text-yellow-600' : 
+                    index === 1 ? 'bg-gray-100 text-gray-600' : 
+                    index === 2 ? 'bg-orange-100 text-orange-600' : 
+                    'bg-gray-100 text-gray-600'
+                }`;
+                rankSpan.textContent = index + 1;
+                
+                // 名称
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'flex-1';
+                nameSpan.textContent = item.users?.nickname || '匿名用户';
+                
+                // 分数
+                const scoreSpan = document.createElement('span');
+                scoreSpan.className = 'font-bold';
+                scoreSpan.textContent = item.score;
+                
+                rankItem.appendChild(rankSpan);
+                rankItem.appendChild(nameSpan);
+                rankItem.appendChild(scoreSpan);
+                
+                elements.leaderboardList.appendChild(rankItem);
+            });
+            
+            // 查找我的排名
+            const { data: myRankData } = await supabase
+                .rpc('get_user_rank', { 
+                    user_id: gameState.user.user_id,
+                    target_date: today
+                });
+                
+            if (myRankData && myRankData.length > 0) {
+                const myRank = myRankData[0].rank;
+                elements.myRankName.textContent = gameState.user.nickname;
+                elements.myRankScore.textContent = gameState.user.total_score;
+                elements.myRank.querySelector('span:first-child').textContent = myRank;
+            }
+            
+            // 显示排行榜
+            elements.leaderboardModal.classList.remove('hidden');
+        }
+        
+        // 显示关卡选择
+        async function showLevels() {
+            // 获取用户关卡数据
+            const { data: levelsData } = await supabase
+                .from('levels')
+                .select('*')
+                .eq('user_id', gameState.user.user_id)
+                .order('level_id', { ascending: true });
+            
+            // 清空关卡网格
+            elements.levelsGrid.innerHTML = '';
+            
+            // 显示前20关
+            for (let i = 1; i <= 20; i++) {
+                const levelBtn = document.createElement('button');
+                levelBtn.className = 'w-full aspect-square rounded-lg flex items-center justify-center font-bold';
+                
+                // 检查是否已解锁
+                const isUnlocked = i <= gameState.user.max_level;
+                
+                if (isUnlocked) {
+                    // 已解锁
+                    levelBtn.classList.add('bg-primary/10', 'text-primary', 'hover:bg-primary/20');
+                    
+                    // 检查是否已完成
+                    const completedLevel = levelsData?.find(level => level.level_id === i && level.is_completed);
+                    if (completedLevel) {
+                        levelBtn.innerHTML = `${i}<i class="fa fa-check text-green-500 ml-1"></i>`;
+                    } else {
+                        levelBtn.textContent = i;
+                    }
+                    
+                    // 添加点击事件
+                    levelBtn.addEventListener('click', () => {
+                        initLevel(i);
+                        elements.levelsModal.classList.add('hidden');
+                    });
+                } else {
+                    // 未解锁
+                    levelBtn.classList.add('bg-gray-100', 'text-gray-400');
+                    levelBtn.innerHTML = '<i class="fa fa-lock"></i>';
+                    levelBtn.disabled = true;
                 }
+                
+                elements.levelsGrid.appendChild(levelBtn);
+            }
+            
+            // 显示关卡选择
+            elements.levelsModal.classList.remove('hidden');
+        }
+        
+        // 观看广告获取游戏次数
+        async function watchAdForPlays() {
+            // 模拟观看广告
+            alert('广告播放中...感谢您的支持！');
+            
+            // 增加游戏次数
+            if (gameState.user.daily_play_count < 12) { // 6 + 6
+                gameState.user.daily_play_count++;
+                
+                await supabase
+                    .from('users')
+                    .update({ daily_play_count: gameState.user.daily_play_count })
+                    .eq('user_id', gameState.user.user_id);
+                
+                elements.remainingPlays.textContent = 6 - gameState.user.daily_play_count;
+                elements.getPlaysModal.classList.add('hidden');
+            } else {
+                alert('今日已达最大游戏次数上限');
+            }
+        }
+        
+        // 分享游戏获取次数
+        function shareGameForPlays() {
+            // 生成分享链接
+            const shareUrl = `https://t.me/${BOT_USERNAME}?start=level_${gameState.currentLevel}`;
+            
+            // 复制到剪贴板
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('分享链接已复制到剪贴板，发送给好友即可获得2次游戏机会！');
+                
+                // 增加游戏次数
+                if (gameState.user.daily_play_count < 10) { // 6 + 4 (限制分享获取次数)
+                    gameState.user.daily_play_count += 2;
+                    
+                    supabase
+                        .from('users')
+                        .update({ daily_play_count: gameState.user.daily_play_count })
+                        .eq('user_id', gameState.user.user_id);
+                    
+                    elements.remainingPlays.textContent = 6 - gameState.user.daily_play_count;
+                } else {
+                    alert('今日通过分享获取的游戏次数已达上限');
+                }
+                
+                elements.getPlaysModal.classList.add('hidden');
+            }).catch(err => {
+                console.error('无法复制到剪贴板:', err);
+                alert('复制失败，请手动复制链接: ' + shareUrl);
             });
         }
+        
+        // 复活（观看广告）
+        function reviveWithAd() {
+            // 模拟观看广告
+            alert('广告播放中...感谢您的支持！');
+            
+            // 恢复5步
+            gameState.steps += 5;
+            elements.remainingSteps.textContent = gameState.steps;
+            
+            // 关闭失败弹窗
+            elements.defeatModal.classList.add('hidden');
+            
+            // 重置计时器
+            resetTimer();
+            
+            // 继续游戏
+            gameState.isProcessing = false;
+        }
+        
+        // 复活（消耗"万花币"）
+        async function reviveWithCoins() {
+            if (gameState.user["万花币"] < 50) {
+                alert('"万花币"不足，无法复活');
+                return;
+            }
+            
+            // 扣减"万花币"
+            gameState.user["万花币"] -= 50;
+            await supabase
+                .from('users')
+                .update({ "万花币": gameState.user["万花币"] })
+                .eq('user_id', gameState.user.user_id);
+            
+            // 更新UI
+            elements.coinDisplay.textContent = gameState.user["万花币"];
+            
+            // 恢复5步
+            gameState.steps += 5;
+            elements.remainingSteps.textContent = gameState.steps;
+            
+            // 关闭失败弹窗
+            elements.defeatModal.classList.add('hidden');
+            
+            // 重置计时器
+            resetTimer();
+            
+            // 继续游戏
+            gameState.isProcessing = false;
+        }
+        
+        // 注册事件监听
+        function setupEventListeners() {
+            // 开始游戏按钮
+            elements.startGameBtn.addEventListener('click', startGame);
+            
+            // 用户菜单
+            elements.userMenuBtn.addEventListener('click', () => {
+                elements.userMenu.classList.toggle('hidden');
+            });
+            
+            elements.closeUserMenu.addEventListener('click', () => {
+                elements.userMenu.classList.add('hidden');
+            });
+            
+            // 点击其他区域关闭菜单
+            document.addEventListener('click', (e) => {
+                if (!elements.userMenu.contains(e.target) && e.target !== elements.userMenuBtn) {
+                    elements.userMenu.classList.add('hidden');
+                }
+            });
+            
+            // 签到
+            elements.checkinBtn.addEventListener('click', checkin);
+            
+            // 提现
+            elements.withdrawBtn.addEventListener('click', showWithdrawModal);
+            elements.closeWithdrawModal.addEventListener('click', () => {
+                elements.withdrawModal.classList.add('hidden');
+            });
+            elements.withdrawForm.addEventListener('submit', submitWithdraw);
+            
+            // 排行榜
+            elements.leaderboardBtn.addEventListener('click', showLeaderboard);
+            elements.closeLeaderboardModal.addEventListener('click', () => {
+                elements.leaderboardModal.classList.add('hidden');
+            });
+            
+            // 获取更多游戏次数
+            elements.getMorePlays.addEventListener('click', () => {
+                elements.getPlaysModal.classList.remove('hidden');
+            });
+            
+            elements.closePlaysModal.addEventListener('click', () => {
+                elements.getPlaysModal.classList.add('hidden');
+            });
+            
+            elements.watchAdBtn.addEventListener('click', watchAdForPlays);
+            elements.shareGameBtn.addEventListener('click', shareGameForPlays);
+            
+            // 关卡选择
+            elements.levelsBtn.addEventListener('click', showLevels);
+            elements.closeLevelsModal.addEventListener('click', () => {
+                elements.levelsModal.classList.add('hidden');
+            });
+            
+            // 道具按钮
+            elements.shuffleBtn.addEventListener('click', shuffleBoard);
+            elements.boomBtn.addEventListener('click', useBoom);
+            elements.addStepBtn.addEventListener('click', addSteps);
+            
+            // 胜利弹窗
+            elements.nextLevelBtn.addEventListener('click', () => {
+                initLevel(gameState.currentLevel + 1);
+                elements.victoryModal.classList.add('hidden');
+            });
+            
+            elements.closeVictoryModal.addEventListener('click', () => {
+                elements.victoryModal.classList.add('hidden');
+            });
+            
+            // 失败弹窗
+            elements.watchAdResetBtn.addEventListener('click', reviveWithAd);
+            elements.useCoinsResetBtn.addEventListener('click', reviveWithCoins);
+            elements.closeDefeatModal.addEventListener('click', () => {
+                elements.defeatModal.classList.add('hidden');
+            });
+            
+            // 分享按钮
+            elements.shareBtn.addEventListener('click', () => {
+                const shareUrl = `https://t.me/${BOT_USERNAME}?start=level_${gameState.currentLevel}`;
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('游戏链接已复制到剪贴板，可以分享给好友了！');
+                }).catch(err => {
+                    console.error('无法复制到剪贴板:', err);
+                    alert('复制失败，请手动复制链接: ' + shareUrl);
+                });
+            });
+        }
+        
+        // 创建排名函数（需要在Supabase中手动创建这个SQL函数）
+        /*
+        CREATE OR REPLACE FUNCTION public.get_user_rank(user_id uuid, target_date date)
+        RETURNS TABLE (rank bigint) AS $$
+        BEGIN
+            RETURN QUERY
+            SELECT COUNT(*) + 1 AS rank
+            FROM leaderboard
+            WHERE rank_date = target_date
+            AND score > (SELECT score FROM leaderboard WHERE user_id = $1 AND rank_date = $2);
+        END;
+        $$ LANGUAGE plpgsql;
+        */
+        
+        // 启动游戏
+        window.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            initGame();
+        });
     </script>
 </body>
 </html>
