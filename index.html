@@ -177,10 +177,16 @@
 
             <!-- 游戏棋盘 -->
             <div class="bg-white rounded-xl p-4 md:p-6 shadow-lg mb-4">
-                <div class="aspect-square max-w-md mx-auto relative">
+                <div class="aspect-square max-w-md mx-auto relative" style="min-height: 250px;">
                     <!-- 游戏棋盘 -->
                     <div id="game-board" class="grid grid-cols-5 gap-1 w-full h-full">
                         <!-- 游戏方块将通过JS动态生成 -->
+                        <div class="col-span-5 row-span-5 flex items-center justify-center text-gray-400" id="loading-indicator">
+                            <div class="text-center">
+                                <i class="fa fa-circle-o-notch fa-spin text-3xl mb-2"></i>
+                                <p>加载游戏中...</p>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- 游戏结束遮罩 -->
@@ -594,6 +600,7 @@
 
         // DOM元素
         const gameBoard = document.getElementById('game-board');
+        const loadingIndicator = document.getElementById('loading-indicator');
         const currentScoreEl = document.getElementById('current-score');
         const remainingMovesEl = document.getElementById('remaining-moves');
         const targetScoreEl = document.getElementById('target-score');
@@ -661,11 +668,11 @@
 
         // 初始化游戏
         function initGame() {
-            // 检查是否还有游戏次数
-            if (gameState.remainingAttempts <= 0) {
-                noAttemptsEl.classList.remove('hidden');
-                return;
-            }
+            // 显示加载指示器
+            loadingIndicator.style.display = 'flex';
+            
+            // 确保游戏板容器可见
+            gameBoard.style.display = 'grid';
             
             // 重置游戏状态
             gameState.score = 0;
@@ -682,12 +689,25 @@
             generateBoard();
             
             // 检查初始是否有可消除的组合，如果有则重新生成
-            while (checkForMatches().length > 0) {
+            let attempts = 0;
+            while (checkForMatches().length > 0 && attempts < 10) {
                 generateBoard();
+                attempts++;
             }
             
             // 渲染游戏板
             renderBoard();
+            
+            // 隐藏加载指示器
+            setTimeout(() => {
+                loadingIndicator.style.display = 'none';
+            }, 500);
+            
+            // 检查是否还有游戏次数
+            if (gameState.remainingAttempts <= 0) {
+                noAttemptsEl.classList.remove('hidden');
+                return;
+            }
             
             // 隐藏游戏结束界面
             gameOverEl.classList.add('hidden');
@@ -727,9 +747,17 @@
 
         // 渲染游戏板
         function renderBoard() {
-            gameBoard.innerHTML = '';
+            // 清空游戏板
+            Array.from(gameBoard.children).forEach(child => {
+                if (child.id !== 'loading-indicator') {
+                    gameBoard.removeChild(child);
+                }
+            });
+            
+            // 设置网格列数
             gameBoard.style.gridTemplateColumns = `repeat(${gameConfig.gridSize}, 1fr)`;
             
+            // 创建游戏方块
             for (let row = 0; row < gameConfig.gridSize; row++) {
                 for (let col = 0; col < gameConfig.gridSize; col++) {
                     const element = gameState.board[row][col];
@@ -788,7 +816,9 @@
         function highlightSelectedTile(row, col) {
             const tiles = document.querySelectorAll('.game-tile');
             const index = row * gameConfig.gridSize + col;
-            tiles[index].classList.add('ring-4', 'ring-accent', 'scale-110');
+            if (tiles[index]) {
+                tiles[index].classList.add('ring-4', 'ring-accent', 'scale-110');
+            }
         }
 
         // 移除所有高亮
@@ -836,12 +866,12 @@
                     const tiles = document.querySelectorAll('.game-tile');
                     const index1 = row1 * gameConfig.gridSize + col1;
                     const index2 = row2 * gameConfig.gridSize + col2;
-                    tiles[index1].classList.add('animate-shake');
-                    tiles[index2].classList.add('animate-shake');
+                    if (tiles[index1]) tiles[index1].classList.add('animate-shake');
+                    if (tiles[index2]) tiles[index2].classList.add('animate-shake');
                     
                     setTimeout(() => {
-                        tiles[index1].classList.remove('animate-shake');
-                        tiles[index2].classList.remove('animate-shake');
+                        if (tiles[index1]) tiles[index1].classList.remove('animate-shake');
+                        if (tiles[index2]) tiles[index2].classList.remove('animate-shake');
                         gameState.isProcessing = false;
                     }, 500);
                 }
@@ -1022,7 +1052,9 @@
             const tiles = document.querySelectorAll('.game-tile');
             matches.forEach(match => {
                 const index = match.row * gameConfig.gridSize + match.col;
-                tiles[index].classList.add('animate-clear');
+                if (tiles[index]) {
+                    tiles[index].classList.add('animate-clear');
+                }
             });
             
             // 移除匹配的元素
@@ -1547,12 +1579,14 @@
                 const index = firstMatch.row * gameConfig.gridSize + firstMatch.col;
                 
                 // 添加提示动画
-                tiles[index].classList.add('ring-4', 'ring-yellow-500', 'animate-pulse');
-                
-                setTimeout(() => {
-                    tiles[index].classList.remove('ring-4', 'ring-yellow-500', 'animate-pulse');
-                    gameState.isProcessing = false;
-                }, 2000);
+                if (tiles[index]) {
+                    tiles[index].classList.add('ring-4', 'ring-yellow-500', 'animate-pulse');
+                    
+                    setTimeout(() => {
+                        tiles[index].classList.remove('ring-4', 'ring-yellow-500', 'animate-pulse');
+                        gameState.isProcessing = false;
+                    }, 2000);
+                }
             } else {
                 // 没有可消除的匹配，自动洗牌
                 alert('没有可消除的组合，将自动洗牌');
@@ -1602,8 +1636,10 @@
             generateBoard();
             
             // 确保不会生成无匹配的棋盘
-            while (checkForMatches().length === 0) {
+            let attempts = 0;
+            while (checkForMatches().length === 0 && attempts < 10) {
                 generateBoard();
+                attempts++;
             }
             
             // 渲染新棋盘
@@ -2158,6 +2194,9 @@
 
         // 初始化
         window.addEventListener('DOMContentLoaded', () => {
+            // 确保游戏板容器有最小高度，避免空白
+            gameBoard.style.minHeight = '250px';
+            
             // 检查本地存储的最大关卡
             const savedMaxLevel = localStorage.getItem('maxLevel');
             if (savedMaxLevel) {
@@ -2173,6 +2212,12 @@
                 initGame();
                 // 加载排行榜
                 fetchLeaderboard();
+            }).catch(error => {
+                console.error('初始化失败:', error);
+                // 即使加载失败也尝试显示游戏板
+                generateBoard();
+                renderBoard();
+                loadingIndicator.style.display = 'none';
             });
         });
     </script>
