@@ -3,28 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>几何障碍生存战</title>
+    <title>万花消消乐 - Telegram小游戏</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // 配置Tailwind自定义主题
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3B82F6',
-                        secondary: '#EC4899',
-                        accent: '#8B5CF6',
-                        danger: '#EF4444',
-                        warning: '#F59E0B',
-                        success: '#10B981',
-                        dark: '#1F2937',
-                        light: '#F3F4F6'
+                        primary: '#8B5CF6', // 主色调：紫色
+                        secondary: '#EC4899', // 辅助色：粉色
+                        accent: '#F59E0B', // 强调色：橙色
+                        background: '#FEF3C7', // 背景色：浅黄色
+                        board: '#FFFBEB', // 棋盘背景色
                     },
                     fontFamily: {
-                        game: ['Arial', 'sans-serif']
-                    }
+                        game: ['"Comic Sans MS"', '"Marker Felt"', 'sans-serif'],
+                    },
                 }
             }
         }
@@ -34,2207 +31,1019 @@
             .content-auto {
                 content-visibility: auto;
             }
-            .text-shadow {
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            .game-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             }
-            .text-shadow-lg {
-                text-shadow: 0 4px 8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+            .tile-shadow {
+                box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
             }
-            .backdrop-blur {
-                backdrop-filter: blur(8px);
+            .animate-pop {
+                animation: pop 0.3s ease-out;
             }
+            .animate-clear {
+                animation: clear 0.5s ease-in-out;
+            }
+            .animate-fall {
+                transition: transform 0.5s ease-out;
+            }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes clear {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white font-game overflow-hidden h-screen flex flex-col">
-    <!-- 顶部导航栏 -->
-    <header class="bg-dark/80 backdrop-blur px-4 py-2 flex justify-between items-center border-b border-gray-700">
-        <div class="flex items-center">
-            <i class="fa fa-cube text-primary text-2xl mr-2"></i>
-            <h1 class="text-xl font-bold">几何障碍生存战</h1>
-        </div>
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center">
-                <i class="fa fa-diamond text-warning mr-1"></i>
-                <span id="coin-count" class="font-bold">0</span>
+<body class="bg-background min-h-screen font-game text-gray-800 overflow-x-hidden">
+    <!-- 顶部导航 -->
+    <header class="bg-gradient-to-r from-primary to-secondary text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-gamepad text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold">万花消消乐</h1>
             </div>
-            <div class="flex items-center">
-                <i class="fa fa-gamepad text-primary mr-1"></i>
-                <span id="play-count" class="font-bold">5</span>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-1">
+                    <i class="fa fa-diamond text-accent"></i>
+                    <span id="coin-count" class="font-bold">0</span>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <i class="fa fa-map-signs"></i>
+                    <span id="level-display">关卡: 1</span>
+                </div>
+                <button id="user-btn" class="bg-white/20 hover:bg-white/30 rounded-full w-8 h-8 flex items-center justify-center transition-all">
+                    <i class="fa fa-user"></i>
+                </button>
             </div>
-            <button id="profile-btn" class="bg-primary/20 hover:bg-primary/30 p-2 rounded-full transition-all">
-                <i class="fa fa-user"></i>
-            </button>
         </div>
     </header>
 
-    <!-- 主游戏区域 -->
-    <main class="flex-1 relative overflow-hidden">
-        <!-- 登录提示遮罩 -->
-        <div id="login-overlay" class="absolute inset-0 bg-black/80 backdrop-blur flex flex-col items-center justify-center p-4 z-50">
-            <div class="text-center max-w-xs">
-                <i class="fa fa-telegram text-5xl text-blue-500 mb-4"></i>
-                <h2 class="text-2xl font-bold mb-2">请登录游戏</h2>
-                <p id="login-message" class="text-gray-300 mb-6">正在通过Telegram登录...</p>
-                <button id="retry-login-btn" class="bg-primary hover:bg-primary/80 text-white font-bold py-2 px-6 rounded-full transition-all hidden">
-                    重试登录
-                </button>
-                <div id="offline-mode-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full transition-all mt-3 hidden">
-                    离线模式体验
+    <!-- 游戏状态区 -->
+    <div class="container mx-auto px-4 py-4">
+        <div class="bg-white rounded-xl p-4 game-shadow mb-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-3 md:mb-0">
+                    <h2 class="text-lg font-bold">目标: 获得 <span id="target-score" class="text-accent">500</span> 分</h2>
                 </div>
-                <div id="debug-info" class="text-xs text-gray-400 mt-4">
-                    调试信息: 初始化中...
-                </div>
-            </div>
-        </div>
-        
-        <!-- 游戏画布容器 -->
-        <div id="game-container" class="absolute inset-0 flex items-center justify-center">
-            <canvas id="game-canvas" class="border-2 border-gray-700 rounded-lg bg-gray-800/50" width="400" height="600"></canvas>
-            
-            <!-- 游戏暂停遮罩 -->
-            <div id="pause-overlay" class="absolute inset-0 bg-black/70 backdrop-blur hidden flex-col items-center justify-center">
-                <h2 class="text-3xl font-bold mb-6 text-shadow-lg">游戏暂停</h2>
-                <div class="flex flex-col space-y-3">
-                    <button id="resume-btn" class="bg-primary hover:bg-primary/80 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105">
-                        继续游戏
-                    </button>
-                    <button id="restart-btn" class="bg-warning hover:bg-warning/80 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105">
-                        重新开始
-                    </button>
-                    <button id="quit-btn" class="bg-danger hover:bg-danger/80 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105">
-                        退出游戏
-                    </button>
-                </div>
-            </div>
-            
-            <!-- 游戏结束遮罩 -->
-            <div id="game-over-overlay" class="absolute inset-0 bg-black/70 backdrop-blur hidden flex-col items-center justify-center">
-                <h2 class="text-3xl font-bold mb-2 text-shadow-lg">游戏结束</h2>
-                <p id="final-score" class="text-xl mb-1">得分: 0秒</p>
-                <p id="coins-earned" class="text-yellow-400 mb-6">获得万花币: 0</p>
-                <div class="flex flex-col space-y-3 w-3/4 max-w-xs">
-                    <button id="revive-btn" class="bg-accent hover:bg-accent/80 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105">
-                        <i class="fa fa-refresh mr-1"></i> 花费500万花币复活
-                    </button>
-                    <button id="play-again-btn" class="bg-primary hover:bg-primary/80 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105">
-                        再玩一次
-                    </button>
-                    <button id="back-to-menu-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105">
-                        返回菜单
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 开始菜单 -->
-        <div id="start-menu" class="absolute inset-0 bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col items-center justify-center p-4">
-            <div class="text-center mb-8">
-                <h2 class="text-4xl font-bold mb-2 text-shadow-lg">几何障碍生存战</h2>
-                <p class="text-gray-300">躲避障碍物，生存时间越长得分越高</p>
-            </div>
-            
-            <div class="flex flex-col space-y-4 w-full max-w-xs">
-                <button id="start-game-btn" class="bg-primary hover:bg-primary/80 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-105 text-lg">
-                    开始游戏
-                </button>
-                <button id="leaderboard-btn" class="bg-dark hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-105">
-                    <i class="fa fa-trophy mr-2 text-yellow-500"></i> 排行榜
-                </button>
-                <button id="shop-btn" class="bg-dark hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-105">
-                    <i class="fa fa-shopping-bag mr-2 text-green-400"></i> 商店
-                </button>
-                <button id="withdraw-btn" class="bg-dark hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-105">
-                    <i class="fa fa-money mr-2 text-green-500"></i> 提现
-                </button>
-            </div>
-            
-            <!-- 新手提示 -->
-            <div class="absolute bottom-16 bg-black/50 backdrop-blur p-3 rounded-lg text-sm text-gray-300 max-w-xs text-center">
-                <p><i class="fa fa-info-circle text-blue-400 mr-1"></i> 拖动蓝色方块躲避红色三角形和黄色圆形</p>
-            </div>
-        </div>
-        
-        <!-- 排行榜界面 -->
-        <div id="leaderboard-menu" class="absolute inset-0 bg-gradient-to-b from-gray-900 to-gray-800 hidden p-4 overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-shadow">全服排行榜</h2>
-                <button id="back-from-leaderboard-btn" class="bg-gray-700 hover:bg-gray-600 p-2 rounded-full">
-                    <i class="fa fa-arrow-left"></i>
-                </button>
-            </div>
-            
-            <div class="bg-dark/60 backdrop-blur rounded-xl p-4 mb-4">
-                <h3 class="text-lg font-semibold mb-3 text-center">你的排名</h3>
-                <div id="user-rank" class="flex items-center justify-between bg-primary/20 rounded-lg p-3 mb-2">
-                    <div class="flex items-center">
-                        <span class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3">--</span>
-                        <span id="user-rank-name" class="font-medium">加载中...</span>
+                <div class="flex space-x-6">
+                    <div class="text-center">
+                        <div class="text-sm opacity-70">当前得分</div>
+                        <div id="current-score" class="text-2xl font-bold text-primary">0</div>
                     </div>
-                    <span id="user-rank-score" class="font-bold">0秒</span>
-                </div>
-            </div>
-            
-            <h3 class="text-lg font-semibold mb-3">前10名</h3>
-            <div id="top-leaderboard" class="space-y-2 mb-6">
-                <!-- 排行榜数据将通过JS动态填充 -->
-                <div class="flex items-center justify-between bg-gray-800/50 rounded-lg p-3">
-                    <div class="flex items-center">
-                        <span class="bg-yellow-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3">1</span>
-                        <span class="font-medium">加载中...</span>
+                    <div class="text-center">
+                        <div class="text-sm opacity-70">剩余步数</div>
+                        <div id="remaining-moves" class="text-2xl font-bold text-secondary">20</div>
                     </div>
-                    <span class="font-bold">0秒</span>
-                </div>
-            </div>
-            
-            <h3 class="text-lg font-semibold mb-3">其他玩家</h3>
-            <div id="other-players" class="space-y-2">
-                <!-- 其他玩家数据将通过JS动态填充 -->
-            </div>
-        </div>
-        
-        <!-- 商店界面 -->
-        <div id="shop-menu" class="absolute inset-0 bg-gradient-to-b from-gray-900 to-gray-800 hidden p-4 overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-shadow">游戏商店</h2>
-                <button id="back-from-shop-btn" class="bg-gray-700 hover:bg-gray-600 p-2 rounded-full">
-                    <i class="fa fa-arrow-left"></i>
-                </button>
-            </div>
-            
-            <div class="bg-dark/60 backdrop-blur rounded-xl p-4 mb-6">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-gray-300">你的万花币</span>
-                    <span id="shop-coin-count" class="font-bold text-yellow-400">0</span>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2">
-                    <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 0%"></div>
-                </div>
-            </div>
-            
-            <h3 class="text-lg font-semibold mb-3">购买游戏次数</h3>
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <button class="buy-plays-btn bg-primary/20 hover:bg-primary/30 rounded-xl p-4 flex flex-col items-center transition-all" data-count="1">
-                    <span class="text-xl font-bold mb-1">1次</span>
-                    <span class="text-yellow-400"><i class="fa fa-diamond mr-1"></i> 200</span>
-                </button>
-                <button class="buy-plays-btn bg-primary/20 hover:bg-primary/30 rounded-xl p-4 flex flex-col items-center transition-all" data-count="5">
-                    <span class="text-xl font-bold mb-1">5次</span>
-                    <span class="text-yellow-400"><i class="fa fa-diamond mr-1"></i> 1000</span>
-                </button>
-            </div>
-            
-            <h3 class="text-lg font-semibold mb-3">游戏道具</h3>
-            <div class="space-y-3 mb-6">
-                <button id="buy-shield-btn" class="w-full bg-accent/20 hover:bg-accent/30 rounded-xl p-4 flex justify-between items-center transition-all">
-                    <div class="flex items-center">
-                        <i class="fa fa-shield text-2xl mr-3 text-blue-400"></i>
-                        <div>
-                            <span class="block font-bold">护盾</span>
-                            <span class="text-sm text-gray-300">可抵挡1次碰撞伤害</span>
-                        </div>
-                    </div>
-                    <span class="text-yellow-400 font-bold"><i class="fa fa-diamond mr-1"></i> 1000</span>
-                </button>
-            </div>
-            
-            <h3 class="text-lg font-semibold mb-3">获取免费次数</h3>
-            <div class="space-y-3">
-                <button id="watch-ad-btn" class="w-full bg-green-600/20 hover:bg-green-600/30 rounded-xl p-4 flex justify-between items-center transition-all">
-                    <div class="flex items-center">
-                        <i class="fa fa-play-circle text-2xl mr-3 text-green-400"></i>
-                        <div>
-                            <span class="block font-bold">观看广告</span>
-                            <span class="text-sm text-gray-300">获得1次游戏机会和100万花币</span>
-                        </div>
-                    </div>
-                    <i class="fa fa-arrow-right text-gray-400"></i>
-                </button>
-                <button id="share-btn" class="w-full bg-blue-600/20 hover:bg-blue-600/30 rounded-xl p-4 flex justify-between items-center transition-all">
-                    <div class="flex items-center">
-                        <i class="fa fa-share-alt text-2xl mr-3 text-blue-400"></i>
-                        <div>
-                            <span class="block font-bold">分享游戏</span>
-                            <span class="text-sm text-gray-300">邀请好友获得1次游戏机会和50万花币</span>
-                        </div>
-                    </div>
-                    <i class="fa fa-arrow-right text-gray-400"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- 提现界面 -->
-        <div id="withdraw-menu" class="absolute inset-0 bg-gradient-to-b from-gray-900 to-gray-800 hidden p-4 overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-shadow">提现</h2>
-                <button id="back-from-withdraw-btn" class="bg-gray-700 hover:bg-gray-600 p-2 rounded-full">
-                    <i class="fa fa-arrow-left"></i>
-                </button>
-            </div>
-            
-            <div class="bg-dark/60 backdrop-blur rounded-xl p-4 mb-6">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-gray-300">可提现万花币</span>
-                    <span id="withdraw-coin-count" class="font-bold text-yellow-400">0</span>
-                </div>
-                <p class="text-sm text-gray-400 mb-3">最低提现金额: 100000万花币 (需为10000的整数倍)</p>
-                <p class="text-sm text-gray-400">提现手续费: 15%</p>
-            </div>
-            
-            <form id="withdraw-form" class="space-y-4 mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1" for="withdraw-amount">提现金额</label>
-                    <input type="number" id="withdraw-amount" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="输入提现金额" step="10000" min="100000">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1" for="alipay-account">支付宝账号</label>
-                    <input type="text" id="alipay-account" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入支付宝账号">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1" for="real-name">真实姓名</label>
-                    <input type="text" id="real-name" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入真实姓名（与支付宝一致）">
-                </div>
-                
-                <button type="submit" id="submit-withdraw-btn" class="w-full bg-success hover:bg-success/80 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-[1.02]">
-                    提交提现申请
-                </button>
-            </form>
-            
-            <h3 class="text-lg font-semibold mb-3">提现历史</h3>
-            <div id="withdraw-history" class="space-y-3">
-                <!-- 提现历史将通过JS动态填充 -->
-                <div class="text-center text-gray-400 py-6">
-                    暂无提现记录
                 </div>
             </div>
         </div>
-        
-        <!-- 个人资料界面 -->
-        <div id="profile-menu" class="absolute inset-0 bg-gradient-to-b from-gray-900 to-gray-800 hidden p-4">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-shadow">个人资料</h2>
-                <button id="back-from-profile-btn" class="bg-gray-700 hover:bg-gray-600 p-2 rounded-full">
-                    <i class="fa fa-arrow-left"></i>
-                </button>
-            </div>
-            
-            <div class="flex flex-col items-center mb-8">
-                <div class="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mb-4">
-                    <i class="fa fa-user text-4xl text-primary"></i>
-                </div>
-                <h3 id="profile-nickname" class="text-xl font-bold">加载中...</h3>
-                <p class="text-gray-400">游戏玩家</p>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="bg-dark/60 backdrop-blur rounded-xl p-4 text-center">
-                    <p class="text-gray-300 text-sm">最高得分</p>
-                    <p id="profile-high-score" class="text-2xl font-bold text-primary">0秒</p>
-                </div>
-                <div class="bg-dark/60 backdrop-blur rounded-xl p-4 text-center">
-                    <p class="text-gray-300 text-sm">拥有万花币</p>
-                    <p id="profile-coin-count" class="text-2xl font-bold text-yellow-400">0</p>
-                </div>
-                <div class="bg-dark/60 backdrop-blur rounded-xl p-4 text-center">
-                    <p class="text-gray-300 text-sm">剩余游戏次数</p>
-                    <p id="profile-play-count" class="text-2xl font-bold text-green-400">0</p>
-                </div>
-                <div class="bg-dark/60 backdrop-blur rounded-xl p-4 text-center">
-                    <p class="text-gray-300 text-sm">总游戏时间</p>
-                    <p id="profile-total-time" class="text-2xl font-bold text-purple-400">0分钟</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 次数不足提示 -->
-        <div id="no-plays-modal" class="absolute inset-0 bg-black/70 backdrop-blur hidden flex-col items-center justify-center p-4">
-            <div class="bg-dark rounded-xl p-6 max-w-xs w-full">
-                <h3 class="text-xl font-bold mb-3 text-center">游戏次数不足</h3>
-                <p class="text-gray-300 text-center mb-4">你已经没有游戏次数了，可以通过以下方式获取</p>
-                <div class="flex flex-col space-y-3">
-                    <button id="watch-ad-for-plays-btn" class="bg-green-600/20 hover:bg-green-600/30 text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center justify-center">
-                        <i class="fa fa-play-circle mr-2 text-green-400"></i> 观看广告获取1次机会
-                    </button>
-                    <button id="share-for-plays-btn" class="bg-blue-600/20 hover:bg-blue-600/30 text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center justify-center">
-                        <i class="fa fa-share-alt mr-2 text-blue-400"></i> 分享游戏获取1次机会
-                    </button>
-                    <button id="go-to-shop-btn" class="bg-primary hover:bg-primary/80 text-white font-bold py-2 px-4 rounded-lg transition-all">
-                        去商店购买次数
-                    </button>
-                    <button id="close-no-plays-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-all">
-                        关闭
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 提示消息 -->
-        <div id="toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-dark/80 backdrop-blur px-4 py-2 rounded-lg text-sm opacity-0 transition-opacity duration-300 hidden">
-            <span id="toast-message">提示消息</span>
-        </div>
-    </main>
 
-    <!-- 底部赞助商信息 -->
-    <footer class="bg-dark/80 backdrop-blur px-4 py-2 text-center text-sm border-t border-gray-700">
-        <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" class="text-primary hover:underline" target="_blank">@bjxc010</a> 开发</p>
+        <!-- 游戏主区域 -->
+        <div class="flex flex-col md:flex-row gap-4">
+            <!-- 游戏棋盘 -->
+            <div class="flex-1">
+                <div class="relative bg-board rounded-xl p-4 md:p-6 game-shadow aspect-square max-w-md mx-auto">
+                    <div id="game-board" class="grid grid-cols-5 gap-1 w-full h-full">
+                        <!-- 游戏方块将通过JS动态生成 -->
+                    </div>
+                    
+                    <!-- 游戏结束遮罩 -->
+                    <div id="game-over" class="absolute inset-0 bg-black/70 rounded-xl flex flex-col items-center justify-center hidden">
+                        <h2 id="game-over-title" class="text-white text-3xl font-bold mb-4"></h2>
+                        <p id="game-over-message" class="text-white text-xl mb-6"></p>
+                        <div class="flex space-x-3">
+                            <button id="retry-btn" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-all">
+                                重试
+                            </button>
+                            <button id="next-level-btn" class="bg-secondary hover:bg-secondary/90 text-white px-6 py-2 rounded-lg transition-all hidden">
+                                下一关
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="w-full md:w-64 space-y-4">
+                <!-- 道具区 -->
+                <div class="bg-white rounded-xl p-4 game-shadow">
+                    <h3 class="text-lg font-bold mb-3 flex items-center">
+                        <i class="fa fa-magic text-accent mr-2"></i>道具
+                    </h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="prop-btn flex flex-col items-center p-2 rounded-lg border border-gray-200 hover:border-primary transition-all" data-prop="shuffle">
+                            <i class="fa fa-refresh text-xl mb-1"></i>
+                            <span class="text-xs">洗牌</span>
+                            <span class="text-xs text-primary">30</span>
+                        </button>
+                        <button class="prop-btn flex flex-col items-center p-2 rounded-lg border border-gray-200 hover:border-primary transition-all" data-prop="boom">
+                            <i class="fa fa-bomb text-xl mb-1"></i>
+                            <span class="text-xs">爆炸</span>
+                            <span class="text-xs text-primary">60</span>
+                        </button>
+                        <button class="prop-btn flex flex-col items-center p-2 rounded-lg border border-gray-200 hover:border-primary transition-all" data-prop="add_step">
+                            <i class="fa fa-plus-circle text-xl mb-1"></i>
+                            <span class="text-xs">加步</span>
+                            <span class="text-xs text-primary">40</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 任务区 -->
+                <div class="bg-white rounded-xl p-4 game-shadow">
+                    <h3 class="text-lg font-bold mb-3 flex items-center">
+                        <i class="fa fa-tasks text-accent mr-2"></i>每日任务
+                    </h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center">
+                            <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                            <span>完成3局游戏</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-circle-o text-gray-300 mr-2"></i>
+                            <span>合成1个十字特效</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-circle-o text-gray-300 mr-2"></i>
+                            <span>获得1000分</span>
+                        </li>
+                    </ul>
+                    <button class="mt-3 w-full bg-primary/10 hover:bg-primary/20 text-primary rounded-lg py-1 text-sm transition-all">
+                        领取奖励
+                    </button>
+                </div>
+
+                <!-- 好友排行 -->
+                <div class="bg-white rounded-xl p-4 game-shadow">
+                    <h3 class="text-lg font-bold mb-3 flex items-center">
+                        <i class="fa fa-trophy text-accent mr-2"></i>好友排行
+                    </h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <div class="w-6 h-6 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-xs font-bold mr-2">1</div>
+                            <span class="flex-1">Telegram用户1</span>
+                            <span class="font-bold">5200分</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="w-6 h-6 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center text-xs font-bold mr-2">2</div>
+                            <span class="flex-1">Telegram用户2</span>
+                            <span class="font-bold">4850分</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="w-6 h-6 bg-amber-700 text-white rounded-full flex items-center justify-center text-xs font-bold mr-2">3</div>
+                            <span class="flex-1">你</span>
+                            <span class="font-bold">4500分</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部信息 -->
+    <footer class="mt-8 bg-white py-4 border-t">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-600">
+                本游戏由北京修车【万花楼】赞助 
+                由 <a href="https://t.me/bjxc010" target="_blank" class="text-primary hover:underline">@bjxc010</a> 开发
+            </p>
+            <div class="flex justify-center space-x-4 mt-2">
+                <button class="text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-share-alt mr-1"></i>分享游戏
+                </button>
+                <button class="text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-question-circle mr-1"></i>帮助
+                </button>
+                <button class="text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-cog mr-1"></i>设置
+                </button>
+            </div>
+        </div>
     </footer>
 
+    <!-- 登录模态框 -->
+    <div id="login-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md game-shadow">
+            <h3 class="text-xl font-bold mb-4">登录游戏</h3>
+            <p class="text-gray-600 mb-6">通过Telegram账号登录，同步你的游戏进度</p>
+            <button id="telegram-login" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg flex items-center justify-center transition-all">
+                <i class="fa fa-telegram text-2xl mr-2"></i>
+                用Telegram登录
+            </button>
+            <button id="close-login" class="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg transition-all">
+                稍后登录
+            </button>
+        </div>
+    </div>
+
     <script>
-        // 配置信息
+        // 游戏配置和状态
+        const gameConfig = {
+            gridSize: 5, // 5x5网格
+            elements: ['flower', 'star', 'moon', 'sun', 'gem', 'bell'],
+            baseScore: 10,
+            currentLevel: 1,
+            targetScore: 500,
+            moves: 20
+        };
+
+        const gameState = {
+            board: [],
+            score: 0,
+            remainingMoves: gameConfig.moves,
+            selectedTile: null,
+            isProcessing: false,
+            coins: 0,
+            props: {
+                shuffle: 0,
+                boom: 0,
+                add_step: 0
+            }
+        };
+
+        // 初始化Supabase
+        const supabaseUrl = 'https://ylnfjlltesnlfanrxfoy.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDc0MjMsImV4cCI6MjA3MTY4MzQyM30.czuQwYoFd7Ew9f-PBaojhsWJkXrBEtkqTRdhfX-DWFk';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Telegram配置
         const BOT_TOKEN = "7058588982:AAGaWY3tDT7np7-rwAp350i6gBhC0d_UxjI";
         const BOT_USERNAME = "bjxcwhljiluBot";
-        const ADMIN_ID = 8392100400;
-        const SUPABASE_URL = "https://ylnfjlltesnlfanrxfoy.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDc0MjMsImV4cCI6MjA3MTY4MzQyM30.czuQwYoFd7Ew9f-PBaojhsWJkXrBEtkqTRdhfX-DWFk";
-        const SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjEwNzQyMywiZXhwIjoyMDcxNjgzNDIzfQ.7Z0oPczZntIWHiO0CucqVIZMP5xTY9x_wlCiFGbE-ew";
-        
-        // 全局变量
-        let canvas, ctx;
-        let player = {
-            x: 200,
-            y: 500,
-            size: 20,
-            color: '#3B82F6',
-            isDragging: false,
-            shield: false
+        const ADMIN_ID = "8392100400";
+
+        // DOM元素
+        const gameBoard = document.getElementById('game-board');
+        const currentScoreEl = document.getElementById('current-score');
+        const remainingMovesEl = document.getElementById('remaining-moves');
+        const targetScoreEl = document.getElementById('target-score');
+        const coinCountEl = document.getElementById('coin-count');
+        const levelDisplayEl = document.getElementById('level-display');
+        const gameOverEl = document.getElementById('game-over');
+        const gameOverTitleEl = document.getElementById('game-over-title');
+        const gameOverMessageEl = document.getElementById('game-over-message');
+        const retryBtn = document.getElementById('retry-btn');
+        const nextLevelBtn = document.getElementById('next-level-btn');
+        const userBtn = document.getElementById('user-btn');
+        const loginModal = document.getElementById('login-modal');
+        const telegramLoginBtn = document.getElementById('telegram-login');
+        const closeLoginBtn = document.getElementById('close-login');
+        const propBtns = document.querySelectorAll('.prop-btn');
+
+        // 元素图标映射
+        const elementIcons = {
+            flower: 'fa-pagelines',
+            star: 'fa-star',
+            moon: 'fa-moon-o',
+            sun: 'fa-sun-o',
+            gem: 'fa-diamond',
+            bell: 'fa-bell'
         };
-        let obstacles = [];
-        let gameState = 'menu'; // menu, playing, paused, gameOver
-        let gameTime = 0;
-        let gameTimer;
-        let lastObstacleTime = 0;
-        let obstacleInterval = 1000; // 初始障碍物生成间隔（毫秒）
-        let speedMultiplier = 1;
-        let obstacleCount = 3;
-        let isNewUser = false;
-        let userData = null;
-        let gameProgress = {};
-        let isRevived = false;
-        let userId = null;
-        let supabase, supabaseServiceRole;
-        let telegramInitTimeout; // 用于存储超时计时器ID
-        let isTelegramReady = false; // 标记Telegram是否准备就绪
-        let loginRetryCount = 0; // 登录重试计数
-        const MAX_RETRY_COUNT = 3; // 最大重试次数
-        let isOfflineMode = false; // 是否离线模式
-        
-        // 初始化函数
-        function init() {
-            // 显示登录遮罩和调试信息
-            const loginOverlay = document.getElementById('login-overlay');
-            loginOverlay.classList.remove('hidden');
-            document.getElementById('debug-info').classList.remove('hidden');
-            updateDebugInfo('初始化游戏...');
+
+        // 元素颜色映射
+        const elementColors = {
+            flower: 'text-green-500',
+            star: 'text-purple-500',
+            moon: 'text-blue-500',
+            sun: 'text-yellow-500',
+            gem: 'text-red-500',
+            bell: 'text-amber-500'
+        };
+
+        // 初始化游戏
+        function initGame() {
+            // 重置游戏状态
+            gameState.score = 0;
+            gameState.remainingMoves = gameConfig.moves;
+            gameState.selectedTile = null;
+            gameState.isProcessing = false;
             
-            // 获取画布和上下文
-            canvas = document.getElementById('game-canvas');
-            ctx = canvas.getContext('2d');
+            // 更新UI
+            updateScore();
+            updateRemainingMoves();
+            targetScoreEl.textContent = gameConfig.targetScore;
+            levelDisplayEl.textContent = `关卡: ${gameConfig.currentLevel}`;
             
-            // 初始化Supabase客户端
-            try {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                supabaseServiceRole = window.supabase.createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-                console.log('Supabase初始化成功');
-                updateDebugInfo('Supabase初始化成功');
-            } catch (error) {
-                console.error('Supabase初始化失败:', error);
-                updateLoginMessage('服务初始化失败，请刷新页面重试');
-                updateDebugInfo(`Supabase初始化失败: ${error.message}`);
-                showRetryLoginButton();
-                showOfflineModeButton(); // 显示离线模式选项
+            // 生成游戏板
+            generateBoard();
+            
+            // 检查初始是否有可消除的组合，如果有则重新生成
+            while (checkForMatches().length > 0) {
+                generateBoard();
+            }
+            
+            // 渲染游戏板
+            renderBoard();
+            
+            // 隐藏游戏结束界面
+            gameOverEl.classList.add('hidden');
+        }
+
+        // 生成游戏板
+        function generateBoard() {
+            gameState.board = [];
+            for (let row = 0; row < gameConfig.gridSize; row++) {
+                const currentRow = [];
+                for (let col = 0; col < gameConfig.gridSize; col++) {
+                    // 确保不会在初始状态下生成可消除的组合
+                    let validElements = [...gameConfig.elements];
+                    
+                    // 检查左侧两个元素，避免横向三连
+                    if (col >= 2) {
+                        if (currentRow[col-1] === currentRow[col-2]) {
+                            validElements = validElements.filter(el => el !== currentRow[col-1]);
+                        }
+                    }
+                    
+                    // 检查上方两个元素，避免纵向三连
+                    if (row >= 2) {
+                        if (gameState.board[row-1][col] === gameState.board[row-2][col]) {
+                            validElements = validElements.filter(el => el !== gameState.board[row-1][col]);
+                        }
+                    }
+                    
+                    // 随机选择一个有效的元素
+                    const randomIndex = Math.floor(Math.random() * validElements.length);
+                    currentRow.push(validElements[randomIndex]);
+                }
+                gameState.board.push(currentRow);
+            }
+        }
+
+        // 渲染游戏板
+        function renderBoard() {
+            gameBoard.innerHTML = '';
+            gameBoard.style.gridTemplateColumns = `repeat(${gameConfig.gridSize}, 1fr)`;
+            
+            for (let row = 0; row < gameConfig.gridSize; row++) {
+                for (let col = 0; col < gameConfig.gridSize; col++) {
+                    const element = gameState.board[row][col];
+                    const tile = document.createElement('div');
+                    tile.className = `tile bg-white rounded-lg flex items-center justify-center tile-shadow cursor-pointer hover:scale-105 transition-transform`;
+                    tile.dataset.row = row;
+                    tile.dataset.col = col;
+                    
+                    const icon = document.createElement('i');
+                    icon.className = `fa ${elementIcons[element]} text-2xl md:text-3xl ${elementColors[element]}`;
+                    tile.appendChild(icon);
+                    
+                    tile.addEventListener('click', () => handleTileClick(row, col));
+                    
+                    gameBoard.appendChild(tile);
+                }
+            }
+        }
+
+        // 处理方块点击
+        function handleTileClick(row, col) {
+            if (gameState.isProcessing) return;
+            
+            // 如果没有选中的方块，选中当前方块
+            if (!gameState.selectedTile) {
+                gameState.selectedTile = { row, col };
+                highlightSelectedTile(row, col);
                 return;
             }
             
-            // 初始化事件监听
-            initEventListeners();
-            
-            // 初始化Telegram App
-            initTelegramApp();
-        }
-        
-        // 更新调试信息
-        function updateDebugInfo(message) {
-            const debugElement = document.getElementById('debug-info');
-            if (debugElement) {
-                debugElement.textContent = `调试信息: ${message}`;
-                console.log('调试:', message);
-            }
-        }
-        
-        // 初始化Telegram Web App
-        function initTelegramApp() {
-            // 清除之前的超时计时器
-            if (telegramInitTimeout) {
-                clearTimeout(telegramInitTimeout);
-            }
-            
-            updateLoginMessage('正在初始化Telegram连接...');
-            updateDebugInfo('检查Telegram环境...');
-            
-            // 检查Telegram环境
-            if (typeof window.Telegram === 'undefined' || typeof window.Telegram.WebApp === 'undefined') {
-                console.error('未检测到Telegram Web App环境');
-                updateDebugInfo('未检测到Telegram Web App环境');
-                
-                // 尝试重新检测Telegram环境，增加检测次数和间隔
-                let checkCount = 0;
-                const maxChecks = 60; // 检查60次（60秒）- 增加超时时间
-                const checkInterval = setInterval(() => {
-                    checkCount++;
-                    updateDebugInfo(`等待Telegram环境加载...(${checkCount}/${maxChecks})`);
-                    
-                    if (typeof window.Telegram !== 'undefined' && typeof window.Telegram.WebApp !== 'undefined') {
-                        clearInterval(checkInterval);
-                        updateDebugInfo('检测到Telegram环境，重新初始化');
-                        initTelegramApp(); // 重新初始化
-                    } else if (checkCount >= maxChecks) { // 检查60次后放弃
-                        clearInterval(checkInterval);
-                        updateLoginMessage('无法连接到Telegram，请确保在Telegram中打开');
-                        updateDebugInfo('超过最大检查次数，未检测到Telegram环境');
-                        showRetryLoginButton();
-                        showOfflineModeButton(); // 显示离线模式选项
-                    }
-                }, 1000);
-                
+            // 如果点击的是已经选中的方块，取消选中
+            if (gameState.selectedTile.row === row && gameState.selectedTile.col === col) {
+                gameState.selectedTile = null;
+                removeHighlights();
                 return;
             }
             
-            try {
-                const tg = window.Telegram.WebApp;
-                updateDebugInfo('检测到Telegram Web App，版本: ' + (tg.version || '未知'));
-                
-                // 移除之前的事件监听器，防止重复绑定
-                tg.offEvent('ready', handleTelegramReady);
-                tg.offEvent('user', handleTelegramUser);
-                
-                // 监听Telegram初始化完成事件
-                tg.onEvent('ready', handleTelegramReady);
-                
-                // 监听用户信息更新事件
-                tg.onEvent('user', handleTelegramUser);
-                
-                // 初始化Telegram Web App
-                updateDebugInfo('调用tg.ready()');
-                tg.ready();
-                
-                // 延长超时时间至60秒，并提供更详细的状态更新
-                updateLoginMessage('正在连接到Telegram...');
-                let timeoutCounter = 0;
-                const maxTimeout = 60; // 60秒超时 - 增加超时时间
-                
-                telegramInitTimeout = setInterval(() => {
-                    timeoutCounter++;
-                    
-                    if (userId) {
-                        clearInterval(telegramInitTimeout);
-                        return;
-                    }
-                    
-                    if (timeoutCounter >= maxTimeout) { // 60秒超时
-                        clearInterval(telegramInitTimeout);
-                        if (!userId) {
-                            console.warn('Telegram初始化超时');
-                            updateLoginMessage('连接超时，请检查网络后重试');
-                            updateDebugInfo(`Telegram初始化超时(${maxTimeout}秒)`);
-                            showRetryLoginButton();
-                            showOfflineModeButton(); // 显示离线模式选项
-                        }
-                    } else {
-                        // 更新登录状态信息，让用户知道系统仍在尝试
-                        updateLoginMessage(`正在连接到Telegram...(${timeoutCounter}秒)`);
-                        // 主动请求用户信息
-                        if (isTelegramReady && tg.initDataUnsafe && !tg.initDataUnsafe.user) {
-                            updateDebugInfo('主动请求用户信息...');
-                            tg.sendData('request_user_info');
-                        }
-                    }
-                }, 1000);
-                
-            } catch (error) {
-                console.error('Telegram Web App初始化失败:', error);
-                updateLoginMessage('登录失败: ' + error.message);
-                updateDebugInfo(`Telegram初始化失败: ${error.message}`);
-                showRetryLoginButton();
-                showOfflineModeButton(); // 显示离线模式选项
+            // 检查是否相邻（上下左右）
+            const isAdjacent = 
+                (Math.abs(gameState.selectedTile.row - row) === 1 && gameState.selectedTile.col === col) ||
+                (Math.abs(gameState.selectedTile.col - col) === 1 && gameState.selectedTile.row === row);
+            
+            if (!isAdjacent) {
+                // 不相邻，选中新的方块
+                gameState.selectedTile = { row, col };
+                removeHighlights();
+                highlightSelectedTile(row, col);
+                return;
             }
+            
+            // 相邻，尝试交换
+            swapTiles(gameState.selectedTile.row, gameState.selectedTile.col, row, col);
         }
-        
-        // 处理Telegram ready事件
-        function handleTelegramReady() {
-            isTelegramReady = true;
-            console.log('Telegram Web App已准备就绪');
-            updateDebugInfo('Telegram Web App已准备就绪');
-            updateLoginMessage('正在获取用户信息...');
+
+        // 高亮选中的方块
+        function highlightSelectedTile(row, col) {
+            const tiles = document.querySelectorAll('.tile');
+            const index = row * gameConfig.gridSize + col;
+            tiles[index].classList.add('ring-4', 'ring-accent', 'scale-110');
+        }
+
+        // 移除所有高亮
+        function removeHighlights() {
+            const tiles = document.querySelectorAll('.tile');
+            tiles.forEach(tile => {
+                tile.classList.remove('ring-4', 'ring-accent', 'scale-110');
+            });
+        }
+
+        // 交换方块
+        function swapTiles(row1, col1, row2, col2) {
+            gameState.isProcessing = true;
             
-            const tg = window.Telegram.WebApp;
+            // 交换数据
+            const temp = gameState.board[row1][col1];
+            gameState.board[row1][col1] = gameState.board[row2][col2];
+            gameState.board[row2][col2] = temp;
             
-            // 设置UI样式
-            try {
-                tg.setHeaderColor('#1F2937');
-                tg.setBackgroundColor('#111827');
-                updateDebugInfo('Telegram UI样式设置完成');
-            } catch (error) {
-                updateDebugInfo(`设置Telegram样式失败: ${error.message}`);
-            }
+            // 重新渲染
+            renderBoard();
             
-            // 尝试直接获取用户信息
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                userId = tg.initDataUnsafe.user.id;
-                console.log('获取到Telegram用户ID:', userId);
-                updateDebugInfo(`获取到用户ID: ${userId}`);
-                authenticateUser(tg.initDataUnsafe.user);
-            } else {
-                updateDebugInfo('tg.initDataUnsafe中没有用户信息，等待user事件...');
-                // 主动请求用户数据，增加重试机制
-                const requestUserData = (attempt = 1) => {
-                    if (userId || attempt > 5) return;
+            // 检查是否有匹配
+            setTimeout(() => {
+                const matches = checkForMatches();
+                
+                if (matches.length > 0) {
+                    // 有匹配，处理消除
+                    processMatches(matches);
+                    gameState.remainingMoves--;
+                    updateRemainingMoves();
                     
-                    updateDebugInfo(`第${attempt}次主动请求用户信息...`);
-                    try {
-                        tg.sendData('get_user_data');
+                    // 检查游戏是否结束
+                    checkGameStatus();
+                } else {
+                    // 没有匹配，交换回来
+                    const temp = gameState.board[row1][col1];
+                    gameState.board[row1][col1] = gameState.board[row2][col2];
+                    gameState.board[row2][col2] = temp;
+                    
+                    // 重新渲染
+                    renderBoard();
+                    
+                    // 添加动画效果表示无效交换
+                    const tiles = document.querySelectorAll('.tile');
+                    const index1 = row1 * gameConfig.gridSize + col1;
+                    const index2 = row2 * gameConfig.gridSize + col2;
+                    tiles[index1].classList.add('animate-shake');
+                    tiles[index2].classList.add('animate-shake');
+                    
+                    setTimeout(() => {
+                        tiles[index1].classList.remove('animate-shake');
+                        tiles[index2].classList.remove('animate-shake');
+                        gameState.isProcessing = false;
+                    }, 500);
+                }
+                
+                // 重置选中状态
+                gameState.selectedTile = null;
+                removeHighlights();
+            }, 300);
+        }
+
+        // 检查匹配
+        function checkForMatches() {
+            const matches = [];
+            
+            // 检查水平匹配
+            for (let row = 0; row < gameConfig.gridSize; row++) {
+                let col = 0;
+                while (col < gameConfig.gridSize - 2) {
+                    const current = gameState.board[row][col];
+                    if (current && 
+                        current === gameState.board[row][col + 1] && 
+                        current === gameState.board[row][col + 2]) {
                         
-                        // 2秒后再次尝试
-                        setTimeout(() => {
-                            if (!userId) {
-                                requestUserData(attempt + 1);
-                            }
-                        }, 2000);
-                    } catch (error) {
-                        updateDebugInfo(`请求用户信息失败: ${error.message}`);
-                    }
-                };
-                
-                requestUserData();
-            }
-        }
-        
-        // 处理Telegram用户信息事件
-        function handleTelegramUser(user) {
-            if (user) {
-                console.log('通过user事件获取到用户信息');
-                updateDebugInfo('通过user事件获取到用户信息');
-                userId = user.id;
-                authenticateUser(user);
-            } else {
-                updateDebugInfo('user事件触发，但用户信息为空');
-            }
-        }
-        
-        // 更新登录消息
-        function updateLoginMessage(message) {
-            document.getElementById('login-message').textContent = message;
-        }
-        
-        // 显示重试登录按钮
-        function showRetryLoginButton() {
-            document.getElementById('retry-login-btn').classList.remove('hidden');
-        }
-        
-        // 显示离线模式按钮
-        function showOfflineModeButton() {
-            document.getElementById('offline-mode-btn').classList.remove('hidden');
-        }
-        
-        // 重试登录
-        function retryLogin() {
-            // 检查是否已达到最大重试次数
-            loginRetryCount++;
-            if (loginRetryCount >= MAX_RETRY_COUNT) {
-                updateLoginMessage(`已尝试${MAX_RETRY_COUNT}次仍无法连接，建议使用离线模式`);
-                showOfflineModeButton();
-                return;
-            }
-            
-            // 重置用户ID和数据
-            userId = null;
-            userData = null;
-            isTelegramReady = false;
-            
-            updateLoginMessage('正在重新尝试登录...');
-            document.getElementById('retry-login-btn').classList.add('hidden');
-            document.getElementById('offline-mode-btn').classList.add('hidden');
-            updateDebugInfo(`用户点击重试登录 (第${loginRetryCount}次)`);
-            
-            // 完全重新初始化Telegram连接
-            initTelegramApp();
-        }
-        
-        // 进入离线模式
-        function enterOfflineMode() {
-            isOfflineMode = true;
-            updateDebugInfo('进入离线模式');
-            document.getElementById('login-overlay').classList.add('hidden');
-            
-            // 创建模拟用户数据
-            userData = {
-                nickname: '离线玩家',
-                game_plays: 5,
-                kaleido_coins: 1000,
-                high_score: 0,
-                total_time: 0
-            };
-            
-            updateUIWithUserData();
-            showToast('已进入离线模式，数据不会被保存');
-        }
-        
-        // 用户认证
-        async function authenticateUser(telegramUser) {
-            // 清除超时计时器
-            if (telegramInitTimeout) {
-                clearInterval(telegramInitTimeout);
-            }
-            
-            if (!userId) {
-                updateLoginMessage('用户ID不存在，登录失败');
-                updateDebugInfo('用户ID不存在');
-                showRetryLoginButton();
-                showOfflineModeButton();
-                return;
-            }
-            
-            try {
-                updateLoginMessage('正在验证用户信息...');
-                updateDebugInfo(`开始用户认证，用户ID: ${userId}`);
-                
-                // 检查用户是否已存在
-                let { data: existingUser, error: fetchError } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('telegram_id', userId)
-                    .single();
-                
-                if (fetchError && fetchError.code !== 'PGRST116') {
-                    // 发生错误（不是"未找到"错误）
-                    throw fetchError;
-                }
-                
-                if (existingUser) {
-                    // 用户已存在，更新最后登录时间
-                    userData = existingUser;
-                    isNewUser = false;
-                    updateDebugInfo(`用户已存在: ${userData.nickname}`);
-                    
-                    await supabase
-                        .from('users')
-                        .update({ last_login: new Date() })
-                        .eq('telegram_id', userId);
-                } else {
-                    // 新用户，创建账号
-                    const newUser = {
-                        telegram_id: userId,
-                        nickname: telegramUser.first_name || telegramUser.username || `用户${userId}`,
-                        game_plays: 5, // 初始5次游戏机会
-                        kaleido_coins: 0,
-                        high_score: 0,
-                        is_new: true,
-                        created_at: new Date(),
-                        last_login: new Date(),
-                        total_time: 0
-                    };
-                    
-                    const { data, error } = await supabase
-                        .from('users')
-                        .insert([newUser])
-                        .select();
-                    
-                    if (error) throw error;
-                    
-                    userData = data[0];
-                    isNewUser = true;
-                    updateDebugInfo(`创建新用户: ${userData.nickname}`);
-                }
-                
-                // 登录成功，隐藏登录遮罩
-                document.getElementById('login-overlay').classList.add('hidden');
-                
-                // 更新UI
-                updateUIWithUserData();
-                
-                // 检查每日奖励
-                await checkDailyReward();
-                
-                // 获取游戏进度
-                await fetchGameProgress();
-                
-                // 显示欢迎消息
-                if (isNewUser) {
-                    showToast(`欢迎新用户${userData.nickname}！赠送5次游戏机会`);
-                } else {
-                    showToast(`欢迎回来，${userData.nickname}！`);
-                }
-                
-            } catch (error) {
-                console.error('认证失败:', error);
-                updateLoginMessage(`认证失败: ${error.message || '请重试'}`);
-                updateDebugInfo(`认证失败: ${error.message}`);
-                showRetryLoginButton();
-                showOfflineModeButton();
-            }
-        }
-        
-        // 检查每日奖励
-        async function checkDailyReward() {
-            // 离线模式不检查每日奖励
-            if (isOfflineMode) return;
-            
-            if (!userId) return;
-            
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                updateDebugInfo(`检查每日奖励，日期: ${today}`);
-                
-                // 检查今天是否已领取奖励
-                const { data: rewardRecord } = await supabase
-                    .from('daily_rewards')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .eq('date', today)
-                    .single();
-                
-                if (!rewardRecord) {
-                    // 发放每日奖励
-                    const rewardCoins = 100; // 每日奖励100万花币
-                    
-                    // 更新用户金币
-                    await supabase
-                        .from('users')
-                        .update({ 
-                            kaleido_coins: userData.kaleido_coins + rewardCoins 
-                        })
-                        .eq('telegram_id', userId);
-                    
-                    // 记录奖励领取
-                    await supabase
-                        .from('daily_rewards')
-                        .insert([{
-                            user_id: userId,
-                            date: today,
-                            coins: rewardCoins
-                        }]);
-                    
-                    // 更新本地用户数据
-                    userData.kaleido_coins += rewardCoins;
-                    updateUIWithUserData();
-                    
-                    showToast(`获得每日登录奖励: ${rewardCoins}万花币`);
-                    updateDebugInfo(`发放每日奖励: ${rewardCoins}万花币`);
-                } else {
-                    updateDebugInfo('今日已领取过每日奖励');
-                }
-            } catch (error) {
-                console.error('检查每日奖励失败:', error);
-                updateDebugInfo(`检查每日奖励失败: ${error.message}`);
-                // 仅在非离线模式下显示错误
-                if (!isOfflineMode) {
-                    showToast('获取每日奖励失败，但不影响游戏体验');
-                }
-            }
-        }
-        
-        // 更新UI显示用户数据
-        function updateUIWithUserData() {
-            if (!userData) return;
-            
-            document.getElementById('coin-count').textContent = userData.kaleido_coins;
-            document.getElementById('play-count').textContent = userData.game_plays;
-            document.getElementById('shop-coin-count').textContent = userData.kaleido_coins;
-            document.getElementById('withdraw-coin-count').textContent = userData.kaleido_coins;
-            document.getElementById('profile-nickname').textContent = userData.nickname;
-            document.getElementById('profile-high-score').textContent = `${userData.high_score}秒`;
-            document.getElementById('profile-coin-count').textContent = userData.kaleido_coins;
-            document.getElementById('profile-play-count').textContent = userData.game_plays;
-            document.getElementById('profile-total-time').textContent = `${Math.floor(userData.total_time / 60)}分钟`;
-        }
-        
-        // 获取游戏进度
-        async function fetchGameProgress() {
-            // 离线模式不获取游戏进度
-            if (isOfflineMode) return;
-            
-            if (!userId) return;
-            
-            try {
-                const { data, error } = await supabase
-                    .from('game_progress')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .single();
-                
-                if (!error && data) {
-                    gameProgress = {
-                        gameTime: data.game_time || 0,
-                        player: data.player ? JSON.parse(data.player) : { x: 200, y: 500, shield: false },
-                        obstacles: data.obstacles ? JSON.parse(data.obstacles) : [],
-                        speedMultiplier: data.speed_multiplier || 1,
-                        obstacleCount: data.obstacle_count || 3,
-                        isRevived: data.is_revived || false
-                    };
-                    updateDebugInfo('已加载上次游戏进度');
-                    showToast('已加载上次游戏进度');
-                }
-            } catch (error) {
-                console.error('获取游戏进度失败:', error);
-                updateDebugInfo(`获取游戏进度失败: ${error.message}`);
-                showToast('获取游戏进度失败，但不影响新游戏');
-            }
-        }
-        
-        // 保存游戏进度
-        async function saveGameProgress() {
-            // 离线模式不保存游戏进度
-            if (isOfflineMode || gameState !== 'playing') return;
-            
-            if (!userId) return;
-            
-            try {
-                const progressData = {
-                    game_time: gameTime,
-                    player: JSON.stringify({ x: player.x, y: player.y, shield: player.shield }),
-                    obstacles: JSON.stringify(obstacles),
-                    speed_multiplier: speedMultiplier,
-                    obstacle_count: obstacleCount,
-                    is_revived: isRevived,
-                    updated_at: new Date()
-                };
-                
-                // 检查是否已有进度记录
-                const { data: existingProgress } = await supabase
-                    .from('game_progress')
-                    .select('id')
-                    .eq('user_id', userId)
-                    .single();
-                
-                if (existingProgress) {
-                    // 更新现有进度
-                    await supabase
-                        .from('game_progress')
-                        .update(progressData)
-                        .eq('id', existingProgress.id);
-                } else {
-                    // 创建新进度记录
-                    await supabase
-                        .from('game_progress')
-                        .insert([{
-                            user_id: userId,
-                            ...progressData
-                        }]);
-                }
-                
-                updateDebugInfo('游戏进度已保存');
-            } catch (error) {
-                console.error('保存游戏进度失败:', error);
-                updateDebugInfo(`保存游戏进度失败: ${error.message}`);
-                // 不显示错误提示，避免干扰游戏
-            }
-        }
-        
-        // 初始化事件监听
-        function initEventListeners() {
-            // 登录相关
-            document.getElementById('retry-login-btn').addEventListener('click', retryLogin);
-            document.getElementById('offline-mode-btn').addEventListener('click', enterOfflineMode);
-            
-            // 画布鼠标/触摸事件
-            canvas.addEventListener('mousedown', startDrag);
-            canvas.addEventListener('mousemove', drag);
-            canvas.addEventListener('mouseup', endDrag);
-            canvas.addEventListener('mouseleave', endDrag);
-            
-            canvas.addEventListener('touchstart', startDrag, { passive: false });
-            canvas.addEventListener('touchmove', drag, { passive: false });
-            canvas.addEventListener('touchend', endDrag);
-            
-            // 按钮事件
-            document.getElementById('start-game-btn').addEventListener('click', startGame);
-            document.getElementById('resume-btn').addEventListener('click', resumeGame);
-            document.getElementById('restart-btn').addEventListener('click', restartGame);
-            document.getElementById('quit-btn').addEventListener('click', quitGame);
-            document.getElementById('play-again-btn').addEventListener('click', restartGame);
-            document.getElementById('back-to-menu-btn').addEventListener('click', quitGame);
-            document.getElementById('revive-btn').addEventListener('click', revivePlayer);
-            
-            // 菜单切换
-            document.getElementById('leaderboard-btn').addEventListener('click', showLeaderboard);
-            document.getElementById('back-from-leaderboard-btn').addEventListener('click', hideLeaderboard);
-            document.getElementById('shop-btn').addEventListener('click', showShop);
-            document.getElementById('back-from-shop-btn').addEventListener('click', hideShop);
-            document.getElementById('withdraw-btn').addEventListener('click', showWithdraw);
-            document.getElementById('back-from-withdraw-btn').addEventListener('click', hideWithdraw);
-            document.getElementById('profile-btn').addEventListener('click', showProfile);
-            document.getElementById('back-from-profile-btn').addEventListener('click', hideProfile);
-            
-            // 商店按钮
-            document.querySelectorAll('.buy-plays-btn').forEach(btn => {
-                btn.addEventListener('click', () => buyGamePlays(parseInt(btn.dataset.count)));
-            });
-            document.getElementById('buy-shield-btn').addEventListener('click', buyShield);
-            document.getElementById('watch-ad-btn').addEventListener('click', watchAdForReward);
-            document.getElementById('share-btn').addEventListener('click', shareGame);
-            
-            // 次数不足弹窗
-            document.getElementById('watch-ad-for-plays-btn').addEventListener('click', () => {
-                watchAdForReward();
-                hideNoPlaysModal();
-            });
-            document.getElementById('share-for-plays-btn').addEventListener('click', () => {
-                shareGame();
-                hideNoPlaysModal();
-            });
-            document.getElementById('go-to-shop-btn').addEventListener('click', () => {
-                hideNoPlaysModal();
-                showShop();
-            });
-            document.getElementById('close-no-plays-btn').addEventListener('click', hideNoPlaysModal);
-            
-            // 提现表单
-            document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawSubmit);
-            
-            // 窗口大小变化时重绘
-            window.addEventListener('resize', draw);
-            
-            // 页面关闭前保存游戏进度
-            window.addEventListener('beforeunload', saveGameProgress);
-        }
-        
-        // 开始拖动玩家
-        function startDrag(e) {
-            if (gameState !== 'playing') return;
-            
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            let clientX, clientY;
-            
-            if (e.type === 'touchstart') {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            }
-            
-            const x = clientX - rect.left;
-            const y = clientY - rect.top;
-            
-            // 检查是否点击了玩家
-            if (x >= player.x && x <= player.x + player.size &&
-                y >= player.y && y <= player.y + player.size) {
-                player.isDragging = true;
-            }
-        }
-        
-        // 拖动玩家
-        function drag(e) {
-            if (gameState !== 'playing' || !player.isDragging) return;
-            
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            let clientX, clientY;
-            
-            if (e.type === 'touchmove') {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            }
-            
-            // 计算玩家新位置（使鼠标/触摸在玩家中心）
-            let newX = clientX - rect.left - player.size / 2;
-            let newY = clientY - rect.top - player.size / 2;
-            
-            // 限制在画布内
-            newX = Math.max(0, Math.min(newX, canvas.width - player.size));
-            newY = Math.max(0, Math.min(newY, canvas.height - player.size));
-            
-            player.x = newX;
-            player.y = newY;
-        }
-        
-        // 结束拖动
-        function endDrag() {
-            player.isDragging = false;
-        }
-        
-        // 检查游戏次数并开始游戏
-        async function checkGamePlaysAndStart() {
-            // 检查是否已登录或处于离线模式
-            if (!isOfflineMode && (!userId || !userData)) {
-                showToast('请先登录');
-                // 显示登录遮罩
-                document.getElementById('login-overlay').classList.remove('hidden');
-                updateLoginMessage('会话已过期，请重新登录');
-                showRetryLoginButton();
-                showOfflineModeButton();
-                return false;
-            }
-            
-            if (userData.game_plays <= 0) {
-                showNoPlaysModal();
-                return false;
-            }
-            
-            // 非离线模式下减少游戏次数
-            if (!isOfflineMode) {
-                try {
-                    await supabase
-                        .from('users')
-                        .update({ game_plays: userData.game_plays - 1 })
-                        .eq('telegram_id', userId);
-                } catch (error) {
-                    console.error('更新游戏次数失败:', error);
-                    showToast('更新游戏次数失败，但仍可继续游戏');
-                }
-            }
-            
-            // 无论是否离线都更新本地数据
-            userData.game_plays -= 1;
-            updateUIWithUserData();
-            return true;
-        }
-        
-        // 开始游戏
-        async function startGame() {
-            // 检查游戏次数
-            const canStart = await checkGamePlaysAndStart();
-            if (!canStart) return;
-            
-            // 隐藏菜单
-            document.getElementById('start-menu').classList.add('hidden');
-            
-            // 重置游戏状态
-            resetGame();
-            
-            // 如果有保存的进度，使用保存的进度（仅在线模式）
-            if (!isOfflineMode && Object.keys(gameProgress).length > 0) {
-                gameTime = gameProgress.gameTime;
-                player.x = gameProgress.player.x;
-                player.y = gameProgress.player.y;
-                player.shield = gameProgress.player.shield;
-                obstacles = gameProgress.obstacles;
-                speedMultiplier = gameProgress.speedMultiplier;
-                obstacleCount = gameProgress.obstacleCount;
-                isRevived = gameProgress.isRevived;
-            }
-            
-            // 设置游戏状态
-            gameState = 'playing';
-            
-            // 开始游戏循环
-            gameTimer = setInterval(updateGame, 16); // 约60fps
-            
-            // 每30秒保存一次游戏进度（仅在线模式）
-            if (!isOfflineMode) {
-                setInterval(saveGameProgress, 30000);
-            }
-        }
-        
-        // 重置游戏
-        function resetGame() {
-            // 重置玩家
-            player = {
-                x: canvas.width / 2 - player.size / 2,
-                y: canvas.height - player.size - 50,
-                size: 20,
-                color: '#3B82F6',
-                isDragging: false,
-                shield: false
-            };
-            
-            // 重置障碍物
-            obstacles = [];
-            
-            // 重置游戏状态
-            gameTime = 0;
-            lastObstacleTime = 0;
-            speedMultiplier = 1;
-            obstacleCount = 3;
-            isRevived = false;
-            
-            // 新手难度调整
-            if (isNewUser && userData && userData.game_plays + 1 <= 3) {
-                speedMultiplier = 0.5;
-                obstacleCount = 1;
-            }
-        }
-        
-        // 恢复游戏
-        function resumeGame() {
-            if (gameState === 'paused') {
-                gameState = 'playing';
-                document.getElementById('pause-overlay').classList.add('hidden');
-                gameTimer = setInterval(updateGame, 16);
-            }
-        }
-        
-        // 重新开始游戏
-        async function restartGame() {
-            // 检查游戏次数
-            const canStart = await checkGamePlaysAndStart();
-            if (!canStart) return;
-            
-            // 隐藏游戏结束或暂停界面
-            document.getElementById('game-over-overlay').classList.add('hidden');
-            document.getElementById('pause-overlay').classList.add('hidden');
-            
-            // 重置游戏
-            resetGame();
-            
-            // 设置游戏状态
-            gameState = 'playing';
-            
-            // 开始游戏循环
-            gameTimer = setInterval(updateGame, 16);
-        }
-        
-        // 退出游戏
-        function quitGame() {
-            // 停止游戏循环
-            clearInterval(gameTimer);
-            
-            // 保存游戏进度（仅在线模式）
-            if (!isOfflineMode && gameState === 'playing') {
-                saveGameProgress();
-            }
-            
-            // 重置游戏状态
-            gameState = 'menu';
-            
-            // 显示菜单
-            document.getElementById('game-over-overlay').classList.add('hidden');
-            document.getElementById('pause-overlay').classList.add('hidden');
-            document.getElementById('start-menu').classList.remove('hidden');
-        }
-        
-        // 玩家复活
-        async function revivePlayer() {
-            // 离线模式不支持复活功能
-            if (isOfflineMode) {
-                showToast('离线模式不支持复活功能');
-                return;
-            }
-            
-            if (!userId || !userData) {
-                showToast('请先登录');
-                return;
-            }
-            
-            if (isRevived) {
-                showToast('每局游戏只能复活一次');
-                return;
-            }
-            
-            if (userData.kaleido_coins < 500) {
-                showToast('万花币不足，无法复活');
-                return;
-            }
-            
-            try {
-                // 扣除复活所需的万花币
-                await supabase
-                    .from('users')
-                    .update({ 
-                        kaleido_coins: userData.kaleido_coins - 500 
-                    })
-                    .eq('telegram_id', userId);
-                
-                // 更新本地用户数据
-                userData.kaleido_coins -= 500;
-                updateUIWithUserData();
-                
-                // 记录复活操作
-                await supabase
-                    .from('transactions')
-                    .insert([{
-                        user_id: userId,
-                        type: 'revive',
-                        amount: -500,
-                        timestamp: new Date()
-                    }]);
-                
-                // 隐藏游戏结束界面
-                document.getElementById('game-over-overlay').classList.add('hidden');
-                
-                // 设置复活状态
-                isRevived = true;
-                speedMultiplier *= 1.2; // 复活后速度增加20%
-                
-                // 继续游戏
-                gameState = 'playing';
-                gameTimer = setInterval(updateGame, 16);
-                
-                showToast('复活成功！');
-            } catch (error) {
-                console.error('复活失败:', error);
-                showToast('复活失败，请重试');
-            }
-        }
-        
-        // 更新游戏状态
-        function updateGame() {
-            // 增加游戏时间
-            gameTime += 16; // 约16毫秒/帧
-            const seconds = Math.floor(gameTime / 1000);
-            
-            // 每10秒增加难度
-            if (seconds > 0 && seconds % 10 === 0 && gameTime % 1000 < 32) {
-                if (obstacleCount < 10) {
-                    obstacleCount++;
-                }
-                speedMultiplier += 0.1;
-                
-                // 第30秒起，每5秒随机改变障碍物方向
-                if (seconds >= 30 && seconds % 5 === 0) {
-                    obstacles.forEach(obstacle => {
-                        obstacle.vx = (Math.random() - 0.5) * 2 * 3 * speedMultiplier;
-                        obstacle.vy = (Math.random() - 0.5) * 2 * 3 * speedMultiplier;
-                    });
-                }
-            }
-            
-            // 生成障碍物
-            if (Date.now() - lastObstacleTime > obstacleInterval && obstacles.length < obstacleCount) {
-                spawnObstacle();
-                lastObstacleTime = Date.now();
-            }
-            
-            // 更新障碍物位置
-            updateObstacles();
-            
-            // 检测碰撞
-            if (checkCollisions()) {
-                endGame();
-                return;
-            }
-            
-            // 绘制游戏
-            draw();
-        }
-        
-        // 生成障碍物
-        function spawnObstacle() {
-            const type = Math.random() > 0.5 ? 'triangle' : 'circle';
-            let size = Math.random() * 15 + 15; // 15-30px
-            
-            // 随机位置（从画布边缘生成）
-            let x, y;
-            const edge = Math.floor(Math.random() * 4); // 0:上, 1:右, 2:下, 3:左
-            
-            switch (edge) {
-                case 0: // 上
-                    x = Math.random() * canvas.width;
-                    y = -size;
-                    break;
-                case 1: // 右
-                    x = canvas.width + size;
-                    y = Math.random() * canvas.height;
-                    break;
-                case 2: // 下
-                    x = Math.random() * canvas.width;
-                    y = canvas.height + size;
-                    break;
-                case 3: // 左
-                    x = -size;
-                    y = Math.random() * canvas.height;
-                    break;
-            }
-            
-            // 随机速度
-            const baseSpeed = 3;
-            let vx, vy;
-            
-            // 确保障碍物向画布中心移动
-            if (x < 0) {
-                vx = Math.random() * baseSpeed * 0.5 + baseSpeed * 0.5;
-            } else if (x > canvas.width) {
-                vx = -Math.random() * baseSpeed * 0.5 - baseSpeed * 0.5;
-            } else {
-                vx = (Math.random() - 0.5) * baseSpeed;
-            }
-            
-            if (y < 0) {
-                vy = Math.random() * baseSpeed * 0.5 + baseSpeed * 0.5;
-            } else if (y > canvas.height) {
-                vy = -Math.random() * baseSpeed * 0.5 - baseSpeed * 0.5;
-            } else {
-                vy = (Math.random() - 0.5) * baseSpeed;
-            }
-            
-            // 应用速度乘数
-            vx *= speedMultiplier;
-            vy *= speedMultiplier;
-            
-            // 三角形随机旋转角度
-            const rotation = type === 'triangle' ? Math.random() * Math.PI * 2 : 0;
-            
-            obstacles.push({
-                x, y, size, type, vx, vy, rotation
-            });
-        }
-        
-        // 更新障碍物位置
-        function updateObstacles() {
-            for (let i = obstacles.length - 1; i >= 0; i--) {
-                const obstacle = obstacles[i];
-                
-                // 更新位置
-                obstacle.x += obstacle.vx;
-                obstacle.y += obstacle.vy;
-                
-                // 三角形旋转
-                if (obstacle.type === 'triangle') {
-                    obstacle.rotation += 0.02;
-                }
-                
-                // 移除超出画布范围的障碍物
-                if (obstacle.x < -obstacle.size * 2 ||
-                    obstacle.x > canvas.width + obstacle.size * 2 ||
-                    obstacle.y < -obstacle.size * 2 ||
-                    obstacle.y > canvas.height + obstacle.size * 2) {
-                    obstacles.splice(i, 1);
-                }
-            }
-        }
-        
-        // 检测碰撞
-        function checkCollisions() {
-            for (const obstacle of obstacles) {
-                let collision = false;
-                
-                if (obstacle.type === 'circle') {
-                    // 圆形碰撞检测
-                    const dx = (player.x + player.size / 2) - (obstacle.x + obstacle.size / 2);
-                    const dy = (player.y + player.size / 2) - (obstacle.y + obstacle.size / 2);
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    collision = distance < (player.size / 2 + obstacle.size / 2);
-                } else if (obstacle.type === 'triangle') {
-                    // 三角形碰撞检测（简化为边界框检测）
-                    collision = player.x < obstacle.x + obstacle.size &&
-                                player.x + player.size > obstacle.x &&
-                                player.y < obstacle.y + obstacle.size &&
-                                player.y + player.size > obstacle.y;
-                }
-                
-                if (collision) {
-                    if (player.shield) {
-                        // 使用护盾抵挡一次碰撞
-                        player.shield = false;
-                        // 移除碰撞的障碍物
-                        const index = obstacles.indexOf(obstacle);
-                        if (index > -1) {
-                            obstacles.splice(index, 1);
+                        // 找到匹配，检查是否有更长的匹配
+                        let matchLength = 3;
+                        let nextCol = col + 3;
+                        
+                        while (nextCol < gameConfig.gridSize && gameState.board[row][nextCol] === current) {
+                            matchLength++;
+                            nextCol++;
                         }
-                        showToast('护盾抵挡了一次碰撞！');
-                        return false;
+                        
+                        // 添加匹配的位置
+                        for (let i = 0; i < matchLength; i++) {
+                            matches.push({ row, col: col + i, type: getSpecialType(matchLength, 'horizontal') });
+                        }
+                        
+                        col = nextCol;
                     } else {
-                        return true;
+                        col++;
                     }
                 }
             }
             
-            return false;
+            // 检查垂直匹配
+            for (let col = 0; col < gameConfig.gridSize; col++) {
+                let row = 0;
+                while (row < gameConfig.gridSize - 2) {
+                    const current = gameState.board[row][col];
+                    if (current && 
+                        current === gameState.board[row + 1][col] && 
+                        current === gameState.board[row + 2][col]) {
+                        
+                        // 找到匹配，检查是否有更长的匹配
+                        let matchLength = 3;
+                        let nextRow = row + 3;
+                        
+                        while (nextRow < gameConfig.gridSize && gameState.board[nextRow][col] === current) {
+                            matchLength++;
+                            nextRow++;
+                        }
+                        
+                        // 添加匹配的位置
+                        for (let i = 0; i < matchLength; i++) {
+                            matches.push({ row: row + i, col, type: getSpecialType(matchLength, 'vertical') });
+                        }
+                        
+                        row = nextRow;
+                    } else {
+                        row++;
+                    }
+                }
+            }
+            
+            // TODO: 检查L/T型匹配
+            
+            return matches;
         }
-        
-        // 结束游戏
-        function endGame() {
-            // 停止游戏循环
-            clearInterval(gameTimer);
+
+        // 确定特殊类型
+        function getSpecialType(matchLength, direction) {
+            if (matchLength >= 5) {
+                return 'boom'; // 爆炸特效
+            } else if (matchLength >= 4) {
+                return 'line'; // 直线特效
+            }
+            return 'normal'; // 普通消除
+        }
+
+        // 处理匹配
+        function processMatches(matches) {
+            if (matches.length === 0) {
+                gameState.isProcessing = false;
+                return;
+            }
             
-            // 计算得分和获得的万花币
-            const score = Math.floor(gameTime / 1000);
-            const coinsEarned = score * 2;
+            // 计算得分
+            const scoreToAdd = matches.length * gameConfig.baseScore;
+            gameState.score += scoreToAdd;
+            updateScore();
             
-            // 更新游戏状态
-            gameState = 'gameOver';
+            // 添加消除动画
+            const tiles = document.querySelectorAll('.tile');
+            matches.forEach(match => {
+                const index = match.row * gameConfig.gridSize + match.col;
+                tiles[index].classList.add('animate-clear');
+            });
+            
+            // 移除匹配的元素
+            setTimeout(() => {
+                matches.forEach(match => {
+                    gameState.board[match.row][match.col] = null;
+                });
+                
+                // 让元素下落
+                dropElements();
+                
+                // 填充新元素
+                setTimeout(() => {
+                    fillEmptySpaces();
+                    
+                    // 检查是否有新的匹配
+                    setTimeout(() => {
+                        const newMatches = checkForMatches();
+                        processMatches(newMatches);
+                    }, 500);
+                }, 500);
+            }, 500);
+        }
+
+        // 让元素下落
+        function dropElements() {
+            for (let col = 0; col < gameConfig.gridSize; col++) {
+                for (let row = gameConfig.gridSize - 1; row > 0; row--) {
+                    if (gameState.board[row][col] === null) {
+                        // 找到当前列上方第一个非空元素
+                        for (let r = row - 1; r >= 0; r--) {
+                            if (gameState.board[r][col] !== null) {
+                                // 下落
+                                gameState.board[row][col] = gameState.board[r][col];
+                                gameState.board[r][col] = null;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            renderBoard();
+        }
+
+        // 填充空白位置
+        function fillEmptySpaces() {
+            for (let row = 0; row < gameConfig.gridSize; row++) {
+                for (let col = 0; col < gameConfig.gridSize; col++) {
+                    if (gameState.board[row][col] === null) {
+                        // 随机选择一个元素
+                        const randomIndex = Math.floor(Math.random() * gameConfig.elements.length);
+                        gameState.board[row][col] = gameConfig.elements[randomIndex];
+                    }
+                }
+            }
+            
+            renderBoard();
+        }
+
+        // 更新分数
+        function updateScore() {
+            currentScoreEl.textContent = gameState.score;
+            
+            // 添加分数变化动画
+            currentScoreEl.classList.add('animate-pop');
+            setTimeout(() => {
+                currentScoreEl.classList.remove('animate-pop');
+            }, 300);
+        }
+
+        // 更新剩余步数
+        function updateRemainingMoves() {
+            remainingMovesEl.textContent = gameState.remainingMoves;
+            
+            // 步数较少时添加警告颜色
+            if (gameState.remainingMoves <= 5) {
+                remainingMovesEl.classList.add('text-red-500');
+            } else {
+                remainingMovesEl.classList.remove('text-red-500');
+            }
+        }
+
+        // 检查游戏状态
+        function checkGameStatus() {
+            if (gameState.remainingMoves <= 0) {
+                // 步数用完
+                if (gameState.score >= gameConfig.targetScore) {
+                    // 通关
+                    endGame(true);
+                } else {
+                    // 未通关
+                    endGame(false);
+                }
+            } else if (gameState.score >= gameConfig.targetScore) {
+                // 提前完成目标
+                endGame(true);
+            }
+        }
+
+        // 游戏结束
+        function endGame(isWin) {
+            gameState.isProcessing = true;
+            
+            if (isWin) {
+                gameOverTitleEl.textContent = '恭喜过关！';
+                gameOverMessageEl.textContent = `得分: ${gameState.score} 分，获得 ${Math.floor(gameState.score / 10)} 万花币`;
+                
+                // 增加万花币
+                gameState.coins += Math.floor(gameState.score / 10);
+                coinCountEl.textContent = gameState.coins;
+                
+                // 显示下一关按钮
+                nextLevelBtn.classList.remove('hidden');
+            } else {
+                gameOverTitleEl.textContent = '游戏结束';
+                gameOverMessageEl.textContent = `得分: ${gameState.score} 分，目标: ${gameConfig.targetScore} 分`;
+                nextLevelBtn.classList.add('hidden');
+            }
             
             // 显示游戏结束界面
-            document.getElementById('final-score').textContent = `得分: ${score}秒`;
-            document.getElementById('coins-earned').textContent = `获得万花币: ${coinsEarned}`;
-            document.getElementById('game-over-overlay').classList.remove('hidden');
+            gameOverEl.classList.remove('hidden');
             
-            // 提交游戏结果（仅在线模式）
-            if (!isOfflineMode) {
-                submitGameResult(score, coinsEarned);
-            } else {
-                // 离线模式下仅更新本地数据
-                userData.kaleido_coins += coinsEarned;
-                if (score > userData.high_score) {
-                    userData.high_score = score;
-                }
-                updateUIWithUserData();
-                showToast('游戏结束（离线模式，数据未保存）');
-            }
-            
-            // 清除保存的进度（仅在线模式）
-            if (!isOfflineMode && userId) {
-                clearGameProgress();
-            }
+            // 保存游戏进度到数据库
+            saveGameProgress(isWin);
         }
-        
-        // 清除游戏进度
-        async function clearGameProgress() {
+
+        // 保存游戏进度到数据库
+        async function saveGameProgress(isWin) {
             try {
-                await supabase
-                    .from('game_progress')
-                    .delete()
-                    .eq('user_id', userId);
-            } catch (error) {
-                console.error('清除游戏进度失败:', error);
-            }
-        }
-        
-        // 提交游戏结果
-        async function submitGameResult(score, coinsEarned) {
-            if (!userId || !userData) return;
-            
-            try {
-                // 计算总游戏时间（分钟）
-                const gameMinutes = Math.floor(gameTime / 60000);
-                const newTotalTime = userData.total_time + gameMinutes;
+                // 这里应该先获取用户ID，实际应用中需要实现登录逻辑
+                const userId = 'guest'; // 临时使用guest作为用户ID
                 
-                // 检查是否是新纪录
-                const isHighScore = score > userData.high_score;
-                const newHighScore = isHighScore ? score : userData.high_score;
-                
-                // 更新用户数据
-                await supabase
-                    .from('users')
-                    .update({ 
-                        kaleido_coins: userData.kaleido_coins + coinsEarned,
-                        high_score: newHighScore,
-                        total_time: newTotalTime
-                    })
-                    .eq('telegram_id', userId);
-                
-                // 记录获得的金币
-                await supabase
-                    .from('transactions')
-                    .insert([{
-                        user_id: userId,
-                        type: 'game_reward',
-                        amount: coinsEarned,
-                        timestamp: new Date()
-                    }]);
-                
-                // 记录游戏结果
-                await supabase
-                    .from('game_results')
-                    .insert([{
-                        user_id: userId,
-                        score: score,
-                        coins_earned: coinsEarned,
-                        played_at: new Date()
-                    }]);
-                
-                // 更新本地用户数据
-                userData.kaleido_coins += coinsEarned;
-                userData.high_score = newHighScore;
-                userData.total_time = newTotalTime;
-                updateUIWithUserData();
-                
-                if (isHighScore) {
-                    showToast(`新纪录！${score}秒`);
-                }
-            } catch (error) {
-                console.error('提交游戏结果失败:', error);
-                showToast('提交游戏结果失败，但不影响游戏体验');
-            }
-        }
-        
-        // 绘制游戏
-        function draw() {
-            // 清空画布
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 绘制背景网格
-            drawGrid();
-            
-            // 绘制玩家
-            drawPlayer();
-            
-            // 绘制障碍物
-            drawObstacles();
-            
-            // 绘制游戏信息
-            drawGameInfo();
-        }
-        
-        // 绘制背景网格
-        function drawGrid() {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-            ctx.lineWidth = 1;
-            
-            // 绘制水平线
-            for (let y = 0; y < canvas.height; y += 40) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
-            
-            // 绘制垂直线
-            for (let x = 0; x < canvas.width; x += 40) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
-        }
-        
-        // 绘制玩家
-        function drawPlayer() {
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x, player.y, player.size, player.size);
-            
-            // 绘制护盾（如果有）
-            if (player.shield) {
-                ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(
-                    player.x + player.size / 2,
-                    player.y + player.size / 2,
-                    player.size / 2 + 5,
-                    0,
-                    Math.PI * 2
-                );
-                ctx.stroke();
-            }
-        }
-        
-        // 绘制障碍物
-        function drawObstacles() {
-            for (const obstacle of obstacles) {
-                ctx.save();
-                ctx.translate(obstacle.x + obstacle.size / 2, obstacle.y + obstacle.size / 2);
-                
-                if (obstacle.type === 'circle') {
-                    // 绘制圆形
-                    ctx.fillStyle = '#F59E0B';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, obstacle.size / 2, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (obstacle.type === 'triangle') {
-                    // 绘制三角形
-                    ctx.fillStyle = '#EF4444';
-                    ctx.rotate(obstacle.rotation);
-                    ctx.beginPath();
-                    ctx.moveTo(0, -obstacle.size / 2);
-                    ctx.lineTo(obstacle.size / 2, obstacle.size / 2);
-                    ctx.lineTo(-obstacle.size / 2, obstacle.size / 2);
-                    ctx.closePath();
-                    ctx.fill();
+                if (isWin && gameConfig.currentLevel > localStorage.getItem('maxLevel')) {
+                    localStorage.setItem('maxLevel', gameConfig.currentLevel);
                 }
                 
-                ctx.restore();
-            }
-        }
-        
-        // 绘制游戏信息
-        function drawGameInfo() {
-            // 绘制得分
-            const seconds = Math.floor(gameTime / 1000);
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 20px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(`${seconds}秒`, canvas.width / 2, 30);
-            
-            // 绘制护盾图标（如果有）
-            if (player.shield) {
-                ctx.fillStyle = 'rgba(59, 130, 246, 0.8)';
-                ctx.beginPath();
-                ctx.arc(350, 30, 15, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('盾', 350, 35);
-            }
-        }
-        
-        // 显示排行榜
-        async function showLeaderboard() {
-            // 离线模式不支持排行榜
-            if (isOfflineMode) {
-                showToast('离线模式不支持排行榜功能');
-                return;
-            }
-            
-            // 检查登录状态
-            if (!userId || !userData) {
-                showToast('请先登录');
-                return;
-            }
-            
-            document.getElementById('start-menu').classList.add('hidden');
-            document.getElementById('leaderboard-menu').classList.remove('hidden');
-            
-            try {
-                // 获取排行榜数据（前100名）
-                const { data: leaderboard, error } = await supabase
-                    .from('users')
-                    .select('nickname, high_score')
-                    .order('high_score', { ascending: false })
-                    .limit(100);
+                // 保存游戏记录
+                const { data, error } = await supabase
+                    .from('game_records')
+                    .insert([
+                        { 
+                            user_id: userId, 
+                            level: gameConfig.currentLevel, 
+                            score: gameState.score, 
+                            is_win: isWin,
+                            coins_earned: isWin ? Math.floor(gameState.score / 10) : 0
+                        }
+                    ]);
                 
                 if (error) throw error;
                 
-                if (leaderboard) {
-                    updateLeaderboardUI(leaderboard);
-                }
-                
-                // 获取用户排名
-                if (userId) {
-                    // 这是一个客户端估算的排名方法
-                    const userRank = leaderboard.findIndex(user => 
-                        // 由于我们没有用户ID在排行榜中，这是一个简化的匹配方式
-                        user.nickname === userData.nickname
-                    );
-                    
-                    updateUserRankUI(
-                        { rank: userRank > -1 ? userRank + 1 : null, high_score: userData.high_score },
-                        userData
-                    );
+                // 更新用户信息
+                if (isWin) {
+                    const { error: userError } = await supabase
+                        .from('users')
+                        .upsert([
+                            { 
+                                user_id: userId, 
+                                max_level: Math.max(gameConfig.currentLevel, parseInt(localStorage.getItem('maxLevel') || 0)),
+                                kaleido_coins: gameState.coins
+                            }
+                        ]);
+                        
+                    if (userError) throw userError;
                 }
             } catch (error) {
-                console.error('获取排行榜失败:', error);
-                showToast('获取排行榜失败');
+                console.error('保存游戏进度失败:', error);
             }
         }
-        
-        // 更新排行榜UI
-        function updateLeaderboardUI(leaderboard) {
-            const topLeaderboard = document.getElementById('top-leaderboard');
-            const otherPlayers = document.getElementById('other-players');
-            
-            // 清空现有内容
-            topLeaderboard.innerHTML = '';
-            otherPlayers.innerHTML = '';
-            
-            // 填充排行榜
-            leaderboard.forEach((entry, index) => {
-                const rankElement = document.createElement('div');
-                rankElement.className = 'flex items-center justify-between rounded-lg p-3 transition-all';
-                
-                // 前三名使用特殊颜色
-                if (index === 0) {
-                    rankElement.className += ' bg-yellow-500/20';
-                } else if (index === 1) {
-                    rankElement.className += ' bg-gray-300/20';
-                } else if (index === 2) {
-                    rankElement.className += ' bg-orange-700/20';
-                } else {
-                    rankElement.className += ' bg-gray-800/50';
-                }
-                
-                rankElement.innerHTML = `
-                    <div class="flex items-center">
-                        <span class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3">${index + 1}</span>
-                        <span class="font-medium">${entry.nickname}</span>
-                    </div>
-                    <span class="font-bold">${entry.high_score}秒</span>
-                `;
-                
-                // 前10名显示在顶部区域，其余显示在其他玩家区域
-                if (index < 10) {
-                    topLeaderboard.appendChild(rankElement);
-                } else {
-                    otherPlayers.appendChild(rankElement);
-                }
-            });
-        }
-        
-        // 更新用户排名UI
-        function updateUserRankUI(rankData, userData) {
-            const userRankElement = document.getElementById('user-rank');
-            
-            if (rankData.rank) {
-                userRankElement.innerHTML = `
-                    <div class="flex items-center">
-                        <span class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3">${rankData.rank}</span>
-                        <span id="user-rank-name" class="font-medium">${userData.nickname}</span>
-                    </div>
-                    <span id="user-rank-score" class="font-bold">${rankData.high_score}秒</span>
-                `;
-            } else {
-                userRankElement.innerHTML = `
-                    <div class="flex items-center">
-                        <span class="bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3">--</span>
-                        <span id="user-rank-name" class="font-medium">${userData.nickname}</span>
-                    </div>
-                    <span id="user-rank-score" class="font-bold">未进入前100</span>
-                `;
-            }
-        }
-        
-        // 隐藏排行榜
-        function hideLeaderboard() {
-            document.getElementById('leaderboard-menu').classList.add('hidden');
-            document.getElementById('start-menu').classList.remove('hidden');
-        }
-        
-        // 显示商店
-        function showShop() {
-            // 离线模式不支持商店功能
-            if (isOfflineMode) {
-                showToast('离线模式不支持商店功能');
-                return;
-            }
-            
-            // 检查登录状态
-            if (!userId || !userData) {
-                showToast('请先登录');
-                return;
-            }
-            
-            document.getElementById('start-menu').classList.add('hidden');
-            document.getElementById('shop-menu').classList.remove('hidden');
-        }
-        
-        // 隐藏商店
-        function hideShop() {
-            document.getElementById('shop-menu').classList.add('hidden');
-            document.getElementById('start-menu').classList.remove('hidden');
-        }
-        
-        // 显示提现界面
-        async function showWithdraw() {
-            // 离线模式不支持提现功能
-            if (isOfflineMode) {
-                showToast('离线模式不支持提现功能');
-                return;
-            }
-            
-            // 检查登录状态
-            if (!userId || !userData) {
-                showToast('请先登录');
-                return;
-            }
-            
-            document.getElementById('start-menu').classList.add('hidden');
-            document.getElementById('withdraw-menu').classList.remove('hidden');
-            
-            // 获取提现历史
-            if (userId) {
-                try {
-                    const { data: withdrawals, error } = await supabase
-                        .from('withdrawals')
-                        .select('*')
-                        .eq('user_id', userId)
-                        .order('created_at', { ascending: false });
-                    
-                    if (error) throw error;
-                    
-                    updateWithdrawHistoryUI(withdrawals || []);
-                } catch (error) {
-                    console.error('获取提现历史失败:', error);
-                    showToast('获取提现历史失败');
-                }
-            }
-        }
-        
-        // 更新提现历史UI
-        function updateWithdrawHistoryUI(withdrawals) {
-            const historyContainer = document.getElementById('withdraw-history');
-            
-            if (withdrawals.length === 0) {
-                historyContainer.innerHTML = `
-                    <div class="text-center text-gray-400 py-6">
-                        暂无提现记录
-                    </div>
-                `;
-                return;
-            }
-            
-            historyContainer.innerHTML = '';
-            
-            withdrawals.forEach(withdrawal => {
-                const statusClass = withdrawal.status === 'completed' ? 'text-green-400' : 
-                                   withdrawal.status === 'failed' ? 'text-red-400' : 'text-yellow-400';
-                
-                const statusText = withdrawal.status === 'completed' ? '已完成' : 
-                                  withdrawal.status === 'failed' ? '已失败' : '处理中';
-                
-                const date = new Date(withdrawal.created_at);
-                const formattedDate = date.toLocaleString();
-                
-                const element = document.createElement('div');
-                element.className = 'bg-dark/60 backdrop-blur rounded-xl p-4';
-                element.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-medium">${withdrawal.amount}万花币</span>
-                        <span class="${statusClass} font-medium">${statusText}</span>
-                    </div>
-                    <div class="flex justify-between text-sm text-gray-400">
-                        <span>${withdrawal.alipay_account}</span>
-                        <span>${formattedDate}</span>
-                    </div>
-                `;
-                
-                historyContainer.appendChild(element);
-            });
-        }
-        
-        // 隐藏提现界面
-        function hideWithdraw() {
-            document.getElementById('withdraw-menu').classList.add('hidden');
-            document.getElementById('start-menu').classList.remove('hidden');
-        }
-        
-        // 显示个人资料
-        function showProfile() {
-            // 检查登录状态
-            if (!userId || !userData) {
-                showToast('请先登录');
-                return;
-            }
-            
-            document.getElementById('start-menu').classList.add('hidden');
-            document.getElementById('profile-menu').classList.remove('hidden');
-        }
-        
-        // 隐藏个人资料
-        function hideProfile() {
-            document.getElementById('profile-menu').classList.add('hidden');
-            document.getElementById('start-menu').classList.remove('hidden');
-        }
-        
-        // 显示次数不足弹窗
-        function showNoPlaysModal() {
-            document.getElementById('no-plays-modal').classList.remove('hidden');
-        }
-        
-        // 隐藏次数不足弹窗
-        function hideNoPlaysModal() {
-            document.getElementById('no-plays-modal').classList.add('hidden');
-        }
-        
-        // 购买游戏次数
-        async function buyGamePlays(count) {
-            // 离线模式不支持购买功能
-            if (isOfflineMode) {
-                showToast('离线模式不支持购买功能');
-                return;
-            }
-            
-            if (!userId || !userData) {
-                showToast('请先登录');
-                return;
-            }
-            
-            const cost = count * 200;
-            if (userData.kaleido_coins < cost) {
-                showToast('万花币不足');
-                return;
-            }
-            
+
+        // 加载用户数据
+        async function loadUserData() {
             try {
-                // 更新用户数据
-                await supabase
+                // 这里应该先获取用户ID，实际应用中需要实现登录逻辑
+                const userId = 'guest'; // 临时使用guest作为用户ID
+                
+                const { data, error } = await supabase
                     .from('users')
-                    .update({ 
-                        game_plays: userData.game_plays + count,
-                        kaleido_coins: userData.kaleido_coins - cost
-                    })
-                    .eq('telegram_id', userId);
+                    .select('*')
+                    .eq('user_id', userId)
+                    .single();
                 
-                // 记录交易
-                await supabase
-                    .from('transactions')
-                    .insert([{
-                        user_id: userId,
-                        type: 'buy_plays',
-                        amount: -cost,
-                        timestamp: new Date()
-                    }]);
-                
-                // 更新本地用户数据
-                userData.game_plays += count;
-                userData.kaleido_coins -= cost;
-                updateUIWithUserData();
-                
-                showToast(`成功购买${count}次游戏机会`);
-            } catch (error) {
-                console.error('购买游戏次数失败:', error);
-                showToast('购买失败，请重试');
-            }
-        }
-        
-        // 购买护盾
-        async function buyShield() {
-            // 离线模式不支持购买功能
-            if (isOfflineMode) {
-                showToast('离线模式不支持购买功能');
-                return;
-            }
-            
-            if (!userId || !userData) {
-                showToast('请先登录');
-                return;
-            }
-            
-            const cost = 1000;
-            if (userData.kaleido_coins < cost) {
-                showToast('万花币不足');
-                return;
-            }
-            
-            try {
-                // 更新用户数据
-                await supabase
-                    .from('users')
-                    .update({ 
-                        kaleido_coins: userData.kaleido_coins - cost
-                    })
-                    .eq('telegram_id', userId);
-                
-                // 记录交易
-                await supabase
-                    .from('transactions')
-                    .insert([{
-                        user_id: userId,
-                        type: 'buy_shield',
-                        amount: -cost,
-                        timestamp: new Date()
-                    }]);
-                
-                // 更新本地用户数据
-                userData.kaleido_coins -= cost;
-                updateUIWithUserData();
-                
-                // 为下一局游戏设置护盾
-                player.shield = true;
-                showToast('成功购买护盾，下一局游戏生效');
-            } catch (error) {
-                console.error('购买护盾失败:', error);
-                showToast('购买失败，请重试');
-            }
-        }
-        
-        // 观看广告获取奖励
-        async function watchAdForReward() {
-            // 离线模式不支持广告奖励
-            if (isOfflineMode) {
-                showToast('离线模式不支持广告奖励');
-                return;
-            }
-            
-            if (!userId || !userData) {
-                showToast('请先登录');
-                return;
-            }
-            
-            // 模拟广告观看
-            showToast('广告播放中...');
-            
-            // 2秒后模拟广告完成
-            setTimeout(async () => {
-                try {
-                    // 增加游戏次数和金币
+                if (error) {
+                    // 用户不存在，创建新用户
                     await supabase
                         .from('users')
-                        .update({ 
-                            game_plays: userData.game_plays + 1,
-                            kaleido_coins: userData.kaleido_coins + 100
-                        })
-                        .eq('telegram_id', userId);
-                    
-                    // 记录奖励
-                    await supabase
-                        .from('transactions')
-                        .insert([{
-                            user_id: userId,
-                            type: 'ad_reward',
-                            amount: 100,
-                            timestamp: new Date()
-                        }]);
-                    
-                    // 更新本地用户数据
-                    userData.game_plays += 1;
-                    userData.kaleido_coins += 100;
-                    updateUIWithUserData();
-                    
-                    showToast('获得1次游戏机会和100万花币');
-                } catch (error) {
-                    console.error('获取广告奖励失败:', error);
-                    showToast('获取奖励失败，请重试');
-                }
-            }, 2000);
-        }
-        
-        // 分享游戏
-        async function shareGame() {
-            // 离线模式不支持分享奖励
-            if (isOfflineMode) {
-                showToast('离线模式不支持分享奖励');
-                return;
-            }
-            
-            if (!userId || !userData) {
-                showToast('请先登录');
-                return;
-            }
-            
-            try {
-                // 调用Telegram分享功能
-                if (window.Telegram && window.Telegram.WebApp) {
-                    const shareText = `来玩几何障碍生存战吧！我已经坚持了${userData.high_score}秒，你能超过我吗？`;
-                    window.Telegram.WebApp.shareText(shareText);
+                        .insert([
+                            { user_id: userId, max_level: 1, kaleido_coins: 0 }
+                        ]);
+                        
+                    gameState.coins = 0;
+                    gameConfig.currentLevel = 1;
+                } else {
+                    gameState.coins = data.kaleido_coins;
+                    gameConfig.currentLevel = data.max_level;
                 }
                 
-                // 分享后给予奖励
-                await supabase
-                    .from('users')
-                    .update({ 
-                        game_plays: userData.game_plays + 1,
-                        kaleido_coins: userData.kaleido_coins + 50
-                    })
-                    .eq('telegram_id', userId);
+                // 更新UI
+                coinCountEl.textContent = gameState.coins;
+                levelDisplayEl.textContent = `关卡: ${gameConfig.currentLevel}`;
                 
-                // 记录奖励
-                await supabase
-                    .from('transactions')
-                    .insert([{
-                        user_id: userId,
-                        type: 'share_reward',
-                        amount: 50,
-                        timestamp: new Date()
-                    }]);
+                // 从本地存储加载最大关卡
+                const savedMaxLevel = localStorage.getItem('maxLevel');
+                if (savedMaxLevel) {
+                    gameConfig.currentLevel = parseInt(savedMaxLevel);
+                }
                 
-                // 更新本地用户数据
-                userData.game_plays += 1;
-                userData.kaleido_coins += 50;
-                updateUIWithUserData();
+                // 设置关卡目标
+                gameConfig.targetScore = 500 + (gameConfig.currentLevel - 1) * 100;
+                targetScoreEl.textContent = gameConfig.targetScore;
                 
-                showToast('获得1次游戏机会和50万花币');
             } catch (error) {
-                console.error('分享游戏失败:', error);
-                showToast('分享失败，请重试');
+                console.error('加载用户数据失败:', error);
+                // 失败时使用默认值
+                gameState.coins = 0;
+                gameConfig.currentLevel = 1;
+                coinCountEl.textContent = gameState.coins;
             }
         }
-        
-        // 处理提现提交
-        async function handleWithdrawSubmit(e) {
-            e.preventDefault();
+
+        // 进入下一关
+        function nextLevel() {
+            gameConfig.currentLevel++;
             
-            // 离线模式不支持提现功能
-            if (isOfflineMode) {
-                showToast('离线模式不支持提现功能');
-                return;
+            // 每20关增加棋盘大小
+            if (gameConfig.currentLevel === 21) {
+                gameConfig.gridSize = 6;
             }
             
-            if (!userId || !userData) {
-                showToast('请先登录');
-                return;
-            }
+            // 增加难度
+            gameConfig.targetScore = 500 + (gameConfig.currentLevel - 1) * 100;
+            gameConfig.moves = Math.max(10, 20 - Math.floor((gameConfig.currentLevel - 1) / 5));
             
-            const amount = parseInt(document.getElementById('withdraw-amount').value);
-            const alipayAccount = document.getElementById('alipay-account').value;
-            const realName = document.getElementById('real-name').value;
+            // 保存最大关卡
+            localStorage.setItem('maxLevel', gameConfig.currentLevel);
             
-            // 验证输入
-            if (!amount || amount < 100000 || amount % 10000 !== 0) {
-                showToast('请输入有效的提现金额（最低100000，且为10000的整数倍）');
-                return;
-            }
-            
-            if (!alipayAccount) {
-                showToast('请输入支付宝账号');
-                return;
-            }
-            
-            if (!realName) {
-                showToast('请输入真实姓名');
-                return;
-            }
-            
-            if (userData.kaleido_coins < amount) {
-                showToast('万花币不足');
-                return;
-            }
-            
-            // 计算手续费和实际到账金额
-            const fee = Math.round(amount * 0.15);
-            const actualAmount = amount - fee;
-            
-            try {
-                // 创建提现记录
-                const { data: withdrawal, error } = await supabase
-                    .from('withdrawals')
-                    .insert([{
-                        user_id: userId,
-                        amount: amount,
-                        fee: fee,
-                        actual_amount: actualAmount,
-                        alipay_account: alipayAccount,
-                        real_name: realName,
-                        status: 'pending',
-                        created_at: new Date()
-                    }])
-                    .select();
-                
-                if (error) throw error;
-                
-                // 扣除用户金币
-                await supabase
-                    .from('users')
-                    .update({ 
-                        kaleido_coins: userData.kaleido_coins - amount 
-                    })
-                    .eq('telegram_id', userId);
-                
-                // 记录交易
-                await supabase
-                    .from('transactions')
-                    .insert([{
-                        user_id: userId,
-                        type: 'withdrawal',
-                        amount: -amount,
-                        timestamp: new Date()
-                    }]);
-                
-                // 更新本地用户数据
-                userData.kaleido_coins -= amount;
-                updateUIWithUserData();
-                
-                // 重置表单
-                document.getElementById('withdraw-form').reset();
-                
-                // 更新提现历史
-                updateWithdrawHistoryUI([withdrawal[0]]);
-                
-                showToast('提现申请已提交，将在24小时内处理');
-            } catch (error) {
-                console.error('提交提现申请失败:', error);
-                showToast('提交失败，请重试');
-            }
+            // 重新开始游戏
+            initGame();
         }
-        
-        // 显示提示消息
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toast-message');
+
+        // 使用道具
+        function useProp(propType) {
+            if (gameState.isProcessing) return;
             
-            toastMessage.textContent = message;
-            toast.classList.remove('hidden');
-            toast.classList.remove('opacity-0');
-            toast.classList.add('opacity-100');
+            // 检查是否有足够的道具
+            if (gameState.props[propType] <= 0) {
+                // 提示购买道具
+                if (gameState.coins >= getPropCost(propType)) {
+                    if (confirm(`是否花费 ${getPropCost(propType)} 万花币购买该道具?`)) {
+                        gameState.coins -= getPropCost(propType);
+                        gameState.props[propType]++;
+                        coinCountEl.textContent = gameState.coins;
+                    } else {
+                        return;
+                    }
+                } else {
+                    alert('道具不足，且万花币不够购买');
+                    return;
+                }
+            }
             
+            // 使用道具
+            gameState.props[propType]--;
+            
+            switch(propType) {
+                case 'shuffle':
+                    // 洗牌道具
+                    shuffleBoard();
+                    break;
+                case 'boom':
+                    // 爆炸道具 - 让用户选择位置
+                    selectBoomPosition();
+                    break;
+                case 'add_step':
+                    // 增加步数
+                    gameState.remainingMoves += 5;
+                    updateRemainingMoves();
+                    break;
+            }
+            
+            // 更新道具显示
+            updatePropDisplay();
+        }
+
+        // 获取道具成本
+        function getPropCost(propType) {
+            const costs = {
+                shuffle: 30,
+                boom: 60,
+                add_step: 40
+            };
+            return costs[propType] || 0;
+        }
+
+        // 更新道具显示
+        function updatePropDisplay() {
+            propBtns.forEach(btn => {
+                const propType = btn.dataset.prop;
+                const costEl = btn.querySelector('.text-primary');
+                // 这里简化处理，实际应该显示拥有的数量/成本
+                costEl.textContent = gameState.props[propType] > 0 ? gameState.props[propType] : getPropCost(propType);
+            });
+        }
+
+        // 洗牌
+        function shuffleBoard() {
+            gameState.isProcessing = true;
+            
+            // 保存当前分数和步数
+            const currentScore = gameState.score;
+            const currentMoves = gameState.remainingMoves;
+            
+            // 重新生成棋盘
+            generateBoard();
+            
+            // 确保不会生成无匹配的棋盘
+            while (checkForMatches().length === 0) {
+                generateBoard();
+            }
+            
+            // 渲染新棋盘
+            renderBoard();
+            
+            // 恢复状态
+            gameState.score = currentScore;
+            gameState.remainingMoves = currentMoves;
+            gameState.isProcessing = false;
+        }
+
+        // 选择爆炸位置
+        function selectBoomPosition() {
+            gameState.isProcessing = true;
+            alert('请点击要爆炸的位置');
+            
+            // 为所有方块添加爆炸点击事件
+            const tiles = document.querySelectorAll('.tile');
+            tiles.forEach(tile => {
+                tile.classList.add('cursor-crosshair', 'hover:bg-red-100');
+                
+                // 添加临时点击事件
+                const handleBoomClick = function() {
+                    const row = parseInt(tile.dataset.row);
+                    const col = parseInt(tile.dataset.col);
+                    
+                    // 移除所有临时事件和样式
+                    tiles.forEach(t => {
+                        t.classList.remove('cursor-crosshair', 'hover:bg-red-100');
+                        t.removeEventListener('click', handleBoomClick);
+                    });
+                    
+                    // 执行爆炸
+                    executeBoom(row, col);
+                };
+                
+                tile.addEventListener('click', handleBoomClick, { once: true });
+            });
+        }
+
+        // 执行爆炸
+        function executeBoom(row, col) {
+            const matches = [];
+            
+            // 爆炸范围：3x3
+            for (let r = Math.max(0, row - 1); r <= Math.min(gameConfig.gridSize - 1, row + 1); r++) {
+                for (let c = Math.max(0, col - 1); c <= Math.min(gameConfig.gridSize - 1, col + 1); c++) {
+                    matches.push({ row: r, col: c, type: 'boom' });
+                }
+            }
+            
+            // 处理爆炸消除
+            processMatches(matches);
+            
+            // 减少一步
+            gameState.remainingMoves--;
+            updateRemainingMoves();
+            
+            // 检查游戏状态
+            checkGameStatus();
+        }
+
+        // Telegram登录
+        function telegramLogin() {
+            // 实际应用中应该使用Telegram登录API
+            alert('将跳转到Telegram进行登录授权...');
+            
+            // 模拟登录成功
             setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0');
-                setTimeout(() => {
-                    toast.classList.add('hidden');
-                }, 300);
-            }, 3000);
+                loginModal.classList.add('hidden');
+                alert('登录成功！');
+                // 登录成功后加载用户数据
+                loadUserData();
+            }, 1000);
         }
+
+        // 事件监听
+        retryBtn.addEventListener('click', initGame);
+        nextLevelBtn.addEventListener('click', nextLevel);
+        userBtn.addEventListener('click', () => {
+            loginModal.classList.remove('hidden');
+        });
+        closeLoginBtn.addEventListener('click', () => {
+            loginModal.classList.add('hidden');
+        });
+        telegramLoginBtn.addEventListener('click', telegramLogin);
         
-        // 页面加载完成后初始化游戏
-        window.addEventListener('load', init);
+        // 道具按钮事件
+        propBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const propType = btn.dataset.prop;
+                useProp(propType);
+            });
+        });
+
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+            .animate-shake {
+                animation: shake 0.5s ease-in-out;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 检查本地存储的最大关卡
+            const savedMaxLevel = localStorage.getItem('maxLevel');
+            if (savedMaxLevel) {
+                gameConfig.currentLevel = parseInt(savedMaxLevel);
+            }
+            
+            // 设置关卡目标
+            gameConfig.targetScore = 500 + (gameConfig.currentLevel - 1) * 100;
+            
+            // 加载用户数据
+            loadUserData().then(() => {
+                // 初始化游戏
+                initGame();
+            });
+        });
     </script>
 </body>
 </html>
