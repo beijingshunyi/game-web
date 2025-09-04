@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>万花消消乐</title>
+    <title>万花消消乐 - 豪华版</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,143 +14,346 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #ffa500 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #333;
             overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .container {
             width: 100%;
             max-width: 480px;
             min-height: 100vh;
-            background: #f8f9fa;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .header {
-            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
             color: white;
-            padding: 20px;
+            padding: 25px 20px;
             text-align: center;
             position: relative;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .user-info {
+        .user-stats {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
+            margin-top: 20px;
+            gap: 15px;
         }
 
-        .coins-display, .lives-display {
-            background: rgba(255,255,255,0.2);
-            padding: 8px 15px;
+        .stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
             border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            flex: 1;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card i {
+            font-size: 20px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 24px;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .game-info {
+            background: rgba(255, 255, 255, 0.9);
+            margin: 20px 15px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .game-stat-item {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .game-stat-item h3 {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .game-stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .game-board {
-            width: 90%;
-            height: 350px;
-            margin: 20px auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            width: calc(100% - 30px);
+            height: 320px;
+            margin: 0 15px 20px;
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             grid-template-rows: repeat(6, 1fr);
-            gap: 2px;
-            padding: 10px;
+            gap: 3px;
+            padding: 12px;
             position: relative;
+            z-index: 10;
+            border: 2px solid rgba(102, 126, 234, 0.1);
         }
 
         .game-cell {
-            background: #f0f0f0;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 22px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-cell::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .game-cell:hover::before {
+            transform: translateX(100%);
         }
 
         .game-cell:hover {
             transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
 
         .game-cell.selected {
-            background: #ffd700;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
             transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+            border-color: #ffa500;
         }
 
-        .game-cell.flower { background: #ff69b4; }
-        .game-cell.star { background: #ffd700; }
-        .game-cell.moon { background: #c0c0c0; }
-        .game-cell.sun { background: #ffa500; }
-        .game-cell.gem { background: #9370db; }
-        .game-cell.bell { background: #32cd32; }
+        .game-cell.flower { 
+            background: linear-gradient(135deg, #ff69b4, #ff1493);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .game-cell.star { 
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .game-cell.moon { 
+            background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .game-cell.sun { 
+            background: linear-gradient(135deg, #ffa500, #ff8c00);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .game-cell.gem { 
+            background: linear-gradient(135deg, #9370db, #8a2be2);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .game-cell.bell { 
+            background: linear-gradient(135deg, #32cd32, #228b22);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
 
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
-            flex-wrap: wrap;
+        .controls-section {
+            padding: 0 15px;
+            margin-bottom: 20px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 15px 20px;
             border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
-            display: inline-block;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
         }
 
         .btn-primary {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         .btn-success {
             background: linear-gradient(135deg, #56ab2f, #a8e6cf);
             color: white;
+            box-shadow: 0 4px 15px rgba(86, 171, 47, 0.3);
         }
 
         .btn-warning {
             background: linear-gradient(135deg, #f093fb, #f5576c);
             color: white;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
         }
 
         .btn-info {
             background: linear-gradient(135deg, #4facfe, #00f2fe);
             color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        .btn-gold {
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .bonus-section {
+            margin: 20px 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 165, 0, 0.1));
+            border-radius: 20px;
+            border: 2px solid rgba(255, 165, 0, 0.2);
+            text-align: center;
+        }
+
+        .bonus-section h3 {
+            color: #ff6b6b;
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .bonus-section p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
         .modal {
@@ -158,21 +363,35 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
             background: white;
             padding: 30px;
-            border-radius: 15px;
+            border-radius: 20px;
             width: 90%;
             max-width: 400px;
             max-height: 80vh;
             overflow-y: auto;
             position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .close {
@@ -182,6 +401,11 @@
             font-size: 30px;
             cursor: pointer;
             color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #ff6b6b;
         }
 
         .form-group {
@@ -190,23 +414,27 @@
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 700;
             color: #333;
+            font-size: 14px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
             font-size: 16px;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .leaderboard-list {
@@ -219,31 +447,41 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            margin-bottom: 10px;
-            background: #f8f9fa;
-            border-radius: 10px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
             border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         }
 
         .leaderboard-item.top-1 {
             background: linear-gradient(135deg, #ffd700, #ffed4e);
             border-left-color: #ffd700;
+            color: #333;
         }
 
         .leaderboard-item.top-2 {
             background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
             border-left-color: #c0c0c0;
+            color: #333;
         }
 
         .leaderboard-item.top-3 {
             background: linear-gradient(135deg, #cd7f32, #e4a853);
             border-left-color: #cd7f32;
+            color: white;
         }
 
         .rank {
-            font-weight: bold;
-            font-size: 18px;
+            font-weight: 800;
+            font-size: 20px;
             color: #667eea;
+            min-width: 30px;
         }
 
         .player-info {
@@ -252,75 +490,40 @@
         }
 
         .player-name {
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: 700;
+            margin-bottom: 3px;
+            font-size: 16px;
         }
 
         .player-score {
             color: #666;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .footer {
-            background: #333;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
             color: white;
             text-align: center;
-            padding: 20px;
+            padding: 25px 20px;
             margin-top: auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer p {
+            margin-bottom: 8px;
+            font-size: 14px;
         }
 
         .footer a {
-            color: #667eea;
+            color: #3498db;
             text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
         }
 
         .footer a:hover {
-            text-decoration: underline;
-        }
-
-        .game-info {
-            background: white;
-            margin: 20px;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .score-display, .moves-display {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .score-display h3, .moves-display h3 {
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .score-value, .moves-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .signin-bonus {
-            background: linear-gradient(135deg, #ff6b6b, #ffa500);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px;
-            text-align: center;
-        }
-
-        .signin-bonus h3 {
-            margin-bottom: 10px;
-        }
-
-        .ad-container {
-            background: #f0f0f0;
-            padding: 20px;
-            margin: 20px;
-            border-radius: 10px;
-            text-align: center;
+            color: #5dade2;
         }
 
         .reward-notification {
@@ -333,29 +536,77 @@
             padding: 20px 40px;
             border-radius: 15px;
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 700;
             z-index: 2000;
             display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            animation: bounceIn 0.5s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            70% { transform: translate(-50%, -50%) scale(0.9); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .props-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .prop-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            text-align: center;
+        }
+
+        .prop-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .prop-card p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 480px) {
             .container {
                 max-width: 100%;
+                border-radius: 0;
             }
             
             .game-board {
-                width: 95%;
-                height: 300px;
+                height: 280px;
             }
             
-            .controls {
-                padding: 0 20px;
+            .controls-grid {
+                grid-template-columns: 1fr;
             }
             
             .btn {
-                font-size: 14px;
-                padding: 10px 20px;
+                font-size: 13px;
+                padding: 12px 16px;
             }
         }
     </style>
@@ -363,25 +614,31 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌸 万花消消乐 🌸</h1>
-            <div class="user-info">
-                <div class="coins-display">
-                    💰 <span id="coins">0</span> "万花币"
+            <h1><i class="fas fa-gem"></i> 万花消消乐 <i class="fas fa-star"></i></h1>
+            <div class="user-stats">
+                <div class="stat-card">
+                    <i class="fas fa-coins"></i>
+                    <div class="stat-value" id="coins">0</div>
+                    <div class="stat-label">"万花币"</div>
                 </div>
-                <div class="lives-display">
-                    ❤️ <span id="lives">6</span> 次
+                <div class="stat-card">
+                    <i class="fas fa-heart"></i>
+                    <div class="stat-value" id="lives">6</div>
+                    <div class="stat-label">游戏次数</div>
                 </div>
             </div>
         </div>
 
         <div class="game-info">
-            <div class="score-display">
-                <h3>当前得分</h3>
-                <div class="score-value" id="current-score">0</div>
-            </div>
-            <div class="moves-display">
-                <h3>剩余步数</h3>
-                <div class="moves-value" id="remaining-moves">20</div>
+            <div class="game-stats">
+                <div class="game-stat-item">
+                    <h3><i class="fas fa-trophy"></i> 当前得分</h3>
+                    <div class="game-stat-value" id="current-score">0</div>
+                </div>
+                <div class="game-stat-item">
+                    <h3><i class="fas fa-shoe-prints"></i> 剩余步数</h3>
+                    <div class="game-stat-value" id="remaining-moves">20</div>
+                </div>
             </div>
         </div>
 
@@ -389,32 +646,51 @@
             <!-- 游戏格子将通过JavaScript动态生成 -->
         </div>
 
-        <div class="controls">
-            <button class="btn btn-primary" onclick="startGame()">开始游戏</button>
-            <button class="btn btn-success" onclick="showSignin()">每日签到</button>
-            <button class="btn btn-warning" onclick="showLeaderboard()">排行榜</button>
-            <button class="btn btn-info" onclick="showWithdraw()">提现</button>
+        <div class="controls-section">
+            <div class="controls-grid">
+                <button class="btn btn-primary" onclick="startGame()">
+                    <i class="fas fa-play"></i> 开始游戏
+                </button>
+                <button class="btn btn-success" onclick="showSignin()">
+                    <i class="fas fa-calendar-check"></i> 每日签到
+                </button>
+                <button class="btn btn-warning" onclick="showLeaderboard()">
+                    <i class="fas fa-crown"></i> 排行榜
+                </button>
+                <button class="btn btn-info" onclick="showWithdraw()">
+                    <i class="fas fa-money-bill-wave"></i> 提现
+                </button>
+            </div>
+            
+            <div class="controls-grid">
+                <button class="btn btn-gold" onclick="watchAd()">
+                    <i class="fas fa-ad"></i> 看广告+1次
+                </button>
+                <button class="btn btn-primary" onclick="shareGame()">
+                    <i class="fas fa-share-alt"></i> 分享游戏+1次
+                </button>
+                <button class="btn btn-success" onclick="showProps()">
+                    <i class="fas fa-magic"></i> 我的道具
+                </button>
+                <button class="btn btn-warning" onclick="showProfile()">
+                    <i class="fas fa-user"></i> 个人中心
+                </button>
+            </div>
         </div>
 
-        <div class="controls">
-            <button class="btn btn-primary" onclick="watchAd()">看广告+1次</button>
-            <button class="btn btn-success" onclick="shareGame()">分享游戏+1次</button>
-            <button class="btn btn-warning" onclick="showProps()">我的道具</button>
-        </div>
-
-        <div class="signin-bonus">
-            <h3>🎁 每日签到奖励</h3>
+        <div class="bonus-section">
+            <h3><i class="fas fa-gift"></i> 每日签到奖励</h3>
             <p>每日签到可获得15"万花币"，连续7天额外获得100"万花币"！</p>
         </div>
 
-        <div class="ad-container">
-            <h3>📢 获得更多游戏机会</h3>
+        <div class="bonus-section">
+            <h3><i class="fas fa-bullhorn"></i> 获得更多游戏机会</h3>
             <p>观看广告或分享游戏，每天最多可获得6次游戏机会！</p>
         </div>
 
         <div class="footer">
-            <p>本游戏由北京修车【万花楼】赞助</p>
-            <p>由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+            <p><i class="fas fa-building"></i> 本游戏由北京修车【万花楼】赞助</p>
+            <p><i class="fas fa-code"></i> 由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
         </div>
     </div>
 
@@ -422,10 +698,18 @@
     <div id="signinModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('signinModal')">&times;</span>
-            <h2>每日签到</h2>
-            <div id="signinContent">
-                <p>点击签到获得15"万花币"！</p>
-                <button class="btn btn-success" onclick="dailySignin()">立即签到</button>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-calendar-check text-green-500"></i> 每日签到
+            </h2>
+            <div id="signinContent" class="text-center">
+                <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white p-6 rounded-lg mb-6">
+                    <i class="fas fa-coins text-4xl mb-4"></i>
+                    <p class="text-xl font-bold mb-2">点击签到获得15"万花币"！</p>
+                    <p class="text-sm opacity-90">连续签到7天额外获得100"万花币"</p>
+                </div>
+                <button class="btn btn-success w-full" onclick="dailySignin()">
+                    <i class="fas fa-gift"></i> 立即签到
+                </button>
             </div>
         </div>
     </div>
@@ -434,7 +718,9 @@
     <div id="leaderboardModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('leaderboardModal')">&times;</span>
-            <h2>全服排行榜</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-crown text-yellow-500"></i> 全服排行榜
+            </h2>
             <ul class="leaderboard-list" id="leaderboardList">
                 <!-- 排行榜数据将通过JavaScript动态生成 -->
             </ul>
@@ -445,21 +731,35 @@
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('withdrawModal')">&times;</span>
-            <h2>提现</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-money-bill-wave text-green-500"></i> 提现
+            </h2>
+            <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                <p class="text-sm text-gray-600 mb-2">
+                    <i class="fas fa-info-circle"></i> 提现规则
+                </p>
+                <ul class="text-xs text-gray-600 space-y-1">
+                    <li>• 10000"万花币" = 10元人民币</li>
+                    <li>• 扣除10%手续费</li>
+                    <li>• 12小时内到账</li>
+                    <li>• 仅支持支付宝提现</li>
+                </ul>
+            </div>
             <div class="form-group">
-                <label>支付宝账号：</label>
+                <label><i class="fas fa-alipay"></i> 支付宝账号</label>
                 <input type="text" id="alipayAccount" placeholder="请输入支付宝账号">
             </div>
             <div class="form-group">
-                <label>真实姓名：</label>
+                <label><i class="fas fa-user"></i> 真实姓名</label>
                 <input type="text" id="realName" placeholder="请输入真实姓名">
             </div>
             <div class="form-group">
-                <label>提现金额（"万花币"）：</label>
-                <input type="number" id="withdrawAmount" placeholder="最少10000"万花币" min="10000">
+                <label><i class="fas fa-coins"></i> 提现金额</label>
+                <input type="number" id="withdrawAmount" placeholder="最少10000"万花币"" min="10000">
             </div>
-            <p>10000"万花币" = 10元人民币（扣除10%手续费）</p>
-            <button class="btn btn-warning" onclick="submitWithdraw()">申请提现</button>
+            <button class="btn btn-warning w-full" onclick="submitWithdraw()">
+                <i class="fas fa-paper-plane"></i> 申请提现
+            </button>
         </div>
     </div>
 
@@ -467,10 +767,43 @@
     <div id="propsModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('propsModal')">&times;</span>
-            <h2>我的道具</h2>
-            <div id="propsContent">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-magic text-purple-500"></i> 我的道具
+            </h2>
+            <div id="propsContent" class="props-grid">
                 <!-- 道具列表将通过JavaScript动态生成 -->
             </div>
+        </div>
+    </div>
+
+    <!-- 个人中心模态框 -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('profileModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-user-circle text-blue-500"></i> 个人中心
+            </h2>
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-user text-white text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">玩家 #<span id="userIdDisplay">0000</span></h3>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white p-4 rounded-lg text-center">
+                    <i class="fas fa-trophy text-2xl mb-2"></i>
+                    <p class="text-sm">最高得分</p>
+                    <p class="text-xl font-bold" id="highScore">0</p>
+                </div>
+                <div class="bg-gradient-to-r from-purple-400 to-pink-500 text-white p-4 rounded-lg text-center">
+                    <i class="fas fa-gamepad text-2xl mb-2"></i>
+                    <p class="text-sm">游戏次数</p>
+                    <p class="text-xl font-bold" id="totalGames">0</p>
+                </div>
+            </div>
+            <button class="btn btn-danger w-full" onclick="resetGame()">
+                <i class="fas fa-redo"></i> 重置游戏数据
+            </button>
         </div>
     </div>
 
@@ -503,7 +836,9 @@
             isPlaying: false,
             userCoins: 0,
             userLives: 6,
-            userId: null
+            userId: null,
+            totalGames: 0,
+            highScore: 0
         };
 
         // 初始化游戏
@@ -511,16 +846,17 @@
             loadUserData();
             createBoard();
             updateDisplay();
+            updateProfile();
         }
 
         // 加载用户数据
         function loadUserData() {
-            // 模拟用户数据，实际应该从后端API获取
             gameState.userCoins = parseInt(localStorage.getItem('userCoins') || '1000');
             gameState.userLives = parseInt(localStorage.getItem('userLives') || '6');
             gameState.userId = localStorage.getItem('userId') || 'user_' + Date.now();
+            gameState.totalGames = parseInt(localStorage.getItem('totalGames') || '0');
+            gameState.highScore = parseInt(localStorage.getItem('highScore') || '0');
             
-            // 保存用户ID
             localStorage.setItem('userId', gameState.userId);
         }
 
@@ -747,7 +1083,7 @@
         // 开始游戏
         function startGame() {
             if (gameState.userLives <= 0) {
-                showNotification('游戏次数不足，请观看广告或分享游戏获得次数！');
+                showNotification('游戏次数不足，请观看广告或分享游戏获得次数！', 'warning');
                 return;
             }
             
@@ -755,17 +1091,23 @@
             gameState.score = 0;
             gameState.moves = GAME_CONFIG.movesLimit;
             gameState.userLives--;
+            gameState.totalGames++;
             
             createBoard();
             updateDisplay();
             saveUserData();
             
-            showNotification('游戏开始！');
+            showNotification('游戏开始！祝你好运！', 'success');
         }
 
         // 结束游戏
         function endGame() {
             gameState.isPlaying = false;
+            
+            // 更新最高分
+            if (gameState.score > gameState.highScore) {
+                gameState.highScore = gameState.score;
+            }
             
             // 计算奖励
             const coinsEarned = Math.floor(gameState.score / 10);
@@ -773,8 +1115,9 @@
             
             saveUserData();
             updateDisplay();
+            updateProfile();
             
-            showNotification(`游戏结束！获得${coinsEarned}"万花币"！`);
+            showNotification(`游戏结束！获得${coinsEarned}"万花币"！`, 'success');
         }
 
         // 更新显示
@@ -785,10 +1128,19 @@
             document.getElementById('remaining-moves').textContent = gameState.moves;
         }
 
+        // 更新个人中心
+        function updateProfile() {
+            document.getElementById('userIdDisplay').textContent = gameState.userId.slice(-4);
+            document.getElementById('highScore').textContent = gameState.highScore;
+            document.getElementById('totalGames').textContent = gameState.totalGames;
+        }
+
         // 保存用户数据
         function saveUserData() {
             localStorage.setItem('userCoins', gameState.userCoins.toString());
             localStorage.setItem('userLives', gameState.userLives.toString());
+            localStorage.setItem('totalGames', gameState.totalGames.toString());
+            localStorage.setItem('highScore', gameState.highScore.toString());
         }
 
         // 每日签到
@@ -797,7 +1149,7 @@
             const lastSignin = localStorage.getItem('lastSignin');
             
             if (lastSignin === today) {
-                showNotification('今天已经签到过了！');
+                showNotification('今天已经签到过了！', 'warning');
                 return;
             }
             
@@ -808,7 +1160,7 @@
             saveUserData();
             updateDisplay();
             
-            showNotification(`签到成功！获得${coins}"万花币"！`);
+            showNotification(`签到成功！获得${coins}"万花币"！`, 'success');
             closeModal('signinModal');
         }
 
@@ -818,18 +1170,27 @@
             const adCount = parseInt(localStorage.getItem('adCount_' + today) || '0');
             
             if (adCount >= 3) {
-                showNotification('今日观看广告次数已达上限！');
+                showNotification('今日观看广告次数已达上限！', 'warning');
                 return;
             }
             
             // 模拟观看广告
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading-spinner"></span> 观看中...';
+            btn.disabled = true;
+            
             setTimeout(() => {
                 gameState.userLives++;
                 localStorage.setItem('adCount_' + today, (adCount + 1).toString());
                 saveUserData();
                 updateDisplay();
-                showNotification('观看广告成功！获得1次游戏机会！');
-            }, 1000);
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+                showNotification('观看广告成功！获得1次游戏机会！', 'success');
+            }, 2000);
         }
 
         // 分享游戏
@@ -838,7 +1199,7 @@
             const shareCount = parseInt(localStorage.getItem('shareCount_' + today) || '0');
             
             if (shareCount >= 3) {
-                showNotification('今日分享次数已达上限！');
+                showNotification('今日分享次数已达上限！', 'warning');
                 return;
             }
             
@@ -853,7 +1214,7 @@
                     localStorage.setItem('shareCount_' + today, (shareCount + 1).toString());
                     saveUserData();
                     updateDisplay();
-                    showNotification('分享成功！获得1次游戏机会！');
+                    showNotification('分享成功！获得1次游戏机会！', 'success');
                 });
             } else {
                 // 复制链接到剪贴板
@@ -862,7 +1223,7 @@
                     localStorage.setItem('shareCount_' + today, (shareCount + 1).toString());
                     saveUserData();
                     updateDisplay();
-                    showNotification('链接已复制！获得1次游戏机会！');
+                    showNotification('链接已复制！获得1次游戏机会！', 'success');
                 });
             }
         }
@@ -871,11 +1232,11 @@
         function showLeaderboard() {
             // 模拟排行榜数据
             const leaderboardData = [
-                { name: '玩家1', score: 50000, rank: 1 },
-                { name: '玩家2', score: 45000, rank: 2 },
-                { name: '玩家3', score: 40000, rank: 3 },
-                { name: '玩家4', score: 35000, rank: 4 },
-                { name: '玩家5', score: 30000, rank: 5 }
+                { name: '王者玩家', score: 50000, rank: 1 },
+                { name: '钻石玩家', score: 45000, rank: 2 },
+                { name: '黄金玩家', score: 40000, rank: 3 },
+                { name: '白银玩家', score: 35000, rank: 4 },
+                { name: '青铜玩家', score: 30000, rank: 5 }
             ];
             
             const list = document.getElementById('leaderboardList');
@@ -912,17 +1273,17 @@
             const amount = parseInt(document.getElementById('withdrawAmount').value);
             
             if (!alipayAccount || !realName || !amount) {
-                showNotification('请填写完整信息！');
+                showNotification('请填写完整信息！', 'warning');
                 return;
             }
             
             if (amount < 10000) {
-                showNotification('最少需要10000"万花币"才能提现！');
+                showNotification('最少需要10000"万花币"才能提现！', 'warning');
                 return;
             }
             
             if (amount > gameState.userCoins) {
-                showNotification('"万花币"余额不足！');
+                showNotification('"万花币"余额不足！', 'warning');
                 return;
             }
             
@@ -941,7 +1302,7 @@
             document.getElementById('realName').value = '';
             document.getElementById('withdrawAmount').value = '';
             
-            showNotification(`提现申请成功！预计12小时内到账${actualAmount.toFixed(2)}元`);
+            showNotification(`提现申请成功！预计12小时内到账${actualAmount.toFixed(2)}元`, 'success');
             closeModal('withdrawModal');
         }
 
@@ -949,23 +1310,29 @@
         function showProps() {
             const propsContent = document.getElementById('propsContent');
             propsContent.innerHTML = `
-                <div style="margin-bottom: 15px;">
-                    <h4>🔀 洗牌道具</h4>
-                    <p>重新排列当前棋盘元素</p>
-                    <p>数量: <span id="shuffleCount">0</span></p>
-                    <button class="btn btn-primary" onclick="buyProp('shuffle')">购买 (30"万花币")</button>
+                <div class="prop-card">
+                    <h4><i class="fas fa-random"></i> 洗牌道具</h4>
+                    <p>重新排列当前棋盘元素，每局限用2次</p>
+                    <p class="text-lg font-bold text-purple-600">数量: <span id="shuffleCount">0</span></p>
+                    <button class="btn btn-primary w-full" onclick="buyProp('shuffle')">
+                        <i class="fas fa-shopping-cart"></i> 购买 (30"万花币")
+                    </button>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <h4>💥 爆炸道具</h4>
-                    <p>手动选择1个元素触发爆炸特效</p>
-                    <p>数量: <span id="boomCount">0</span></p>
-                    <button class="btn btn-primary" onclick="buyProp('boom')">购买 (60"万花币")</button>
+                <div class="prop-card">
+                    <h4><i class="fas fa-bomb"></i> 爆炸道具</h4>
+                    <p>手动选择1个元素触发爆炸特效，每局限用1次</p>
+                    <p class="text-lg font-bold text-red-600">数量: <span id="boomCount">0</span></p>
+                    <button class="btn btn-primary w-full" onclick="buyProp('boom')">
+                        <i class="fas fa-shopping-cart"></i> 购买 (60"万花币")
+                    </button>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <h4>➕ 步数道具</h4>
-                    <p>关卡内额外增加5步</p>
-                    <p>数量: <span id="addStepCount">0</span></p>
-                    <button class="btn btn-primary" onclick="buyProp('addStep')">购买 (40"万花币")</button>
+                <div class="prop-card">
+                    <h4><i class="fas fa-plus"></i> 步数道具</h4>
+                    <p>关卡内额外增加5步，每局限用1次</p>
+                    <p class="text-lg font-bold text-green-600">数量: <span id="addStepCount">0</span></p>
+                    <button class="btn btn-primary w-full" onclick="buyProp('addStep')">
+                        <i class="fas fa-shopping-cart"></i> 购买 (40"万花币")
+                    </button>
                 </div>
             `;
             
@@ -978,6 +1345,28 @@
             document.getElementById('propsModal').style.display = 'flex';
         }
 
+        // 显示个人中心
+        function showProfile() {
+            updateProfile();
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        // 重置游戏数据
+        function resetGame() {
+            if (confirm('确定要重置所有游戏数据吗？此操作不可恢复！')) {
+                localStorage.clear();
+                gameState.userCoins = 1000;
+                gameState.userLives = 6;
+                gameState.totalGames = 0;
+                gameState.highScore = 0;
+                saveUserData();
+                updateDisplay();
+                updateProfile();
+                showNotification('游戏数据已重置！', 'success');
+                closeModal('profileModal');
+            }
+        }
+
         // 购买道具
         function buyProp(type) {
             const prices = {
@@ -988,7 +1377,7 @@
             
             const price = prices[type];
             if (gameState.userCoins < price) {
-                showNotification('"万花币"不足！');
+                showNotification('"万花币"不足！', 'warning');
                 return;
             }
             
@@ -1002,7 +1391,7 @@
             saveUserData();
             updateDisplay();
             showProps(); // 刷新道具界面
-            showNotification(`购买成功！获得1个${type === 'shuffle' ? '洗牌' : type === 'boom' ? '爆炸' : '步数'}道具`);
+            showNotification(`购买成功！获得1个${type === 'shuffle' ? '洗牌' : type === 'boom' ? '爆炸' : '步数'}道具`, 'success');
         }
 
         // 显示签到界面
@@ -1016,9 +1405,18 @@
         }
 
         // 显示通知
-        function showNotification(message) {
+        function showNotification(message, type = 'success') {
             const notification = document.getElementById('rewardNotification');
             notification.textContent = message;
+            
+            // 根据类型设置颜色
+            const colors = {
+                success: 'linear-gradient(135deg, #56ab2f, #a8e6cf)',
+                warning: 'linear-gradient(135deg, #f093fb, #f5576c)',
+                error: 'linear-gradient(135deg, #ff6b6b, #ffa500)'
+            };
+            
+            notification.style.background = colors[type] || colors.success;
             notification.style.display = 'block';
             
             setTimeout(() => {
