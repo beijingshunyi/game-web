@@ -271,7 +271,7 @@
                             <h3 class="font-bold">加步道具</h3>
                             <p class="text-sm text-gray-600">增加5步游戏机会</p>
                         </div>
-                        <button class="prop-btn bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-lg text-sm transition-all" data-prop="add_step">
+                        <button class="prop-btn bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-lg text-sm transition-all" data-prop="addStep">
                             <span class="prop-count">0</span> / 40币
                         </button>
                     </div>
@@ -313,7 +313,7 @@
                             <i class="fa fa-plus-circle text-primary"></i>
                             <span>加步道具</span>
                         </div>
-                        <span id="my-add-step" class="font-bold">0个</span>
+                        <span id="my-addStep" class="font-bold">0个</span>
                     </div>
                     <div class="flex justify-between items-center p-2">
                         <div class="flex items-center gap-2">
@@ -574,7 +574,7 @@
             props: {
                 shuffle: 0,
                 boom: 0,
-                add_step: 0,
+                addStep: 0,
                 hint: 0
             },
             hasCheckedIn: false, // 是否已签到
@@ -1520,7 +1520,7 @@
                     // 爆炸道具 - 让用户选择位置
                     selectBoomPosition();
                     break;
-                case 'add_step':
+                case 'addStep':
                     // 增加步数
                     gameState.remainingMoves += 5;
                     updateRemainingMoves();
@@ -1565,7 +1565,7 @@
             const costs = {
                 shuffle: 30,
                 boom: 60,
-                add_step: 40,
+                addStep: 40,
                 hint: 20
             };
             return costs[propType] || 0;
@@ -1586,7 +1586,7 @@
             // 更新我的道具列表
             document.getElementById('my-shuffle').textContent = `${gameState.props.shuffle}个`;
             document.getElementById('my-boom').textContent = `${gameState.props.boom}个`;
-            document.getElementById('my-add-step').textContent = `${gameState.props.add_step}个`;
+            document.getElementById('my-addStep').textContent = `${gameState.props.addStep}个`;
             document.getElementById('my-hint').textContent = `${gameState.props.hint}个`;
         }
 
