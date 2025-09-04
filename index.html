@@ -367,13 +367,13 @@
         // 配置信息 - 使用提供的实际数据
         const BOT_TOKEN = "7058588982:AAGaWY3tDT7np7-rwAp350i6gBhC0d_UxjI";
         const BOT_USERNAME = "bjxcwhljiluBot";
+        const ADMIN_ID = 8392100400;
         const SUPABASE_URL = "https://ylnfjlltesnlfanrxfoy.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDc0MjMsImV4cCI6MjA3MTY4MzQyM30.czuQwYoFd7Ew9f-PBaojhsWJkXrBEtkqTRdhfX-DWFk";
         const SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjEwNzQyMywiZXhwIjoyMDcxNjgzNDIzfQ.7Z0oPczZntIWHiO0CucqVIZMP5xTY9x_wlCiFGbE-ew";
         
-        // 初始化Supabase客户端
+        // 初始化Supabase客户端（使用CDN方式，避免import语法）
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        // 服务端角色客户端（注意：在生产环境中不应在前端使用此密钥）
         const supabaseServiceRole = window.supabase.createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
         
         // 全局变量
@@ -1854,3 +1854,4 @@
     </script>
 </body>
 </html>
+    
