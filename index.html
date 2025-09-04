@@ -15,17 +15,19 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#8B5CF6', // 主色调：紫色
-                        secondary: '#EC4899', // 辅助色：粉色
-                        accent: '#F59E0B', // 强调色：橙色
-                        dark: '#1E293B',
-                        light: '#F8FAFC',
+                        primary: '#7C3AED', // 深紫色
+                        secondary: '#EC4899', // 粉色
+                        accent: '#F59E0B', // 橙色
+                        dark: '#1F2937',
+                        light: '#F9FAFB',
                         success: '#10B981',
                         warning: '#F59E0B',
-                        danger: '#EF4444'
+                        danger: '#EF4444',
+                        info: '#3B82F6',
+                        gem: '#8B5CF6'
                     },
                     fontFamily: {
-                        game: ['"Comic Sans MS"', '"Marker Felt"', 'sans-serif']
+                        game: ['"Nunito"', '"Comic Sans MS"', 'sans-serif']
                     }
                 }
             }
@@ -41,14 +43,14 @@
                 text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
             .game-shadow {
-                box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3);
+                box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.4);
             }
             .btn-bounce {
                 transition: transform 0.2s, box-shadow 0.2s;
             }
             .btn-bounce:hover {
                 transform: translateY(-3px);
-                box-shadow: 0 7px 14px rgba(139, 92, 246, 0.3);
+                box-shadow: 0 7px 14px rgba(124, 58, 237, 0.4);
             }
             .btn-bounce:active {
                 transform: translateY(1px);
@@ -67,9 +69,21 @@
             .game-tile {
                 background: linear-gradient(145deg, #ffffff, #e6e6e6);
                 box-shadow: 5px 5px 10px #d1d1d1, -5px -5px 10px #ffffff;
+                position: relative;
+                overflow: hidden;
             }
             .game-tile:active {
                 box-shadow: inset 5px 5px 10px #d1d1d1, inset -5px -5px 10px #ffffff;
+            }
+            .game-tile::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%);
+                pointer-events: none;
             }
             .timer-warning {
                 animation: timerWarning 1s infinite;
@@ -79,10 +93,53 @@
                 50% { color: #EF4444; }
                 100% { color: inherit; }
             }
+            .obstacle {
+                position: relative;
+            }
+            .obstacle::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: inherit;
+            }
+            .ice::after {
+                background: linear-gradient(135deg, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0.3) 100%);
+            }
+            .rock::after {
+                background: linear-gradient(135deg, rgba(107, 114, 128, 0.8) 0%, rgba(107, 114, 128, 0.5) 100%);
+            }
+            .chain::after {
+                background: linear-gradient(135deg, rgba(245, 158, 11, 0.7) 0%, rgba(245, 158, 11, 0.4) 100%);
+            }
+            .shimmer {
+                position: relative;
+                overflow: hidden;
+            }
+            .shimmer::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+                animation: shimmer 2s infinite;
+            }
+            @keyframes shimmer {
+                0% { left: -100%; }
+                100% { left: 100%; }
+            }
+            .gem-icon {
+                filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.7));
+            }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-purple-100 to-pink-100 min-h-screen font-game text-dark overflow-x-hidden">
+<body class="bg-gradient-to-br from-purple-50 via-pink-50 to-amber-50 min-h-screen font-game text-dark overflow-x-hidden">
     <!-- 加载屏幕 -->
     <div id="loading-screen" class="fixed inset-0 bg-gradient-to-r from-primary to-secondary/90 z-50 flex flex-col items-center justify-center">
         <div class="w-24 h-24 border-4 border-white border-t-transparent rounded-full animate-spin mb-6"></div>
@@ -91,41 +148,45 @@
     </div>
     
     <!-- 开始游戏界面 -->
-    <div id="start-screen" class="fixed inset-0 bg-gradient-to-br from-purple-100 to-pink-100 min-h-screen flex flex-col items-center justify-center px-4 hidden">
+    <div id="start-screen" class="fixed inset-0 bg-gradient-to-br from-purple-100 via-pink-100 to-amber-100 min-h-screen flex flex-col items-center justify-center px-4 hidden">
         <div class="max-w-md w-full">
             <div class="text-center mb-8">
-                <h1 class="text-5xl font-bold text-primary mb-2 text-shadow">万花消消乐</h1>
-                <p class="text-lg text-gray-600">消除三个或更多相同图案，获得高分！</p>
+                <h1 class="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary mb-2 text-shadow">万花消消乐</h1>
+                <p class="text-lg text-gray-700">消除三个或更多相同图案，挑战高分！</p>
             </div>
             
-            <div class="bg-white rounded-2xl p-6 shadow-xl game-shadow mb-6">
+            <div class="bg-white rounded-2xl p-6 shadow-xl game-shadow mb-6 border border-purple-100">
                 <div class="flex justify-center mb-6">
-                    <div class="w-32 h-32 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
-                        <i class="fa fa-gamepad text-white text-5xl"></i>
+                    <div class="w-32 h-32 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center shimmer">
+                        <i class="fa fa-gem text-white text-6xl gem-icon"></i>
                     </div>
                 </div>
                 
                 <div class="space-y-4 mb-6">
-                    <div class="flex items-center">
+                    <div class="flex items-center bg-purple-50 p-3 rounded-lg">
                         <i class="fa fa-clock text-primary text-xl mr-3"></i>
                         <p>每步限时<span class="font-bold text-accent">15秒</span>，超时将失败</p>
                     </div>
-                    <div class="flex items-center">
+                    <div class="flex items-center bg-pink-50 p-3 rounded-lg">
                         <i class="fa fa-trophy text-warning text-xl mr-3"></i>
                         <p>完成关卡可获得<span class="font-bold text-accent">"万花币"</span>奖励</p>
                     </div>
-                    <div class="flex items-center">
+                    <div class="flex items-center bg-amber-50 p-3 rounded-lg">
                         <i class="fa fa-gift text-success text-xl mr-3"></i>
                         <p>每日签到和分享可获得额外奖励</p>
                     </div>
+                    <div class="flex items-center bg-blue-50 p-3 rounded-lg">
+                        <i class="fa fa-coins text-gem text-xl mr-3"></i>
+                        <p>1000个"万花币"可提现10元</p>
+                    </div>
                 </div>
                 
-                <button id="start-game-btn" class="w-full bg-gradient-to-r from-primary to-secondary text-white py-4 rounded-xl font-bold text-lg btn-bounce">
+                <button id="start-game-btn" class="w-full bg-gradient-to-r from-primary to-secondary text-white py-4 rounded-xl font-bold text-lg btn-bounce shadow-lg">
                     开始游戏
                 </button>
             </div>
             
-            <footer class="text-center text-sm text-gray-500">
+            <footer class="text-center text-sm text-gray-600">
                 <p>本游戏由北京修车【万花楼】赞助</p>
                 <p class="mt-1">由 <a href="https://t.me/bjxc010" target="_blank" class="text-primary hover:underline">@bjxc010</a> 开发</p>
             </footer>
@@ -137,27 +198,31 @@
         <!-- 顶部导航 -->
         <header class="flex justify-between items-center mb-6">
             <div class="flex items-center">
-                <i class="fa fa-gamepad text-primary text-2xl mr-2"></i>
-                <h1 class="text-[clamp(1.5rem,5vw,2rem)] font-bold text-primary">万花消消乐</h1>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center mr-2">
+                    <i class="fa fa-gamepad text-white"></i>
+                </div>
+                <h1 class="text-[clamp(1.5rem,5vw,2rem)] font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">万花消消乐</h1>
             </div>
             <div class="flex items-center gap-3">
                 <button id="user-menu-btn" class="relative">
                     <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                         <i class="fa fa-user"></i>
                     </div>
-                    <span id="coin-display" class="absolute -top-2 -right-2 bg-accent text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold">0</span>
+                    <span id="coin-display" class="absolute -top-2 -right-2 bg-gradient-to-r from-accent to-amber-500 text-white text-xs w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-md">0</span>
                 </button>
             </div>
         </header>
         
         <!-- 用户菜单 (默认隐藏) -->
-        <div id="user-menu" class="fixed top-20 right-4 bg-white rounded-lg shadow-lg p-4 w-56 hidden z-40">
+        <div id="user-menu" class="fixed top-20 right-4 bg-white rounded-xl shadow-xl p-4 w-56 hidden z-40 border border-purple-100">
             <div class="flex justify-between items-center mb-3">
-                <h3 class="font-bold">我的账户</h3>
-                <button id="close-user-menu"><i class="fa fa-times text-gray-500"></i></button>
+                <h3 class="font-bold text-lg">我的账户</h3>
+                <button id="close-user-menu" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
             </div>
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+            <div class="flex items-center mb-4 p-2 bg-purple-50 rounded-lg">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white mr-3">
                     <i class="fa fa-user text-xl"></i>
                 </div>
                 <div>
@@ -166,42 +231,44 @@
                 </div>
             </div>
             <div class="space-y-2">
-                <button id="checkin-btn" class="w-full flex items-center justify-between p-2 hover:bg-gray-100 rounded">
+                <button id="checkin-btn" class="w-full flex items-center justify-between p-3 hover:bg-gray-100 rounded-lg transition">
                     <span><i class="fa fa-calendar-check-o mr-2 text-accent"></i>每日签到</span>
                     <span id="checkin-status" class="text-xs bg-gray-200 px-2 py-1 rounded">未签到</span>
                 </button>
-                <button id="withdraw-btn" class="w-full flex items-center justify-between p-2 hover:bg-gray-100 rounded">
-                    <span><i class="fa fa-money mr-2 text-success"></i>提现</span>
+                <button id="withdraw-btn" class="w-full flex items-center justify-between p-3 hover:bg-gray-100 rounded-lg transition">
+                    <span><i class="fa fa-money-bill-wave mr-2 text-success"></i>提现</span>
                     <i class="fa fa-chevron-right text-gray-400 text-xs"></i>
                 </button>
-                <button id="leaderboard-btn" class="w-full flex items-center justify-between p-2 hover:bg-gray-100 rounded">
+                <button id="leaderboard-btn" class="w-full flex items-center justify-between p-3 hover:bg-gray-100 rounded-lg transition">
                     <span><i class="fa fa-trophy mr-2 text-warning"></i>排行榜</span>
                     <i class="fa fa-chevron-right text-gray-400 text-xs"></i>
                 </button>
-                <button id="inventory-btn" class="w-full flex items-center justify-between p-2 hover:bg-gray-100 rounded">
-                    <span><i class="fa fa-briefcase mr-2 text-blue-500"></i>道具背包</span>
+                <button id="inventory-btn" class="w-full flex items-center justify-between p-3 hover:bg-gray-100 rounded-lg transition">
+                    <span><i class="fa fa-briefcase mr-2 text-info"></i>道具背包</span>
                     <i class="fa fa-chevron-right text-gray-400 text-xs"></i>
                 </button>
             </div>
         </div>
         
         <!-- 游戏次数提示 -->
-        <div class="bg-white rounded-lg p-3 shadow-sm mb-4 flex justify-between items-center">
+        <div class="bg-white rounded-xl p-4 shadow-md mb-4 flex justify-between items-center border border-purple-100">
             <div class="flex items-center">
-                <i class="fa fa-heart text-secondary mr-2"></i>
+                <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center mr-2">
+                    <i class="fa fa-heart text-secondary"></i>
+                </div>
                 <span>今日剩余游戏次数: <span id="remaining-plays" class="font-bold text-accent">6</span>/6</span>
             </div>
-            <button id="get-more-plays" class="text-xs bg-primary text-white px-3 py-1 rounded-full btn-bounce">
+            <button id="get-more-plays" class="text-xs bg-gradient-to-r from-primary to-secondary text-white px-3 py-1 rounded-full btn-bounce shadow">
                 <i class="fa fa-plus-circle mr-1"></i>获取次数
             </button>
         </div>
         
         <!-- 主游戏界面 -->
-        <div id="game-container" class="bg-white rounded-xl p-4 shadow-lg game-shadow mb-6">
+        <div id="game-container" class="bg-white rounded-xl p-4 shadow-lg game-shadow mb-6 border border-purple-100">
             <!-- 关卡信息 -->
             <div class="flex justify-between items-center mb-4">
                 <div>
-                    <h2 class="font-bold text-lg">关卡 <span id="current-level">1</span></h2>
+                    <h2 class="font-bold text-lg">关卡 <span id="current-level" class="text-primary">1</span></h2>
                     <div class="flex items-center mt-1">
                         <i class="fa fa-star text-yellow-400"></i>
                         <i class="fa fa-star text-gray-300"></i>
@@ -209,22 +276,22 @@
                     </div>
                 </div>
                 <div class="text-right">
-                    <p>目标: <span id="level-target" class="font-bold">500分</span></p>
+                    <p>目标: <span id="level-target" class="font-bold text-accent">500分</span></p>
                     <p>步数: <span id="remaining-steps" class="font-bold">不限</span></p>
                 </div>
             </div>
             
             <!-- 进度条 -->
-            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                <div id="progress-bar" class="bg-gradient-to-r from-primary to-secondary h-2.5 rounded-full" style="width: 0%"></div>
+            <div class="w-full bg-gray-200 rounded-full h-3 mb-4 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-primary to-secondary h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
             
             <!-- 计时器 -->
             <div class="flex justify-center mb-4">
-                <div class="bg-gray-100 rounded-lg px-4 py-2 flex items-center">
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl px-4 py-2 flex items-center border border-purple-100">
                     <i class="fa fa-clock text-primary mr-2"></i>
                     <span class="text-sm text-gray-600 mr-2">剩余时间:</span>
-                    <span id="timer" class="font-bold text-lg">15</span>
+                    <span id="timer" class="font-bold text-lg text-primary">15</span>
                     <span class="text-sm text-gray-600 ml-1">秒</span>
                 </div>
             </div>
@@ -236,22 +303,25 @@
             
             <!-- 分数显示 -->
             <div class="flex justify-between items-center">
-                <div class="bg-gray-100 rounded-lg px-3 py-2">
-                    <p class="text-sm text-gray-500">当前得分</p>
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl px-4 py-3 border border-purple-100">
+                    <p class="text-sm text-gray-600">当前得分</p>
                     <p id="current-score" class="text-xl font-bold text-primary">0</p>
                 </div>
                 <div class="flex gap-2">
-                    <button id="shuffle-btn" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full flex items-center justify-center" title="洗牌">
-                        <i class="fa fa-refresh text-gray-700"></i>
-                        <span class="ml-1 text-xs">30</span>
+                    <button id="shuffle-btn" class="bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 p-3 rounded-xl flex flex-col items-center justify-center border border-purple-100 transition" title="洗牌">
+                        <i class="fa fa-sync-alt text-purple-600 text-lg"></i>
+                        <span class="text-xs mt-1">洗牌</span>
+                        <span class="text-xs font-bold text-purple-600">30</span>
                     </button>
-                    <button id="boom-btn" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full flex items-center justify-center" title="爆炸">
-                        <i class="fa fa-bomb text-gray-700"></i>
-                        <span class="ml-1 text-xs">60</span>
+                    <button id="boom-btn" class="bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 p-3 rounded-xl flex flex-col items-center justify-center border border-purple-100 transition" title="炸弹">
+                        <i class="fa fa-bomb text-red-500 text-lg"></i>
+                        <span class="text-xs mt-1">炸弹</span>
+                        <span class="text-xs font-bold text-red-500">60</span>
                     </button>
-                    <button id="add-step-btn" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full flex items-center justify-center" title="增加步数">
-                        <i class="fa fa-plus text-gray-700"></i>
-                        <span class="ml-1 text-xs">40</span>
+                    <button id="add-step-btn" class="bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 p-3 rounded-xl flex flex-col items-center justify-center border border-purple-100 transition" title="增加步数">
+                        <i class="fa fa-plus text-green-500 text-lg"></i>
+                        <span class="text-xs mt-1">加步</span>
+                        <span class="text-xs font-bold text-green-500">40</span>
                     </button>
                 </div>
             </div>
@@ -259,26 +329,26 @@
         
         <!-- 功能按钮 -->
         <div class="grid grid-cols-4 gap-3 mb-8">
-            <button id="home-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-3 shadow-sm btn-bounce">
+            <button id="home-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-4 shadow-sm btn-bounce border border-purple-100">
                 <i class="fa fa-home text-primary text-xl mb-1"></i>
                 <span class="text-xs">主页</span>
             </button>
-            <button id="levels-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-3 shadow-sm btn-bounce">
+            <button id="levels-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-4 shadow-sm btn-bounce border border-purple-100">
                 <i class="fa fa-th-large text-secondary text-xl mb-1"></i>
                 <span class="text-xs">关卡</span>
             </button>
-            <button id="share-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-3 shadow-sm btn-bounce">
+            <button id="share-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-4 shadow-sm btn-bounce border border-purple-100">
                 <i class="fa fa-share-alt text-accent text-xl mb-1"></i>
                 <span class="text-xs">分享</span>
             </button>
-            <button id="settings-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-3 shadow-sm btn-bounce">
-                <i class="fa fa-cog text-blue-500 text-xl mb-1"></i>
+            <button id="settings-btn" class="flex flex-col items-center justify-center bg-white rounded-xl p-4 shadow-sm btn-bounce border border-purple-100">
+                <i class="fa fa-cog text-info text-xl mb-1"></i>
                 <span class="text-xs">设置</span>
             </button>
         </div>
         
         <!-- 赞助商信息 -->
-        <footer class="text-center text-sm text-gray-500 py-4 border-t border-gray-200">
+        <footer class="text-center text-sm text-gray-600 py-4 border-t border-purple-100">
             <p>本游戏由北京修车【万花楼】赞助</p>
             <p class="mt-1">由 <a href="https://t.me/bjxc010" target="_blank" class="text-primary hover:underline">@bjxc010</a> 开发</p>
         </footer>
@@ -286,14 +356,16 @@
     
     <!-- 提现模态框 (默认隐藏) -->
     <div id="withdraw-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">提现</h3>
-                <button id="close-withdraw-modal"><i class="fa fa-times text-gray-500"></i></button>
+                <button id="close-withdraw-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
             </div>
-            <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+            <div class="mb-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-100">
                 <p class="text-sm text-gray-600">当前可提现: <span id="withdrawable-coins" class="font-bold text-primary">"万花币"</span></p>
-                <p class="text-sm text-gray-500 mt-1">10000个"万花币" = 10元人民币</p>
+                <p class="text-sm text-gray-500 mt-1">1000个"万花币" = 10元人民币</p>
             </div>
             <form id="withdraw-form" class="space-y-4">
                 <div>
@@ -306,20 +378,22 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">提现数量 ("万花币")</label>
-                    <input type="number" id="withdraw-amount" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" min="10000" step="10000" placeholder="最低10000" required>
+                    <input type="number" id="withdraw-amount" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" min="1000" step="1000" placeholder="最低1000" required>
                 </div>
-                <p class="text-xs text-gray-500">* 提现后12小时内到账，将收取10%手续费</p>
-                <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-medium btn-bounce">提交提现申请</button>
+                <p class="text-xs text-gray-500">* 提现后24小时内到账</p>
+                <button type="submit" class="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-lg font-medium btn-bounce shadow">提交提现申请</button>
             </form>
         </div>
     </div>
     
     <!-- 排行榜模态框 (默认隐藏) -->
     <div id="leaderboard-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md max-h-[80vh] overflow-y-auto">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md max-h-[80vh] overflow-y-auto shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">全服排行榜</h3>
-                <button id="close-leaderboard-modal"><i class="fa fa-times text-gray-500"></i></button>
+                <button id="close-leaderboard-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
             </div>
             <p class="text-sm text-gray-500 mb-4">排行前5的玩家每日可领取现金奖励</p>
             
@@ -332,7 +406,7 @@
                 </div>
             </div>
             
-            <div class="mt-6 p-3 bg-primary/10 rounded-lg">
+            <div class="mt-6 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-100">
                 <p class="font-medium text-center">我的排名</p>
                 <div id="my-rank" class="flex items-center justify-between mt-2">
                     <div class="flex items-center">
@@ -347,16 +421,18 @@
     
     <!-- 获取更多游戏次数模态框 (默认隐藏) -->
     <div id="get-plays-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">获取更多游戏次数</h3>
-                <button id="close-plays-modal"><i class="fa fa-times text-gray-500"></i></button>
+                <button id="close-plays-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
             </div>
             <div class="space-y-4">
-                <button id="watch-ad-btn" class="w-full flex items-center justify-center bg-secondary text-white py-3 rounded-lg font-medium btn-bounce">
+                <button id="watch-ad-btn" class="w-full flex items-center justify-center bg-gradient-to-r from-secondary to-pink-500 text-white py-3 rounded-lg font-medium btn-bounce shadow">
                     <i class="fa fa-play-circle mr-2"></i>观看广告 (+1次)
                 </button>
-                <button id="share-game-btn" class="w-full flex items-center justify-center bg-accent text-white py-3 rounded-lg font-medium btn-bounce">
+                <button id="share-game-btn" class="w-full flex items-center justify-center bg-gradient-to-r from-accent to-amber-500 text-white py-3 rounded-lg font-medium btn-bounce shadow">
                     <i class="fa fa-share-alt mr-2"></i>分享游戏 (+2次)
                 </button>
                 <p class="text-xs text-gray-500 text-center">每日最多可额外获取6次游戏机会</p>
@@ -366,10 +442,12 @@
     
     <!-- 关卡选择模态框 (默认隐藏) -->
     <div id="levels-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md max-h-[80vh] overflow-y-auto">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md max-h-[80vh] overflow-y-auto shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">选择关卡</h3>
-                <button id="close-levels-modal"><i class="fa fa-times text-gray-500"></i></button>
+                <button id="close-levels-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
             </div>
             <div id="levels-grid" class="grid grid-cols-5 gap-2">
                 <!-- 关卡按钮将通过JS动态生成 -->
@@ -379,7 +457,7 @@
     
     <!-- 胜利弹窗 (默认隐藏) -->
     <div id="victory-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md text-center">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md text-center shadow-xl">
             <div class="text-5xl text-yellow-500 mb-4 pulse-effect">
                 <i class="fa fa-trophy"></i>
             </div>
@@ -390,24 +468,24 @@
                 <i class="fa fa-star text-yellow-400 text-2xl"></i>
                 <i class="fa fa-star text-yellow-400 text-2xl"></i>
             </div>
-            <button id="next-level-btn" class="w-full bg-primary text-white py-3 rounded-lg font-medium mb-2 btn-bounce">下一关</button>
+            <button id="next-level-btn" class="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-lg font-medium mb-2 btn-bounce shadow">下一关</button>
             <button id="close-victory-modal" class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-medium btn-bounce">返回主页</button>
         </div>
     </div>
     
     <!-- 失败弹窗 (默认隐藏) -->
     <div id="defeat-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md text-center">
+        <div class="bg-white rounded-xl p-6 w-11/12 max-w-md text-center shadow-xl">
             <div class="text-5xl text-gray-500 mb-4">
                 <i class="fa fa-times-circle"></i>
             </div>
             <h3 class="text-2xl font-bold mb-2">挑战失败</h3>
             <p class="text-gray-600 mb-6">再接再厉，继续努力哦！</p>
-            <button id="watch-ad-reset-btn" class="w-full bg-secondary text-white py-3 rounded-lg font-medium mb-2 btn-bounce">
+            <button id="watch-ad-reset-btn" class="w-full bg-gradient-to-r from-secondary to-pink-500 text-white py-3 rounded-lg font-medium mb-2 btn-bounce shadow">
                 <i class="fa fa-play-circle mr-2"></i>观看广告复活
             </button>
-            <button id="use-coins-reset-btn" class="w-full bg-accent text-white py-3 rounded-lg font-medium mb-2 btn-bounce">
-                <i class="fa fa-money mr-2"></i>消耗50"万花币"重试
+            <button id="use-coins-reset-btn" class="w-full bg-gradient-to-r from-accent to-amber-500 text-white py-3 rounded-lg font-medium mb-2 btn-bounce shadow">
+                <i class="fa fa-coins mr-2"></i>消耗50"万花币"重试
             </button>
             <button id="close-defeat-modal" class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-medium btn-bounce">返回主页</button>
         </div>
@@ -441,12 +519,19 @@
                 { type: 'moon', icon: 'fa-moon', color: 'text-indigo-400' },
                 { type: 'sun', icon: 'fa-sun', color: 'text-orange-500' },
                 { type: 'gem', icon: 'fa-gem', color: 'text-purple-500' },
-                { type: 'bell', icon: 'fa-bell', color: 'text-red-400' }
+                { type: 'heart', icon: 'fa-heart', color: 'text-red-400' },
+                { type: 'leaf', icon: 'fa-leaf', color: 'text-green-600' },
+                { type: 'snowflake', icon: 'fa-snowflake', color: 'text-blue-300' }
             ],
             specialTiles: {
                 line: { icon: 'fa-arrows-alt-h', color: 'text-blue-500' },
                 boom: { icon: 'fa-bomb', color: 'text-red-500' },
                 cross: { icon: 'fa-plus', color: 'text-green-500' }
+            },
+            obstacles: {
+                ice: { icon: 'fa-snowflake', color: 'text-blue-300', hits: 2, class: 'ice' },
+                rock: { icon: 'fa-mountain', color: 'text-gray-500', hits: 3, class: 'rock' },
+                chain: { icon: 'fa-link', color: 'text-yellow-500', hits: 1, class: 'chain' }
             },
             user: null,
             props: {
@@ -457,7 +542,8 @@
             },
             timer: 15, // 每步限时15秒
             timerInterval: null,
-            gameStarted: false
+            gameStarted: false,
+            autoShuffleEnabled: true
         };
         
         // DOM元素
@@ -688,26 +774,26 @@
                 // 新手关卡
                 gameState.rows = 5;
                 gameState.cols = 5;
-                gameState.target = 500 + (level - 1) * 100;
+                gameState.target = 800 + (level - 1) * 150;
                 gameState.steps = Infinity; // 无限步数
             } else if (level <= 20) {
                 // 基础关卡
-                gameState.rows = 5;
-                gameState.cols = 5;
-                gameState.target = 1500 + (level - 11) * 200;
-                gameState.steps = 25 - Math.floor((level - 11) / 2);
-            } else if (level <= 40) {
-                // 进阶关卡
-                gameState.rows = level > 20 ? 6 : 5;
-                gameState.cols = level > 20 ? 6 : 5;
-                gameState.target = 3500 + (level - 21) * 250;
-                gameState.steps = 20 - Math.floor((level - 21) / 3);
-            } else {
-                // 挑战关卡
                 gameState.rows = 6;
                 gameState.cols = 6;
-                gameState.target = 8500 + (level - 41) * 300;
-                gameState.steps = 15 - Math.floor((level - 41) / 5);
+                gameState.target = 2500 + (level - 11) * 300;
+                gameState.steps = 30 - Math.floor((level - 11) / 2);
+            } else if (level <= 40) {
+                // 进阶关卡
+                gameState.rows = 7;
+                gameState.cols = 7;
+                gameState.target = 6000 + (level - 21) * 400;
+                gameState.steps = 25 - Math.floor((level - 21) / 3);
+            } else {
+                // 挑战关卡
+                gameState.rows = 8;
+                gameState.cols = 8;
+                gameState.target = 15000 + (level - 41) * 500;
+                gameState.steps = 20 - Math.floor((level - 41) / 5);
             }
             
             // 更新UI
@@ -793,38 +879,84 @@
             for (let i = 0; i < gameState.rows; i++) {
                 for (let j = 0; j < gameState.cols; j++) {
                     if (!gameState.board[i][j]) {
-                        let validElements = [...Array(gameState.elements.length).keys()];
-                        
-                        // 避免初始就有可消除的组合
-                        if (j >= 2) {
-                            const left1 = gameState.board[i][j-1]?.type;
-                            const left2 = gameState.board[i][j-2]?.type;
-                            if (left1 && left2 && left1 === left2) {
-                                validElements = validElements.filter(idx => gameState.elements[idx].type !== left1);
+                        // 根据关卡决定是否放置障碍物
+                        if (shouldPlaceObstacle()) {
+                            const obstacleTypes = Object.keys(gameState.obstacles);
+                            const randomType = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+                            gameState.board[i][j] = {
+                                ...gameState.obstacles[randomType],
+                                type: 'obstacle',
+                                obstacleType: randomType,
+                                hits: gameState.obstacles[randomType].hits
+                            };
+                        } else {
+                            let validElements = [...Array(gameState.elements.length).keys()];
+                            
+                            // 避免初始就有可消除的组合
+                            if (j >= 2) {
+                                const left1 = gameState.board[i][j-1]?.type;
+                                const left2 = gameState.board[i][j-2]?.type;
+                                if (left1 && left2 && left1 === left2 && left1 !== 'obstacle') {
+                                    validElements = validElements.filter(idx => gameState.elements[idx].type !== left1);
+                                }
                             }
-                        }
-                        
-                        if (i >= 2) {
-                            const up1 = gameState.board[i-1][j]?.type;
-                            const up2 = gameState.board[i-2][j]?.type;
-                            if (up1 && up2 && up1 === up2) {
-                                validElements = validElements.filter(idx => gameState.elements[idx].type !== up1);
+                            
+                            if (i >= 2) {
+                                const up1 = gameState.board[i-1][j]?.type;
+                                const up2 = gameState.board[i-2][j]?.type;
+                                if (up1 && up2 && up1 === up2 && up1 !== 'obstacle') {
+                                    validElements = validElements.filter(idx => gameState.elements[idx].type !== up1);
+                                }
                             }
+                            
+                            // 随机选择一个有效元素
+                            const randomIdx = validElements[Math.floor(Math.random() * validElements.length)];
+                            gameState.board[i][j] = {
+                                ...gameState.elements[randomIdx],
+                                special: null
+                            };
                         }
-                        
-                        // 随机选择一个有效元素
-                        const randomIdx = validElements[Math.floor(Math.random() * validElements.length)];
-                        gameState.board[i][j] = {
-                            ...gameState.elements[randomIdx],
-                            special: null
-                        };
                     }
                 }
             }
             
             // 检查是否有可消除的组合，如果没有则重新洗牌
             if (checkElimination().length === 0) {
-                shuffleBoard();
+                if (gameState.autoShuffleEnabled) {
+                    autoShuffle();
+                } else {
+                    shuffleBoard();
+                }
+            }
+        }
+        
+        // 判断是否应该放置障碍物
+        function shouldPlaceObstacle() {
+            // 根据关卡决定障碍物概率
+            let obstacleProbability = 0;
+            
+            if (gameState.currentLevel <= 10) {
+                obstacleProbability = 0.1; // 10%
+            } else if (gameState.currentLevel <= 20) {
+                obstacleProbability = 0.2; // 20%
+            } else if (gameState.currentLevel <= 40) {
+                obstacleProbability = 0.3; // 30%
+            } else {
+                obstacleProbability = 0.4; // 40%
+            }
+            
+            return Math.random() < obstacleProbability;
+        }
+        
+        // 自动洗牌
+        function autoShuffle() {
+            if (gameState.props.shuffle > 0) {
+                useShuffle();
+            } else if (gameState.user["万花币"] >= 30) {
+                buyAndUseShuffle();
+            } else {
+                // 没有洗牌道具和万花币，游戏失败
+                handleTimeout();
             }
         }
         
@@ -842,19 +974,32 @@
                     
                     const tileData = gameState.board[i][j];
                     if (tileData) {
-                        const icon = document.createElement('i');
-                        
-                        if (tileData.special) {
+                        if (tileData.type === 'obstacle') {
+                            // 障碍物
+                            tile.classList.add('obstacle', tileData.class);
+                            const icon = document.createElement('i');
+                            icon.className = `fa ${tileData.icon} ${tileData.color} text-3xl`;
+                            
+                            // 显示剩余点击次数
+                            const hitCount = document.createElement('span');
+                            hitCount.className = 'absolute top-0 right-0 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center';
+                            hitCount.textContent = tileData.hits;
+                            
+                            tile.appendChild(icon);
+                            tile.appendChild(hitCount);
+                        } else if (tileData.special) {
                             // 特殊元素
                             const specialData = gameState.specialTiles[tileData.special];
+                            const icon = document.createElement('i');
                             icon.className = `fa ${specialData.icon} ${specialData.color} text-3xl`;
                             tile.classList.add('ring-2', 'ring-primary/50');
+                            tile.appendChild(icon);
                         } else {
                             // 普通元素
+                            const icon = document.createElement('i');
                             icon.className = `fa ${tileData.icon} ${tileData.color} text-3xl`;
+                            tile.appendChild(icon);
                         }
-                        
-                        tile.appendChild(icon);
                     }
                     
                     // 添加点击事件
@@ -868,6 +1013,14 @@
         // 处理方块点击
         function handleTileClick(row, col) {
             if (gameState.isProcessing) return;
+            
+            const tileData = gameState.board[row][col];
+            
+            // 如果是障碍物，处理障碍物
+            if (tileData && tileData.type === 'obstacle') {
+                handleObstacleClick(row, col);
+                return;
+            }
             
             // 如果没有选中的方块，选中当前方块
             if (!gameState.selectedTile) {
@@ -900,6 +1053,55 @@
             swapTiles(gameState.selectedTile.row, gameState.selectedTile.col, row, col);
         }
         
+        // 处理障碍物点击
+        function handleObstacleClick(row, col) {
+            const obstacle = gameState.board[row][col];
+            
+            if (!obstacle || obstacle.type !== 'obstacle') return;
+            
+            // 减少障碍物的生命值
+            obstacle.hits--;
+            
+            // 更新UI
+            const tile = elements.gameBoard.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            const hitCount = tile.querySelector('.absolute');
+            if (hitCount) {
+                hitCount.textContent = obstacle.hits;
+            }
+            
+            // 如果障碍物被清除
+            if (obstacle.hits <= 0) {
+                // 移除障碍物
+                gameState.board[row][col] = null;
+                
+                // 添加消除动画
+                tile.classList.add('scale-0', 'opacity-0');
+                
+                // 延迟后重新渲染
+                setTimeout(() => {
+                    applyGravity();
+                    fillBoard();
+                    renderBoard();
+                    
+                    // 检查是否有新的可消除组合
+                    setTimeout(() => {
+                        const newElimination = checkElimination();
+                        if (newElimination.length > 0) {
+                            processElimination(newElimination);
+                        } else {
+                            gameState.isProcessing = false;
+                        }
+                    }, 500);
+                }, 300);
+            } else {
+                // 障碍物未被清除，继续游戏
+                gameState.isProcessing = false;
+            }
+            
+            // 重置计时器
+            resetTimer();
+        }
+        
         // 高亮选中的方块
         function highlightSelectedTile(row, col, highlight) {
             const tile = elements.gameBoard.querySelector(`[data-row="${row}"][data-col="${col}"]`);
@@ -913,6 +1115,16 @@
         // 交换方块
         function swapTiles(row1, col1, row2, col2) {
             gameState.isProcessing = true;
+            
+            // 检查是否有障碍物
+            const tile1 = gameState.board[row1][col1];
+            const tile2 = gameState.board[row2][col2];
+            
+            if ((tile1 && tile1.type === 'obstacle') || (tile2 && tile2.type === 'obstacle')) {
+                // 障碍物不能交换
+                gameState.isProcessing = false;
+                return;
+            }
             
             // 交换数据
             const temp = gameState.board[row1][col1];
@@ -977,6 +1189,7 @@
                     if (current && next1 && next2 && 
                         current.type === next1.type && 
                         current.type === next2.type &&
+                        current.type !== 'obstacle' &&
                         !current.special && !next1.special && !next2.special) {
                         
                         // 找到3连
@@ -1011,6 +1224,7 @@
                     if (current && next1 && next2 && 
                         current.type === next1.type && 
                         current.type === next2.type &&
+                        current.type !== 'obstacle' &&
                         !current.special && !next1.special && !next2.special) {
                         
                         // 找到3连
@@ -1331,8 +1545,8 @@
                 gameState.timerInterval = null;
             }
             
-            // 计算奖励"万花币"
-            const coinsEarned = 10 + gameState.currentLevel * 2;
+            // 计算奖励"万花币" - 降低获取难度
+            const coinsEarned = 5 + gameState.currentLevel; // 原来是10+关卡数*2，现在改为5+关卡数
             gameState.user["万花币"] += coinsEarned;
             
             // 更新用户总得分
@@ -1458,8 +1672,8 @@
                 streakDays = yesterdayData.streak_days + 1;
             }
             
-            // 计算奖励（连续签到天数越多，奖励越多）
-            const coinsReward = 15 + Math.min(50, streakDays * 5);
+            // 计算奖励（连续签到天数越多，奖励越多）- 降低获取难度
+            const coinsReward = 10 + Math.min(30, streakDays * 3); // 原来是15+连续天数*5，现在改为10+连续天数*3
             
             // 更新签到状态
             if (checkinData) {
@@ -1517,8 +1731,8 @@
                 return;
             }
             
-            if (amount < 10000) {
-                alert('最低提现金额为10000个"万花币"');
+            if (amount < 1000) {
+                alert('最低提现金额为1000个"万花币"');
                 return;
             }
             
@@ -1527,16 +1741,12 @@
                 return;
             }
             
-            if (amount % 10000 !== 0) {
-                alert('提现金额必须是10000的倍数');
+            if (amount % 1000 !== 0) {
+                alert('提现金额必须是1000的倍数');
                 return;
             }
             
-            // 计算手续费和实际到账金额
-            const fee = Math.floor(amount * 0.1);
-            const actualAmount = amount - fee;
-            
-            if (!confirm(`确认提现${amount}个"万花币"？手续费${fee}个，实际到账${actualAmount}个（约${actualAmount / 1000}元）`)) {
+            if (!confirm(`确认提现${amount}个"万花币"？（约${amount / 100}元）`)) {
                 return;
             }
             
@@ -1571,7 +1781,7 @@
             elements.withdrawModal.classList.add('hidden');
             elements.withdrawForm.reset();
             
-            alert('提现申请已提交，12小时内到账，请耐心等待');
+            alert('提现申请已提交，24小时内到账，请耐心等待');
         }
         
         // 显示排行榜
@@ -1601,11 +1811,11 @@
             // 渲染排行榜
             leaderboardData.forEach((item, index) => {
                 const rankItem = document.createElement('div');
-                rankItem.className = 'flex items-center p-2 border-b border-gray-100';
+                rankItem.className = 'flex items-center p-3 border-b border-gray-100';
                 
                 // 排名
                 const rankSpan = document.createElement('span');
-                rankSpan.className = `w-6 h-6 rounded-full flex items-center justify-center mr-3 text-xs font-bold ${
+                rankSpan.className = `w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold ${
                     index === 0 ? 'bg-yellow-100 text-yellow-600' : 
                     index === 1 ? 'bg-gray-100 text-gray-600' : 
                     index === 2 ? 'bg-orange-100 text-orange-600' : 
@@ -1663,19 +1873,19 @@
             // 显示前20关
             for (let i = 1; i <= 20; i++) {
                 const levelBtn = document.createElement('button');
-                levelBtn.className = 'w-full aspect-square rounded-lg flex items-center justify-center font-bold';
+                levelBtn.className = 'w-full aspect-square rounded-lg flex flex-col items-center justify-center font-bold text-sm';
                 
                 // 检查是否已解锁
                 const isUnlocked = i <= gameState.user.max_level;
                 
                 if (isUnlocked) {
                     // 已解锁
-                    levelBtn.classList.add('bg-primary/10', 'text-primary', 'hover:bg-primary/20');
+                    levelBtn.classList.add('bg-gradient-to-r', 'from-purple-50', 'to-pink-50', 'text-primary', 'hover:from-purple-100', 'hover:to-pink-100', 'border', 'border-purple-100');
                     
                     // 检查是否已完成
                     const completedLevel = levelsData?.find(level => level.level_id === i && level.is_completed);
                     if (completedLevel) {
-                        levelBtn.innerHTML = `${i}<i class="fa fa-check text-green-500 ml-1"></i>`;
+                        levelBtn.innerHTML = `<span>${i}</span><i class="fa fa-check text-green-500 text-xs mt-1"></i>`;
                     } else {
                         levelBtn.textContent = i;
                     }
@@ -1886,6 +2096,16 @@
                     console.error('无法复制到剪贴板:', err);
                     alert('复制失败，请手动复制链接: ' + shareUrl);
                 });
+            });
+            
+            // 设置按钮
+            elements.settingsBtn.addEventListener('click', () => {
+                alert('设置功能开发中，敬请期待！');
+            });
+            
+            // 道具背包按钮
+            elements.inventoryBtn.addEventListener('click', () => {
+                alert('道具背包功能开发中，敬请期待！');
             });
         }
         
