@@ -1954,7 +1954,16 @@
       document.getElementById('use-skipObstacle').addEventListener('click', () => usePowerUp('skipObstacle'));
       
       // 绑定提现按钮
-      document.getElementById('submit-withdrawal-btn').addEventListener('click', submitWithdrawal);
+      // 确保元素存在后再绑定事件
+document.addEventListener('DOMContentLoaded', function() {
+  const loginButton = document.getElementById('login-button');
+  if (loginButton) { // 增加存在性检查
+    loginButton.addEventListener('click', login);
+  } else {
+    console.error('登录按钮元素未找到，请检查HTML结构或选择器');
+  }
+});
+
       
       // 绑定游戏模态框按钮
       document.getElementById('next-level-btn').addEventListener('click', () => {
