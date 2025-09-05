@@ -185,9 +185,13 @@
       background: white;
       box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
       z-index: 100;
-      display: flex;
+      display: none; /* 默认隐藏，登录后才显示 */
       justify-content: space-around;
       padding: 8px 0;
+    }
+    
+    .bottom-nav.show {
+      display: flex;
     }
     
     .nav-item {
@@ -340,6 +344,11 @@
       color: #666;
       background: rgba(255, 255, 255, 0.8);
       z-index: 90;
+      display: none; /* 默认隐藏，登录后才显示 */
+    }
+    
+    .footer-info.show {
+      display: block;
     }
     
     .footer-link {
@@ -609,7 +618,8 @@
       bossHits: {},
       timeLimit: null,
       timeRemaining: null,
-      timerInterval: null
+      timerInterval: null,
+      isLoggedIn: false // 用户登录状态
     };
     
     // API基础URL
@@ -739,9 +749,14 @@
         gameState.currentLevel = userData.progress.current_level;
         gameState.totalScore = userData.progress.total_score;
         gameState.gamePlays = userData.gamePlays;
+        gameState.isLoggedIn = true;
         
         // 根据关卡设置棋盘大小
         gameState.boardSize = gameState.currentLevel > 20 ? 6 : 5;
+        
+        // 显示底部导航栏和版权信息
+        document.querySelector('.bottom-nav').classList.add('show');
+        document.querySelector('.footer-info').classList.add('show');
         
         // 更新UI
         updateUserInterface();
@@ -763,15 +778,18 @@
       });
       
       // 更新当前关卡
-      document.getElementById('current-level-display').textContent = gameState.currentLevel;
+      const levelDisplay = document.getElementById('current-level-display');
+      if (levelDisplay) levelDisplay.textContent = gameState.currentLevel;
       
       // 更新总分数
-      document.getElementById('total-score-display').textContent = gameState.totalScore;
+      const scoreDisplay = document.getElementById('total-score-display');
+      if (scoreDisplay) scoreDisplay.textContent = gameState.totalScore;
       
       // 更新游戏次数
       if (gameState.gamePlays) {
         const remainingFreePlays = 6 - gameState.gamePlays.free_plays_used;
-        document.getElementById('remaining-plays').textContent = remainingFreePlays;
+        const playsDisplay = document.getElementById('remaining-plays');
+        if (playsDisplay) playsDisplay.textContent = remainingFreePlays;
       }
       
       // 更新用户名和头像
@@ -800,8 +818,11 @@
           gameState.balance = result.balance;
           showToast(`签到成功！获得${result.reward}万花币，连续签到${result.streak}天`, 'success');
           updateUserInterface();
-          document.getElementById('checkin-btn').disabled = true;
-          document.getElementById('checkin-btn').textContent = '今日已签到';
+          const checkinBtn = document.getElementById('checkin-btn');
+          if (checkinBtn) {
+            checkinBtn.disabled = true;
+            checkinBtn.textContent = '今日已签到';
+          }
         } else {
           showToast(result.message);
         }
@@ -989,6 +1010,8 @@
     // 渲染游戏板
     function renderGameBoard() {
       const gameBoardElement = document.getElementById('game-board');
+      if (!gameBoardElement) return;
+      
       gameBoardElement.innerHTML = '';
       
       // 设置网格尺寸
@@ -1063,31 +1086,38 @@
     
     // 更新游戏信息显示
     function updateGameInfo() {
-      document.getElementById('game-score').textContent = gameState.score;
-      document.getElementById('current-game-level').textContent = gameState.currentLevel;
+      const gameScore = document.getElementById('game-score');
+      if (gameScore) gameScore.textContent = gameState.score;
+      
+      const currentGameLevel = document.getElementById('current-game-level');
+      if (currentGameLevel) currentGameLevel.textContent = gameState.currentLevel;
       
       // 根据关卡类型更新目标显示
       const targetElement = document.getElementById('game-target');
-      if (gameState.levelType === 'score') {
-        targetElement.innerHTML = `目标分数: ${gameState.targetScore}`;
-      } else if (gameState.levelType === 'collect') {
-        const collected = gameState.collectedItems[gameState.collectTarget] || 0;
-        targetElement.innerHTML = `收集花朵: ${collected}/${gameState.collectCount}`;
-      } else if (gameState.levelType === 'obstacle') {
-        targetElement.innerHTML = `消除锁链: ${gameState.destroyedObstacles}/${gameState.obstacleCount}`;
-      } else if (gameState.levelType === 'boss') {
-        const bossesHit = Object.values(gameState.bossHits).filter(hits => hits >= gameState.bossHitsRequired).length;
-        targetElement.innerHTML = `击败BOSS: ${bossesHit}/${gameState.bossCount}`;
+      if (targetElement) {
+        if (gameState.levelType === 'score') {
+          targetElement.innerHTML = `目标分数: ${gameState.targetScore}`;
+        } else if (gameState.levelType === 'collect') {
+          const collected = gameState.collectedItems[gameState.collectTarget] || 0;
+          targetElement.innerHTML = `收集花朵: ${collected}/${gameState.collectCount}`;
+        } else if (gameState.levelType === 'obstacle') {
+          targetElement.innerHTML = `消除锁链: ${gameState.destroyedObstacles}/${gameState.obstacleCount}`;
+        } else if (gameState.levelType === 'boss') {
+          const bossesHit = Object.values(gameState.bossHits).filter(hits => hits >= gameState.bossHitsRequired).length;
+          targetElement.innerHTML = `击败BOSS: ${bossesHit}/${gameState.bossCount}`;
+        }
       }
       
       // 更新步数或时间显示
       const movesElement = document.getElementById('remaining-moves');
-      if (gameState.movesAllowed > 0) {
-        movesElement.innerHTML = `剩余步数: ${gameState.movesAllowed - gameState.moves}`;
-      } else if (gameState.timeLimit > 0) {
-        const minutes = Math.floor(gameState.timeRemaining / 60);
-        const seconds = gameState.timeRemaining % 60;
-        movesElement.innerHTML = `剩余时间: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      if (movesElement) {
+        if (gameState.movesAllowed > 0) {
+          movesElement.innerHTML = `剩余步数: ${gameState.movesAllowed - gameState.moves}`;
+        } else if (gameState.timeLimit > 0) {
+          const minutes = Math.floor(gameState.timeRemaining / 60);
+          const seconds = gameState.timeRemaining % 60;
+          movesElement.innerHTML = `剩余时间: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
       }
     }
     
@@ -1692,15 +1722,23 @@
     
     // 更新道具显示
     function updatePowerupDisplay() {
-      document.getElementById('powerup-shuffle-count').textContent = gameState.powerups.shuffle;
-      document.getElementById('powerup-bomb-count').textContent = gameState.powerups.bomb;
-      document.getElementById('powerup-steps-count').textContent = gameState.powerups.steps;
+      const shuffleCount = document.getElementById('powerup-shuffle-count');
+      if (shuffleCount) shuffleCount.textContent = gameState.powerups.shuffle;
+      
+      const bombCount = document.getElementById('powerup-bomb-count');
+      if (bombCount) bombCount.textContent = gameState.powerups.bomb;
+      
+      const stepsCount = document.getElementById('powerup-steps-count');
+      if (stepsCount) stepsCount.textContent = gameState.powerups.steps;
     }
     
     // 显示关卡完成
     async function showLevelComplete() {
-      document.getElementById('level-complete-modal').classList.add('show');
-      document.getElementById('level-complete-score').textContent = gameState.score;
+      const modal = document.getElementById('level-complete-modal');
+      if (modal) modal.classList.add('show');
+      
+      const levelCompleteScore = document.getElementById('level-complete-score');
+      if (levelCompleteScore) levelCompleteScore.textContent = gameState.score;
       
       // 计算奖励
       const baseReward = gameState.levelData.reward;
@@ -1708,7 +1746,8 @@
       const bonus = Math.floor(baseReward * (bonusPercentage / 100));
       const totalReward = baseReward + bonus;
       
-      document.getElementById('level-reward').textContent = totalReward;
+      const levelReward = document.getElementById('level-reward');
+      if (levelReward) levelReward.textContent = totalReward;
       
       // 提交关卡完成
       try {
@@ -1727,21 +1766,26 @@
     
     // 显示关卡失败
     function showLevelFailed() {
-      document.getElementById('level-failed-modal').classList.add('show');
-      document.getElementById('failed-score').textContent = gameState.score;
+      const modal = document.getElementById('level-failed-modal');
+      if (modal) modal.classList.add('show');
+      
+      const failedScore = document.getElementById('failed-score');
+      if (failedScore) failedScore.textContent = gameState.score;
       
       // 根据关卡类型显示目标
-      const targetElement = document.getElementById('failed-target');
-      if (gameState.levelType === 'score') {
-        targetElement.textContent = gameState.targetScore;
-      } else if (gameState.levelType === 'collect') {
-        const collected = gameState.collectedItems[gameState.collectTarget] || 0;
-        targetElement.textContent = `${collected}/${gameState.collectCount}`;
-      } else if (gameState.levelType === 'obstacle') {
-        targetElement.textContent = `${gameState.destroyedObstacles}/${gameState.obstacleCount}`;
-      } else if (gameState.levelType === 'boss') {
-        const bossesHit = Object.values(gameState.bossHits).filter(hits => hits >= gameState.bossHitsRequired).length;
-        targetElement.textContent = `${bossesHit}/${gameState.bossCount}`;
+      const failedTarget = document.getElementById('failed-target');
+      if (failedTarget) {
+        if (gameState.levelType === 'score') {
+          failedTarget.textContent = gameState.targetScore;
+        } else if (gameState.levelType === 'collect') {
+          const collected = gameState.collectedItems[gameState.collectTarget] || 0;
+          failedTarget.textContent = `${collected}/${gameState.collectCount}`;
+        } else if (gameState.levelType === 'obstacle') {
+          failedTarget.textContent = `${gameState.destroyedObstacles}/${gameState.obstacleCount}`;
+        } else if (gameState.levelType === 'boss') {
+          const bossesHit = Object.values(gameState.bossHits).filter(hits => hits >= gameState.bossHitsRequired).length;
+          failedTarget.textContent = `${bossesHit}/${gameState.bossCount}`;
+        }
       }
     }
     
@@ -1791,7 +1835,8 @@
         renderGameBoard();
         
         // 显示道具栏
-        document.getElementById('powerup-bar').classList.remove('hidden');
+        const powerupBar = document.getElementById('powerup-bar');
+        if (powerupBar) powerupBar.classList.remove('hidden');
         updatePowerupDisplay();
       } catch (error) {
         console.error('开始游戏失败:', error);
@@ -1807,6 +1852,8 @@
         gameState.leaderboard = leaderboard;
         
         const leaderboardElement = document.getElementById('leaderboard-list');
+        if (!leaderboardElement) return;
+        
         leaderboardElement.innerHTML = '';
         
         if (leaderboard.length === 0) {
@@ -1845,36 +1892,39 @@
         });
         
         // 显示奖励说明
-        document.getElementById('leaderboard-rewards').innerHTML = `
-          <div class="bg-white rounded-xl p-5 mt-4 game-shadow">
-            <h3 class="font-bold text-lg mb-3">月度奖励</h3>
-            <div class="space-y-2">
-              <div class="flex justify-between items-center p-2 bg-yellow-50 rounded-lg">
-                <span class="flex items-center"><i class="fa fa-trophy text-yellow-500 mr-2"></i>第1名</span>
-                <span class="font-bold">¥100</span>
+        const leaderboardRewards = document.getElementById('leaderboard-rewards');
+        if (leaderboardRewards) {
+          leaderboardRewards.innerHTML = `
+            <div class="bg-white rounded-xl p-5 mt-4 game-shadow">
+              <h3 class="font-bold text-lg mb-3">月度奖励</h3>
+              <div class="space-y-2">
+                <div class="flex justify-between items-center p-2 bg-yellow-50 rounded-lg">
+                  <span class="flex items-center"><i class="fa fa-trophy text-yellow-500 mr-2"></i>第1名</span>
+                  <span class="font-bold">¥100</span>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                  <span class="flex items-center"><i class="fa fa-trophy text-gray-400 mr-2"></i>第2名</span>
+                  <span class="font-bold">¥50</span>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-orange-50 rounded-lg">
+                  <span class="flex items-center"><i class="fa fa-trophy text-orange-600 mr-2"></i>第3名</span>
+                  <span class="font-bold">¥30</span>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-blue-50 rounded-lg">
+                  <span>第4名</span>
+                  <span class="font-bold">¥20</span>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-green-50 rounded-lg">
+                  <span>第5名</span>
+                  <span class="font-bold">¥10</span>
+                </div>
               </div>
-              <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                <span class="flex items-center"><i class="fa fa-trophy text-gray-400 mr-2"></i>第2名</span>
-                <span class="font-bold">¥50</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-orange-50 rounded-lg">
-                <span class="flex items-center"><i class="fa fa-trophy text-orange-600 mr-2"></i>第3名</span>
-                <span class="font-bold">¥30</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-blue-50 rounded-lg">
-                <span>第4名</span>
-                <span class="font-bold">¥20</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-green-50 rounded-lg">
-                <span>第5名</span>
-                <span class="font-bold">¥10</span>
+              <div class="text-sm text-gray-500 mt-3 text-center">
+                奖励将在每月最后一天以现金形式发放
               </div>
             </div>
-            <div class="text-sm text-gray-500 mt-3 text-center">
-              奖励将在每月最后一天以现金形式发放
-            </div>
-          </div>
-        `;
+          `;
+        }
       } catch (error) {
         console.error('加载排行榜失败:', error);
         showToast('无法加载排行榜，请重试', 'error');
@@ -1885,15 +1935,23 @@
     async function loadUserProfile() {
       try {
         // 更新用户信息显示
-        document.getElementById('profile-username').textContent = gameState.user.username || gameState.user.first_name;
-        document.getElementById('profile-level').textContent = gameState.currentLevel;
-        document.getElementById('profile-score').textContent = gameState.totalScore;
-        document.getElementById('profile-balance').textContent = gameState.balance;
+        const profileUsername = document.getElementById('profile-username');
+        if (profileUsername) profileUsername.textContent = gameState.user.username || gameState.user.first_name;
+        
+        const profileLevel = document.getElementById('profile-level');
+        if (profileLevel) profileLevel.textContent = gameState.currentLevel;
+        
+        const profileScore = document.getElementById('profile-score');
+        if (profileScore) profileScore.textContent = gameState.totalScore;
+        
+        const profileBalance = document.getElementById('profile-balance');
+        if (profileBalance) profileBalance.textContent = gameState.balance;
         
         // 加载用户头像
         if (gameState.user.username) {
           const avatarUrl = `https://t.me/i/userpic/320/${gameState.user.username}.jpg`;
-          document.getElementById('profile-avatar').src = avatarUrl;
+          const profileAvatar = document.getElementById('profile-avatar');
+          if (profileAvatar) profileAvatar.src = avatarUrl;
         }
         
         // 加载用户成就
@@ -1917,6 +1975,8 @@
         ];
         
         const achievementsElement = document.getElementById('profile-achievements');
+        if (!achievementsElement) return;
+        
         achievementsElement.innerHTML = '';
         
         achievements.forEach(achievement => {
@@ -1956,6 +2016,8 @@
         ];
         
         const tasksElement = document.getElementById('tasks-list');
+        if (!tasksElement) return;
+        
         tasksElement.innerHTML = '';
         
         tasks.forEach(task => {
@@ -2003,6 +2065,8 @@
         ];
         
         const shopElement = document.getElementById('shop-items');
+        if (!shopElement) return;
+        
         shopElement.innerHTML = '';
         
         items.forEach(item => {
@@ -2074,7 +2138,8 @@
         if (result.success) {
           showToast('提现请求已提交，等待处理', 'success');
           // 重置表单
-          document.getElementById('withdrawal-form').reset();
+          const withdrawalForm = document.getElementById('withdrawal-form');
+          if (withdrawalForm) withdrawalForm.reset();
           // 刷新余额
           await initUser();
           // 返回首页
@@ -2094,6 +2159,8 @@
         const history = await apiRequest(`withdrawal-history?telegram_id=${gameState.user.telegram_id}`);
         
         const historyElement = document.getElementById('withdrawal-history');
+        if (!historyElement) return;
+        
         historyElement.innerHTML = '';
         
         if (history.length === 0) {
@@ -2138,19 +2205,50 @@
     // 复活游戏
     async function reviveGame() {
       // 隐藏失败模态框
-      document.getElementById('level-failed-modal').classList.remove('show');
+      const levelFailedModal = document.getElementById('level-failed-modal');
+      if (levelFailedModal) levelFailedModal.classList.remove('show');
       
       // 显示复活选项
       const reviveModal = document.getElementById('revive-modal');
-      reviveModal.classList.add('show');
+      if (reviveModal) reviveModal.classList.add('show');
       
       // 绑定复活按钮事件
-      document.getElementById('revive-ad-btn').onclick = async () => {
-        reviveModal.classList.remove('show');
-        showToast('观看广告中...');
-        
-        // 模拟广告播放
-        setTimeout(() => {
+      const reviveAdBtn = document.getElementById('revive-ad-btn');
+      if (reviveAdBtn) {
+        reviveAdBtn.onclick = async () => {
+          reviveModal.classList.remove('show');
+          showToast('观看广告中...');
+          
+          // 模拟广告播放
+          setTimeout(() => {
+            // 增加步数或时间
+            if (gameState.movesAllowed > 0) {
+              gameState.movesAllowed += 5;
+            } else if (gameState.timeLimit > 0) {
+              gameState.timeRemaining += 60;
+            }
+            
+            gameState.isPlaying = true;
+            updateGameInfo();
+            showToast('复活成功！获得5步额外步数', 'success');
+          }, 3000);
+        };
+      }
+      
+      const reviveCoinsBtn = document.getElementById('revive-coins-btn');
+      if (reviveCoinsBtn) {
+        reviveCoinsBtn.onclick = async () => {
+          if (gameState.balance < 50) {
+            showToast('万花币不足', 'error');
+            return;
+          }
+          
+          reviveModal.classList.remove('show');
+          
+          // 扣除万花币
+          gameState.balance -= 50;
+          updateUserInterface();
+          
           // 增加步数或时间
           if (gameState.movesAllowed > 0) {
             gameState.movesAllowed += 5;
@@ -2161,38 +2259,17 @@
           gameState.isPlaying = true;
           updateGameInfo();
           showToast('复活成功！获得5步额外步数', 'success');
-        }, 3000);
-      };
+        };
+      }
       
-      document.getElementById('revive-coins-btn').onclick = async () => {
-        if (gameState.balance < 50) {
-          showToast('万花币不足', 'error');
-          return;
-        }
-        
-        reviveModal.classList.remove('show');
-        
-        // 扣除万花币
-        gameState.balance -= 50;
-        updateUserInterface();
-        
-        // 增加步数或时间
-        if (gameState.movesAllowed > 0) {
-          gameState.movesAllowed += 5;
-        } else if (gameState.timeLimit > 0) {
-          gameState.timeRemaining += 60;
-        }
-        
-        gameState.isPlaying = true;
-        updateGameInfo();
-        showToast('复活成功！获得5步额外步数', 'success');
-      };
-      
-      document.getElementById('revive-cancel-btn').onclick = () => {
-        reviveModal.classList.remove('show');
-        // 返回首页
-        navigateTo('home-page');
-      };
+      const reviveCancelBtn = document.getElementById('revive-cancel-btn');
+      if (reviveCancelBtn) {
+        reviveCancelBtn.onclick = () => {
+          reviveModal.classList.remove('show');
+          // 返回首页
+          navigateTo('home-page');
+        };
+      }
     }
     
     // 打开Telegram聊天
@@ -2202,47 +2279,127 @@
     
     // 页面加载完成后初始化
     window.addEventListener('DOMContentLoaded', () => {
+      // 绑定登录按钮
+      const telegramLoginBtn = document.getElementById('telegram-login-btn');
+      if (telegramLoginBtn) {
+        telegramLoginBtn.addEventListener('click', async () => {
+          if (tg.initDataUnsafe?.user) {
+            const user = tg.initDataUnsafe.user;
+            try {
+              await apiRequest('login', 'POST', {
+                queryId: tg.initDataUnsafe.query_id,
+                userId: user.id,
+                firstName: user.first_name,
+                lastName: user.last_name || '',
+                username: user.username || ''
+              });
+              window.location.search = `user_id=${user.id}&username=${encodeURIComponent(user.username || '')}`;
+            } catch (error) {
+              console.error('登录失败:', error);
+              showToast('登录失败，请重试', 'error');
+            }
+          } else {
+            showToast('无法获取Telegram用户信息', 'error');
+          }
+        });
+      }
+      
       // 绑定导航事件
-      document.getElementById('nav-home').addEventListener('click', () => navigateTo('home-page'));
-      document.getElementById('nav-game').addEventListener('click', () => navigateTo('game-page'));
-      document.getElementById('nav-profile').addEventListener('click', () => navigateTo('profile-page'));
-      document.getElementById('nav-leaderboard').addEventListener('click', () => navigateTo('leaderboard-page'));
-      document.getElementById('nav-tasks').addEventListener('click', () => navigateTo('tasks-page'));
-      document.getElementById('nav-shop').addEventListener('click', () => navigateTo('shop-page'));
+      const navHome = document.getElementById('nav-home');
+      if (navHome) navHome.addEventListener('click', () => navigateTo('home-page'));
+      
+      const navGame = document.getElementById('nav-game');
+      if (navGame) navGame.addEventListener('click', () => navigateTo('game-page'));
+      
+      const navProfile = document.getElementById('nav-profile');
+      if (navProfile) navProfile.addEventListener('click', () => navigateTo('profile-page'));
+      
+      const navLeaderboard = document.getElementById('nav-leaderboard');
+      if (navLeaderboard) navLeaderboard.addEventListener('click', () => navigateTo('leaderboard-page'));
+      
+      const navTasks = document.getElementById('nav-tasks');
+      if (navTasks) navTasks.addEventListener('click', () => navigateTo('tasks-page'));
+      
+      const navShop = document.getElementById('nav-shop');
+      if (navShop) navShop.addEventListener('click', () => navigateTo('shop-page'));
       
       // 绑定签到按钮
-      document.getElementById('checkin-btn').addEventListener('click', handleCheckin);
+      const checkinBtn = document.getElementById('checkin-btn');
+      if (checkinBtn) checkinBtn.addEventListener('click', handleCheckin);
       
       // 绑定广告和分享按钮
-      document.getElementById('watch-ad-btn').addEventListener('click', () => addGamePlays('ad'));
-      document.getElementById('share-btn').addEventListener('click', () => addGamePlays('share'));
+      const watchAdBtn = document.getElementById('watch-ad-btn');
+      if (watchAdBtn) watchAdBtn.addEventListener('click', () => addGamePlays('ad'));
+      
+      const shareBtn = document.getElementById('share-btn');
+      if (shareBtn) shareBtn.addEventListener('click', () => addGamePlays('share'));
       
       // 绑定提现按钮
-      document.getElementById('submit-withdrawal-btn').addEventListener('click', submitWithdrawal);
+      const submitWithdrawalBtn = document.getElementById('submit-withdrawal-btn');
+      if (submitWithdrawalBtn) submitWithdrawalBtn.addEventListener('click', submitWithdrawal);
       
       // 绑定游戏模态框按钮
-      document.getElementById('next-level-btn').addEventListener('click', () => {
-        document.getElementById('level-complete-modal').classList.remove('show');
-        startGame(gameState.currentLevel + 1);
-      });
+      const nextLevelBtn = document.getElementById('next-level-btn');
+      if (nextLevelBtn) {
+        nextLevelBtn.addEventListener('click', () => {
+          const levelCompleteModal = document.getElementById('level-complete-modal');
+          if (levelCompleteModal) levelCompleteModal.classList.remove('show');
+          startGame(gameState.currentLevel + 1);
+        });
+      }
       
-      document.getElementById('retry-level-btn').addEventListener('click', () => {
-        document.getElementById('level-failed-modal').classList.remove('show');
-        startGame(gameState.currentLevel);
-      });
+      const retryLevelBtn = document.getElementById('retry-level-btn');
+      if (retryLevelBtn) {
+        retryLevelBtn.addEventListener('click', () => {
+          const levelFailedModal = document.getElementById('level-failed-modal');
+          if (levelFailedModal) levelFailedModal.classList.remove('show');
+          startGame(gameState.currentLevel);
+        });
+      }
       
-      document.getElementById('revive-btn').addEventListener('click', reviveGame);
+      const reviveBtn = document.getElementById('revive-btn');
+      if (reviveBtn) reviveBtn.addEventListener('click', reviveGame);
       
-      document.getElementById('exit-level-btn').addEventListener('click', () => {
-        document.getElementById('level-complete-modal').classList.remove('show');
-        document.getElementById('level-failed-modal').classList.remove('show');
-        navigateTo('home-page');
+      const exitLevelBtns = document.querySelectorAll('#exit-level-btn');
+      exitLevelBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const levelCompleteModal = document.getElementById('level-complete-modal');
+          if (levelCompleteModal) levelCompleteModal.classList.remove('show');
+          
+          const levelFailedModal = document.getElementById('level-failed-modal');
+          if (levelFailedModal) levelFailedModal.classList.remove('show');
+          
+          navigateTo('home-page');
+        });
       });
       
       // 绑定道具按钮
-      document.getElementById('powerup-shuffle').addEventListener('click', () => usePowerup('shuffle'));
-      document.getElementById('powerup-bomb').addEventListener('click', () => usePowerup('bomb'));
-      document.getElementById('powerup-steps').addEventListener('click', () => usePowerup('steps'));
+      const powerupShuffle = document.getElementById('powerup-shuffle');
+      if (powerupShuffle) powerupShuffle.addEventListener('click', () => usePowerup('shuffle'));
+      
+      const powerupBomb = document.getElementById('powerup-bomb');
+      if (powerupBomb) powerupBomb.addEventListener('click', () => usePowerup('bomb'));
+      
+      const powerupSteps = document.getElementById('powerup-steps');
+      if (powerupSteps) powerupSteps.addEventListener('click', () => usePowerup('steps'));
+      
+      // 绑定返回首页按钮
+      const homeBtns = document.querySelectorAll('.home-btn');
+      homeBtns.forEach(btn => {
+        btn.addEventListener('click', () => navigateTo('home-page'));
+      });
+      
+      // 绑定开始游戏按钮
+      const playBtn = document.getElementById('play-btn');
+      if (playBtn) playBtn.addEventListener('click', () => navigateTo('game-page'));
+      
+      // 绑定排行榜导航按钮
+      const leaderboardNavBtn = document.getElementById('leaderboard-nav-btn');
+      if (leaderboardNavBtn) leaderboardNavBtn.addEventListener('click', () => navigateTo('leaderboard-page'));
+      
+      // 绑定提现导航按钮
+      const withdrawalNavBtn = document.getElementById('withdrawal-nav-btn');
+      if (withdrawalNavBtn) withdrawalNavBtn.addEventListener('click', () => navigateTo('withdrawal-page'));
       
       // 初始化用户
       initUser();
@@ -2334,7 +2491,7 @@
   <!-- 游戏页面 -->
   <div id="game-page" class="page hidden p-2">
     <div class="flex justify-between items-center mb-3">
-      <button class="bg-white/80 hover:bg-white p-2 rounded-full shadow">
+      <button class="bg-white/80 hover:bg-white p-2 rounded-full shadow home-btn">
         <i class="fa fa-home text-gray-700"></i>
       </button>
       <div class="text-center">
@@ -2366,7 +2523,7 @@
     <div id="game-board" class="w-full aspect-square bg-light/90 rounded-xl game-shadow grid gap-1 p-2 mb-3 overflow-hidden"></div>
     
     <div class="flex justify-between">
-      <button class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg" onclick="navigateTo('home-page')">
+      <button class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg home-btn">
         退出
       </button>
       <button class="bg-accent hover:bg-accent/80 px-4 py-2 rounded-lg" onclick="startGame(gameState.currentLevel)">
@@ -2397,7 +2554,7 @@
   <!-- 个人中心页面 -->
   <div id="profile-page" class="page hidden p-4">
     <div class="flex justify-between items-center mb-6">
-      <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full" onclick="navigateTo('home-page')">
+      <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full home-btn">
         <i class="fa fa-arrow-left"></i>
       </button>
       <h1 class="text-2xl font-bold text-primary">个人中心</h1>
@@ -2463,7 +2620,7 @@
   <!-- 排行榜页面 -->
   <div id="leaderboard-page" class="page hidden p-4">
     <div class="flex justify-between items-center mb-6">
-      <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full" onclick="navigateTo('home-page')">
+      <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full home-btn">
         <i class="fa fa-arrow-left"></i>
       </button>
       <h1 class="text-2xl font-bold text-primary">全服排行榜</h1>
@@ -2493,7 +2650,7 @@
   <!-- 任务页面 -->
   <div id="tasks-page" class="page hidden p-4">
     <div class="flex justify-between items-center mb-6">
-      <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full" onclick="navigateTo('home-page')">
+      <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full home-btn">
         <i class="fa fa-arrow-left"></i>
       </button>
       <h1 class="text-2xl font-bold text-primary">每日任务</h1>
@@ -2535,7 +2692,7 @@
   <!-- 商店页面 -->
   <div id="shop-page" class="page hidden p-4">
     <div class="flex justify-between items-center mb-6">
-      <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full" onclick="navigateTo('home-page')">
+      <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full home-btn">
         <i class="fa fa-arrow-left"></i>
       </button>
       <h1 class="text-2xl font-bold text-primary">游戏商店</h1>
@@ -2587,7 +2744,7 @@
   <!-- 提现页面 -->
   <div id="withdrawal-page" class="page hidden p-4">
     <div class="flex justify-between items-center mb-6">
-      <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full" onclick="navigateTo('home-page')">
+      <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full home-btn">
         <i class="fa fa-arrow-left"></i>
       </button>
       <h1 class="text-2xl font-bold text-primary">提现中心</h1>
@@ -2720,7 +2877,7 @@
   
   <!-- 底部导航栏 -->
   <div class="bottom-nav">
-    <div id="nav-home" class="nav-item active">
+    <div id="nav-home" class="nav-item">
       <i class="fa fa-home text-xl mb-1"></i>
       <span class="text-xs">首页</span>
     </div>
