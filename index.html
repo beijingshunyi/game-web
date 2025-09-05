@@ -329,8 +329,8 @@
       background: rgba(255, 255, 255, 0.8);
       border-radius: 15px;
       box-shadow: var(--card-shadow);
-      max-width: 90vw;
-      max-height: 70vh;
+      max-width: 75vw; /* 缩小游戏区域 */
+      max-height: 60vh; /* 缩小游戏区域 */
       margin: 0 auto;
     }
     
@@ -649,9 +649,10 @@
       padding: 40px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
       max-width: 400px;
-      width: 100%;
+      width: 90%;
       z-index: 10;
       text-align: center;
+      margin: 0 auto; /* 确保在移动设备上居中 */
     }
     
     .login-title {
@@ -695,6 +696,52 @@
     .login-feature-text {
       font-size: 0.9rem;
       color: #666;
+    }
+    
+    /* 开关样式 */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(26px);
     }
   </style>
   <script>
@@ -889,8 +936,13 @@
               lastName: user.last_name || '',
               username: user.username || ''
             });
-            window.location.search = `user_id=${user.id}&username=${encodeURIComponent(user.username || '')}`;
-            return;
+            // 更新URL参数但不刷新页面
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('user_id', user.id);
+            newUrl.searchParams.set('username', user.username || '');
+            window.history.pushState({}, '', newUrl);
+            // 继续初始化用户
+            return initUser();
           } else {
             navigateTo('login-page');
             return;
@@ -943,9 +995,9 @@
       const scoreDisplay = document.getElementById('total-score-display');
       if (scoreDisplay) scoreDisplay.textContent = gameState.totalScore;
       
-      // 更新游戏次数
+      // 更新游戏次数，确保不为负数
       if (gameState.gamePlays) {
-        const remainingFreePlays = 6 - gameState.gamePlays.free_plays_used;
+        const remainingFreePlays = Math.max(0, 6 - gameState.gamePlays.free_plays_used);
         const playsDisplay = document.getElementById('remaining-plays');
         if (playsDisplay) playsDisplay.textContent = remainingFreePlays;
       }
@@ -1033,7 +1085,8 @@
             if (result.success) {
               gameState.gamePlays = result.gamePlays;
               updateUserInterface();
-              showToast(`获得2次游戏机会！剩余次数: ${6 - result.gamePlays.free_plays_used}`, 'success');
+              const remainingPlays = Math.max(0, 6 - result.gamePlays.free_plays_used);
+              showToast(`获得2次游戏机会！剩余次数: ${remainingPlays}`, 'success');
             } else {
               showToast(result.message);
             }
@@ -1056,7 +1109,8 @@
               if (result.success) {
                 gameState.gamePlays = result.gamePlays;
                 updateUserInterface();
-                showToast(`获得2次游戏机会！剩余次数: ${6 - result.gamePlays.free_plays_used}`, 'success');
+                const remainingPlays = Math.max(0, 6 - result.gamePlays.free_plays_used);
+                showToast(`获得2次游戏机会！剩余次数: ${remainingPlays}`, 'success');
               } else {
                 showToast(result.message);
               }
@@ -1300,7 +1354,8 @@
       const movesElement = document.getElementById('remaining-moves');
       if (movesElement) {
         if (gameState.movesAllowed > 0) {
-          movesElement.innerHTML = `剩余步数: ${gameState.movesAllowed - gameState.moves}`;
+          const remainingMoves = Math.max(0, gameState.movesAllowed - gameState.moves);
+          movesElement.innerHTML = `剩余步数: ${remainingMoves}`;
         } else if (gameState.timeLimit > 0) {
           const minutes = Math.floor(gameState.timeRemaining / 60);
           const seconds = gameState.timeRemaining % 60;
@@ -2553,7 +2608,13 @@
                 lastName: user.last_name || '',
                 username: user.username || ''
               });
-              window.location.search = `user_id=${user.id}&username=${encodeURIComponent(user.username || '')}`;
+              // 更新URL参数但不刷新页面
+              const newUrl = new URL(window.location);
+              newUrl.searchParams.set('user_id', user.id);
+              newUrl.searchParams.set('username', user.username || '');
+              window.history.pushState({}, '', newUrl);
+              // 继续初始化用户
+              initUser();
             } catch (error) {
               console.error('登录失败:', error);
               showToast('登录失败，请重试', 'error');
@@ -3146,4 +3207,62 @@
         <button id="revive-btn" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-lg font-bold">
           复活
         </button>
-        <button id="retry-level-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white py-3 rounded-lg font-bold
+        <button id="retry-level-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white py-3 rounded-lg font-bold">
+          重试
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 复活模态框 -->
+  <div id="revive-modal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-2xl font-bold mb-5 text-center">选择复活方式</h2>
+      <div class="space-y-4">
+        <button id="revive-ad-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-lg flex items-center justify-center">
+          <i class="fa fa-play-circle mr-2"></i> 观看广告复活
+        </button>
+        <button id="revive-coins-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-4 rounded-lg flex items-center justify-center">
+          <i class="fa fa-diamond mr-2"></i> 使用50万花币复活
+        </button>
+        <button id="revive-cancel-btn" class="w-full bg-gray-200 hover:bg-gray-300 font-bold py-3 rounded-lg">
+          取消
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <div id="nav-home" class="nav-item">
+      <i class="fa fa-home text-xl mb-1"></i>
+      <span class="text-xs">首页</span>
+    </div>
+    <div id="nav-game" class="nav-item">
+      <i class="fa fa-gamepad text-xl mb-1"></i>
+      <span class="text-xs">游戏</span>
+    </div>
+    <div id="nav-profile" class="nav-item">
+      <i class="fa fa-user text-xl mb-1"></i>
+      <span class="text-xs">我的</span>
+    </div>
+    <div id="nav-leaderboard" class="nav-item">
+      <i class="fa fa-trophy text-xl mb-1"></i>
+      <span class="text-xs">排行</span>
+    </div>
+    <div id="nav-tasks" class="nav-item">
+      <i class="fa fa-tasks text-xl mb-1"></i>
+      <span class="text-xs">任务</span>
+    </div>
+    <div id="nav-shop" class="nav-item">
+      <i class="fa fa-shopping-cart text-xl mb-1"></i>
+      <span class="text-xs">商店</span>
+    </div>
+  </div>
+  
+  <!-- 底部版权信息 -->
+  <div class="footer-info">
+    <p>© 2023 万花楼消消乐 | <a href="#" class="footer-link">用户协议</a> | <a href="#" class="footer-link">隐私政策</a></p>
+  </div>
+</body>
+</html>
