@@ -17,41 +17,10 @@
             secondary: '#4ECDC4',
             accent: '#FFD166',
             dark: '#292F36',
-            light: '#F7FFF7',
-            flower: '#E91E63',
-            star: '#9C27B0',
-            moon: '#3F51B5',
-            sun: '#FF9800',
-            gem: '#4CAF50',
-            bell: '#03A9F4'
+            light: '#F7FFF7'
           },
           fontFamily: {
-            game: ['"Comic Sans MS"', '"Marker Felt"', 'system-ui', 'sans-serif']
-          },
-          animation: {
-            'pop': 'pop 0.3s ease-out',
-            'slide': 'slide 0.3s ease-out',
-            'fade': 'fade 0.3s ease-out',
-            'shine': 'shine 1s ease-in-out infinite',
-            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-          },
-          keyframes: {
-            pop: {
-              '0%, 100%': { transform: 'scale(1)' },
-              '50%': { transform: 'scale(1.1)' },
-            },
-            slide: {
-              '0%': { transform: 'translateY(-20px)', opacity: '0' },
-              '100%': { transform: 'translateY(0)', opacity: '1' },
-            },
-            fade: {
-              '0%': { opacity: '0' },
-              '100%': { opacity: '1' },
-            },
-            shine: {
-              '0%, 100%': { boxShadow: '0 0 10px rgba(255, 209, 102, 0.7)' },
-              '50%': { boxShadow: '0 0 20px rgba(255, 209, 102, 1)' },
-            }
+            game: ['"Comic Sans MS"', '"Marker Felt"', 'sans-serif']
           }
         }
       }
@@ -63,37 +32,26 @@
         content-visibility: auto;
       }
       .game-shadow {
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
       }
-      .tile-shadow {
-        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+      .tile-transition {
+        transition: all 0.2s ease-in-out;
       }
-      .btn-shadow {
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      .tile-hover {
+        transform: scale(1.05);
       }
-      .btn-shadow-hover {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      .pulse-animation {
+        animation: pulse 1.5s infinite;
       }
-      .glass-effect {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-      }
-      .board-grid-5 {
-        grid-template-columns: repeat(5, 1fr);
-      }
-      .board-grid-6 {
-        grid-template-columns: repeat(6, 1fr);
-      }
-      .particle {
-        position: absolute;
-        pointer-events: none;
-        z-index: 10;
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
       }
     }
   </style>
 </head>
-<body class="bg-gradient-to-b from-light to-blue-50 min-h-screen font-game text-dark overflow-x-hidden">
+<body class="bg-light min-h-screen font-game text-dark overflow-x-hidden">
   <!-- Telegram Web App初始化 -->
   <script>
     const tg = window.Telegram.WebApp;
@@ -113,47 +71,16 @@
       moves: 0,
       targetScore: 0,
       movesAllowed: 0,
-      timeLimit: null,
-      timeRemaining: 0,
-      timerInterval: null,
       levelData: null,
-      leaderboard: [],
-      checkinStreak: 0,
-      achievements: [],
-      selectedTile: null,
-      isAnimating: false,
-      boardSize: 5, // 5x5 或 6x6
-      powerUps: {
-        shuffle: 0,
-        bomb: 0,
-        addSteps: 0,
-        skipObstacle: 0
-      },
-      levelType: 'score', // 关卡类型: score, collect, eliminate, boss
-      levelTarget: {
-        type: null, // 目标元素类型
-        count: 0    // 目标数量
-      }
+      leaderboard: []
     };
     
     // API基础URL
     const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev/api';
     
     // 工具函数 - 发起API请求
-    async function apiRequest(endpoint, method = 'GET', data = null, cache = false) {
+    async function apiRequest(endpoint, method = 'GET', data = null) {
       try {
-        // 简单缓存机制
-        if (cache && method === 'GET') {
-          const cacheKey = `cache_${endpoint}`;
-          const cachedData = localStorage.getItem(cacheKey);
-          const cacheTime = localStorage.getItem(`${cacheKey}_time`);
-          
-          // 缓存有效期5分钟
-          if (cachedData && cacheTime && (Date.now() - parseInt(cacheTime) < 300000)) {
-            return JSON.parse(cachedData);
-          }
-        }
-        
         const url = `${API_BASE_URL}/${endpoint}`;
         const options = { method, headers: { 'Content-Type': 'application/json' } };
         
@@ -163,13 +90,6 @@
         const result = await response.json();
         
         if (!response.ok) throw new Error(result.error || '请求失败');
-        
-        // 缓存结果
-        if (cache && method === 'GET') {
-          const cacheKey = `cache_${endpoint}`;
-          localStorage.setItem(cacheKey, JSON.stringify(result));
-          localStorage.setItem(`${cacheKey}_time`, Date.now().toString());
-        }
         
         return result;
       } catch (error) {
@@ -182,10 +102,9 @@
     // 显示提示信息
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      toast.className = `fixed bottom-20 left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-lg z-50 shadow-lg animate-fade ${
+      toast.className = `fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg z-50 ${
         type === 'error' ? 'bg-red-500' : 
-        type === 'success' ? 'bg-green-500' : 
-        type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+        type === 'success' ? 'bg-green-500' : 'bg-blue-500'
       } text-white`;
       toast.textContent = message;
       document.body.appendChild(toast);
@@ -196,52 +115,8 @@
       }, 3000);
     }
     
-    // 创建粒子特效
-    function createParticles(x, y, color, count = 10) {
-      for (let i = 0; i < count; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.width = `${Math.random() * 10 + 5}px`;
-        particle.style.height = `${Math.random() * 10 + 5}px`;
-        particle.style.backgroundColor = color;
-        particle.style.borderRadius = '50%';
-        particle.style.left = `${x}px`;
-        particle.style.top = `${y}px`;
-        particle.style.opacity = '0.8';
-        
-        document.body.appendChild(particle);
-        
-        // 随机方向和距离
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * 80 + 40;
-        const destX = x + Math.cos(angle) * distance;
-        const destY = y + Math.sin(angle) * distance;
-        
-        // 动画
-        particle.animate([
-          { transform: `translate(0, 0)`, opacity: 0.8 },
-          { transform: `translate(${destX - x}px, ${destY - y}px)`, opacity: 0 }
-        ], {
-          duration: Math.random() * 800 + 500,
-          easing: 'cubic-bezier(0.1, 0.8, 0.9, 1)'
-        });
-        
-        // 移除粒子
-        setTimeout(() => particle.remove(), 1300);
-      }
-    }
-    
     // 页面导航
     function navigateTo(pageId) {
-      // 如果正在游戏中且不是前往游戏页面，清除计时器
-      if (gameState.isPlaying && pageId !== 'game-page') {
-        if (gameState.timerInterval) {
-          clearInterval(gameState.timerInterval);
-          gameState.timerInterval = null;
-        }
-        gameState.isPlaying = false;
-      }
-      
       document.querySelectorAll('.page').forEach(page => {
         page.classList.add('hidden');
       });
@@ -252,10 +127,6 @@
         startGame(gameState.currentLevel);
       } else if (pageId === 'leaderboard-page') {
         loadLeaderboard();
-      } else if (pageId === 'profile-page') {
-        updateProfilePage();
-      } else if (pageId === 'shop-page') {
-        updateShopPage();
       }
     }
     
@@ -286,14 +157,12 @@
         }
         
         // 加载用户数据
-        const userData = await apiRequest(`user/info?telegram_id=${telegramId}`, 'GET', null, true);
+        const userData = await apiRequest(`user?telegram_id=${telegramId}`);
         gameState.user = userData.user;
         gameState.balance = userData.balance.万花币_balance;
         gameState.currentLevel = userData.progress.current_level;
         gameState.totalScore = userData.progress.total_score;
         gameState.gamePlays = userData.gamePlays;
-        gameState.checkinStreak = userData.checkinStreak || 0;
-        gameState.achievements = userData.achievements || [];
         
         // 更新UI
         updateUserInterface();
@@ -325,9 +194,6 @@
         const remainingFreePlays = 6 - gameState.gamePlays.free_plays_used;
         document.getElementById('remaining-plays').textContent = remainingFreePlays;
       }
-      
-      // 更新连续签到天数
-      document.getElementById('checkin-streak').textContent = gameState.checkinStreak;
     }
     
     // 处理签到
@@ -339,18 +205,10 @@
         
         if (result.success) {
           gameState.balance = result.balance;
-          gameState.checkinStreak = result.streak;
           showToast(`签到成功！获得${result.reward}万花币，连续签到${result.streak}天`, 'success');
           updateUserInterface();
           document.getElementById('checkin-btn').disabled = true;
           document.getElementById('checkin-btn').textContent = '今日已签到';
-          
-          // 创建签到特效
-          const btn = document.getElementById('checkin-btn');
-          const rect = btn.getBoundingClientRect();
-          const x = rect.left + rect.width / 2;
-          const y = rect.top + rect.height / 2;
-          createParticles(x, y, '#FFD166', 20);
         } else {
           showToast(result.message);
         }
@@ -439,48 +297,6 @@
     async function loadLevelData(levelNumber) {
       try {
         const levelData = await apiRequest(`level?level=${levelNumber}`);
-        
-        // 确定棋盘大小
-        gameState.boardSize = levelNumber >= 20 ? 6 : 5;
-        
-        // 设置关卡类型和目标
-        if (levelNumber <= 10) {
-          // 新手关卡：累计得分
-          gameState.levelType = 'score';
-          gameState.levelTarget = { count: levelData.target_score };
-          gameState.timeLimit = 180; // 3分钟
-          gameState.movesAllowed = null;
-        } else if (levelNumber <= 20) {
-          // 基础关卡：收集特定元素
-          const elements = ['flower', 'star', 'moon', 'sun', 'gem', 'bell'];
-          const targetElement = elements[Math.floor(Math.random() * elements.length)];
-          gameState.levelType = 'collect';
-          gameState.levelTarget = { 
-            type: targetElement, 
-            count: Math.min(10 + Math.floor((levelNumber - 10) * 0.5), 15)
-          };
-          gameState.timeLimit = null;
-          gameState.movesAllowed = 20 + Math.floor((levelNumber - 10) * 0.5);
-        } else if (levelNumber <= 40) {
-          // 进阶关卡：消除障碍
-          gameState.levelType = 'eliminate';
-          gameState.levelTarget = { 
-            type: 'chain', 
-            count: 10 + Math.floor((levelNumber - 20) * 0.25)
-          };
-          gameState.timeLimit = null;
-          gameState.movesAllowed = 15 + Math.floor((levelNumber - 20) * 0.25);
-        } else {
-          // 挑战关卡：消除BOSS
-          gameState.levelType = 'boss';
-          gameState.levelTarget = { 
-            type: 'boss', 
-            count: Math.min(3 + Math.floor((levelNumber - 40) * 0.05), 5)
-          };
-          gameState.timeLimit = null;
-          gameState.movesAllowed = 10 + Math.floor((levelNumber - 40) * 0.1);
-        }
-        
         gameState.levelData = levelData;
         return levelData;
       } catch (error) {
@@ -491,34 +307,9 @@
     }
     
     // 初始化游戏板
-    function initializeGameBoard() {
-      const rows = gameState.boardSize;
-      const cols = gameState.boardSize;
+    function initializeGameBoard(rows = 8, cols = 8, obstacles = {}) {
       const board = [];
-      const tileTypes = ['flower', 'star', 'moon', 'sun', 'gem', 'bell'];
-      
-      // 根据关卡设置障碍物
-      let obstacles = {};
-      if (gameState.currentLevel >= 11) {
-        if (gameState.currentLevel <= 20) {
-          obstacles = { type: 'ice', rate: 0.1 }; // 普通障碍：冰块
-        } else if (gameState.currentLevel <= 40) {
-          obstacles = { 
-            type: 'multiple', 
-            obstacles: ['ice', 'chain'],
-            rates: [0.08, 0.07] // 冰块和锁链的概率
-          };
-        } else {
-          obstacles = { 
-            type: 'multiple', 
-            obstacles: ['ice', 'chain', 'box', 'bomb'],
-            rates: [0.07, 0.06, 0.05, 0.03]
-          };
-        }
-      }
-      
-      // 添加BOSS元素（仅挑战关卡）
-      const hasBoss = gameState.levelType === 'boss';
+      const tileTypes = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
       
       for (let i = 0; i < rows; i++) {
         const row = [];
@@ -529,57 +320,29 @@
             type = tileTypes[Math.floor(Math.random() * tileTypes.length)];
           } while (
             // 检查水平方向
-            (j >= 2 && row[j-1]?.type === type && row[j-2]?.type === type) ||
+            (j >= 2 && row[j-1] === type && row[j-2] === type) ||
             // 检查垂直方向
-            (i >= 2 && board[i-1][j]?.type === type && board[i-2][j]?.type === type)
+            (i >= 2 && board[i-1][j] === type && board[i-2][j] === type)
           );
           
-          // 添加BOSS元素
-          let isBoss = false;
-          if (hasBoss && Math.random() < 0.05 && 
-              gameState.levelTarget.count > 0 && 
-              i > 0 && i < rows - 1 && j > 0 && j < cols - 1) {
-            isBoss = true;
-            type = 'boss';
-          }
-          
           // 添加障碍物
-          let obstacle = null;
-          if (obstacles.type === 'ice' && Math.random() < obstacles.rate) {
-            obstacle = { type: 'ice', hits: 1 };
-          } else if (obstacles.type === 'chain' && Math.random() < obstacles.rate) {
-            obstacle = { type: 'chain', hits: 2 };
-          } else if (obstacles.type === 'box' && Math.random() < obstacles.rate) {
-            obstacle = { type: 'box', hits: 3 };
-          } else if (obstacles.type === 'bomb' && Math.random() < obstacles.rate) {
-            obstacle = { type: 'bomb', timer: 5 + Math.floor(Math.random() * 5) };
+          let hasObstacle = false;
+          if (obstacles.type === 'ice' && Math.random() < 0.1) {
+            hasObstacle = 'ice';
+          } else if (obstacles.type === 'box' && Math.random() < 0.05) {
+            hasObstacle = 'box';
+          } else if (obstacles.type === 'chain' && Math.random() < 0.07) {
+            hasObstacle = 'chain';
           } else if (obstacles.type === 'multiple' && obstacles.obstacles) {
-            for (let k = 0; k < obstacles.obstacles.length; k++) {
-              if (Math.random() < obstacles.rates[k]) {
-                const obstacleType = obstacles.obstacles[k];
-                if (obstacleType === 'ice') {
-                  obstacle = { type: 'ice', hits: 1 };
-                } else if (obstacleType === 'chain') {
-                  obstacle = { type: 'chain', hits: 2 };
-                } else if (obstacleType === 'box') {
-                  obstacle = { type: 'box', hits: 3 };
-                } else if (obstacleType === 'bomb') {
-                  obstacle = { type: 'bomb', timer: 5 + Math.floor(Math.random() * 5) };
-                }
-                break;
-              }
+            if (Math.random() < 0.15) {
+              const obstacleType = obstacles.obstacles[Math.floor(Math.random() * obstacles.obstacles.length)];
+              hasObstacle = obstacleType;
             }
           }
           
-          // 特殊元素：特效元素
-          let special = null;
-          
           row.push({
             type,
-            obstacle,
-            isBoss: isBoss,
-            bossHits: isBoss ? 3 : 0, // BOSS需要3次特效击中
-            special,
+            obstacle: hasObstacle,
             x: j,
             y: i,
             matched: false,
@@ -589,107 +352,7 @@
         board.push(row);
       }
       
-      // 检查是否有可消除的匹配，如果没有则重新生成
-      if (!hasPossibleMatches(board)) {
-        return initializeGameBoard();
-      }
-      
       return board;
-    }
-    
-    // 检查是否有可消除的匹配
-    function hasPossibleMatches(board) {
-      const rows = board.length;
-      const cols = board[0].length;
-      
-      // 检查水平匹配
-      for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols - 2; j++) {
-          if (board[i][j]?.type && 
-              board[i][j].type !== 'boss' &&
-              board[i][j].type === board[i][j+1]?.type && 
-              board[i][j].type === board[i][j+2]?.type) {
-            return true;
-          }
-        }
-      }
-      
-      // 检查垂直匹配
-      for (let j = 0; j < cols; j++) {
-        for (let i = 0; i < rows - 2; i++) {
-          if (board[i][j]?.type && 
-              board[i][j].type !== 'boss' &&
-              board[i][j].type === board[i+1][j]?.type && 
-              board[i][j].type === board[i+2][j]?.type) {
-            return true;
-          }
-        }
-      }
-      
-      // 检查是否有可交换产生匹配的情况
-      for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-          // 交换右侧
-          if (j < cols - 1) {
-            // 跳过BOSS元素
-            if (board[i][j].isBoss || board[i][j+1].isBoss) continue;
-            
-            // 临时交换
-            [board[i][j], board[i][j+1]] = [board[i][j+1], board[i][j]];
-            
-            // 检查交换后是否有匹配
-            const hasMatch = checkForMatches(board).length > 0;
-            
-            // 交换回来
-            [board[i][j], board[i][j+1]] = [board[i][j+1], board[i][j]];
-            
-            if (hasMatch) return true;
-          }
-          
-          // 交换下方
-          if (i < rows - 1) {
-            // 跳过BOSS元素
-            if (board[i][j].isBoss || board[i+1][j].isBoss) continue;
-            
-            // 临时交换
-            [board[i][j], board[i+1][j]] = [board[i+1][j], board[i][j]];
-            
-            // 检查交换后是否有匹配
-            const hasMatch = checkForMatches(board).length > 0;
-            
-            // 交换回来
-            [board[i][j], board[i+1][j]] = [board[i+1][j], board[i][j]];
-            
-            if (hasMatch) return true;
-          }
-        }
-      }
-      
-      return false;
-    }
-    
-    // 自动洗牌
-    async function autoShuffle() {
-      if (gameState.isAnimating) return;
-      
-      showToast('没有可消除的组合，自动洗牌中...');
-      gameState.isAnimating = true;
-      
-      // 洗牌动画
-      const gameBoardElement = document.getElementById('game-board');
-      gameBoardElement.classList.add('opacity-0', 'transition-opacity', 'duration-300');
-      
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // 重新生成棋盘
-      gameState.gameBoard = initializeGameBoard();
-      deselectAllTiles();
-      
-      // 恢复显示
-      gameBoardElement.classList.remove('opacity-0');
-      renderGameBoard();
-      
-      gameState.isAnimating = false;
     }
     
     // 渲染游戏板
@@ -698,181 +361,43 @@
       gameBoardElement.innerHTML = '';
       
       // 设置网格尺寸
-      gameBoardElement.className = `w-full aspect-square bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl game-shadow p-1 mb-3 overflow-hidden ${
-        gameState.boardSize === 5 ? 'board-grid-5' : 'board-grid-6'
-      } grid gap-1`;
-      
-      // 更新关卡目标显示
-      updateLevelObjectiveDisplay();
+      gameBoardElement.style.gridTemplateColumns = `repeat(${gameState.gameBoard[0].length}, 1fr)`;
       
       gameState.gameBoard.forEach((row, rowIndex) => {
         row.forEach((tile, colIndex) => {
           const tileElement = document.createElement('div');
-          tileElement.className = `relative flex items-center justify-center rounded-md cursor-pointer overflow-hidden ${
-            tile.selected ? 'ring-4 ring-accent scale-110 z-10' : ''
+          tileElement.className = `aspect-square flex items-center justify-center rounded-md tile-transition cursor-pointer ${
+            tile.selected ? 'ring-4 ring-accent scale-110' : ''
           }`;
           
-          // 设置背景
-          tileElement.classList.add('bg-white', 'tile-shadow');
-          
-          // 添加元素图标
-          let iconClass = '';
-          let tileColor = '';
-          
+          // 设置颜色
           switch (tile.type) {
-            case 'flower': 
-              iconClass = 'fa fa-pagelines';
-              tileColor = 'text-flower';
-              break;
-            case 'star': 
-              iconClass = 'fa fa-star';
-              tileColor = 'text-star';
-              break;
-            case 'moon': 
-              iconClass = 'fa fa-moon-o';
-              tileColor = 'text-moon';
-              break;
-            case 'sun': 
-              iconClass = 'fa fa-sun-o';
-              tileColor = 'text-sun';
-              break;
-            case 'gem': 
-              iconClass = 'fa fa-diamond';
-              tileColor = 'text-gem';
-              break;
-            case 'bell': 
-              iconClass = 'fa fa-bell';
-              tileColor = 'text-bell';
-              break;
-            case 'boss':
-              iconClass = 'fa fa-dragon';
-              tileColor = 'text-purple-800';
-              break;
-          }
-          
-          // 普通元素
-          if (tile.type !== 'boss') {
-            tileElement.innerHTML = `<i class="fa ${iconClass} text-2xl ${tileColor}"></i>`;
-          } else {
-            // BOSS元素
-            tileElement.innerHTML = `
-              <i class="fa ${iconClass} text-3xl ${tileColor}"></i>
-              <div class="absolute bottom-1 right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                ${tile.bossHits}
-              </div>
-            `;
-          }
-          
-          // 特效元素标记
-          if (tile.special === 'line') {
-            tileElement.innerHTML += '<div class="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">直线</div>';
-          } else if (tile.special === 'bomb') {
-            tileElement.innerHTML += '<div class="absolute top-1 left-1 bg-red-500 text-white text-xs px-1 rounded">爆炸</div>';
-          } else if (tile.special === 'cross') {
-            tileElement.innerHTML += '<div class="absolute top-1 left-1 bg-yellow-500 text-white text-xs px-1 rounded">十字</div>';
+            case 'red': tileElement.classList.add('bg-red-500'); break;
+            case 'blue': tileElement.classList.add('bg-blue-500'); break;
+            case 'green': tileElement.classList.add('bg-green-500'); break;
+            case 'yellow': tileElement.classList.add('bg-yellow-500'); break;
+            case 'purple': tileElement.classList.add('bg-purple-500'); break;
+            case 'orange': tileElement.classList.add('bg-orange-500'); break;
           }
           
           // 添加障碍物
-          if (tile.obstacle) {
-            if (tile.obstacle.type === 'ice') {
-              tileElement.innerHTML += `<div class="absolute w-full h-full bg-blue-200/50 flex items-center justify-center">
-                <i class="fa fa-snowflake-o text-blue-800"></i>
-                ${tile.obstacle.hits > 1 ? `<div class="absolute bottom-1 right-1 bg-blue-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">${tile.obstacle.hits}</div>` : ''}
-              </div>`;
-            } else if (tile.obstacle.type === 'chain') {
-              tileElement.innerHTML += `<div class="absolute w-full h-full flex items-center justify-center">
-                <i class="fa fa-link text-gray-800 text-xl"></i>
-                ${tile.obstacle.hits > 1 ? `<div class="absolute bottom-1 right-1 bg-gray-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">${tile.obstacle.hits}</div>` : ''}
-              </div>`;
-            } else if (tile.obstacle.type === 'box') {
-              tileElement.innerHTML += `<div class="absolute w-3/4 h-3/4 bg-gray-700 rounded-sm flex items-center justify-center">
-                <i class="fa fa-cube text-gray-400"></i>
-                ${tile.obstacle.hits > 1 ? `<div class="absolute bottom-1 right-1 bg-gray-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">${tile.obstacle.hits}</div>` : ''}
-              </div>`;
-            } else if (tile.obstacle.type === 'bomb') {
-              const timerClass = tile.obstacle.timer <= 2 ? 'text-red-600 animate-pulse' : 'text-orange-600';
-              tileElement.innerHTML += `<div class="absolute w-full h-full bg-red-100/70 flex items-center justify-center">
-                <i class="fa fa-bomb text-red-700"></i>
-                <div class="absolute bottom-1 right-1 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center ${timerClass}">
-                  ${tile.obstacle.timer}
-                </div>
-              </div>`;
-            }
-          }
-          
-          // 匹配动画
-          if (tile.matched) {
-            tileElement.classList.add('animate-pop', 'opacity-0');
+          if (tile.obstacle === 'ice') {
+            tileElement.innerHTML += '<div class="absolute w-full h-full bg-blue-200/50 flex items-center justify-center"><i class="fa fa-snowflake-o text-blue-800"></i></div>';
+          } else if (tile.obstacle === 'box') {
+            tileElement.innerHTML += '<div class="absolute w-3/4 h-3/4 bg-gray-700 rounded-sm flex items-center justify-center"><i class="fa fa-cube text-gray-400"></i></div>';
+          } else if (tile.obstacle === 'chain') {
+            tileElement.innerHTML += '<div class="absolute w-full h-full flex items-center justify-center"><i class="fa fa-link text-gray-800 text-xl"></i></div>';
           }
           
           // 添加点击事件
           tileElement.addEventListener('click', () => handleTileClick(rowIndex, colIndex));
           
-          // 添加触摸滑动支持
-          let touchStartX = 0;
-          let touchStartY = 0;
-          
-          tileElement.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            // 防止触摸事件干扰
-            e.preventDefault();
-          }, { passive: false });
-          
-          tileElement.addEventListener('touchend', (e) => {
-            if (!gameState.isPlaying || gameState.isAnimating) return;
-            
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-            
-            const diffX = touchEndX - touchStartX;
-            const diffY = touchEndY - touchStartY;
-            
-            // 确定滑动方向（优先水平或垂直）
-            if (Math.abs(diffX) > Math.abs(diffY)) {
-              // 水平滑动
-              if (Math.abs(diffX) > 30) {
-                if (diffX > 0 && colIndex < gameState.boardSize - 1) {
-                  // 向右滑动，与右侧方块交换
-                  handleSwipe(rowIndex, colIndex, rowIndex, colIndex + 1);
-                } else if (diffX < 0 && colIndex > 0) {
-                  // 向左滑动，与左侧方块交换
-                  handleSwipe(rowIndex, colIndex, rowIndex, colIndex - 1);
-                }
-              } else {
-                // 滑动距离太小，视为点击
-                handleTileClick(rowIndex, colIndex);
-              }
-            } else {
-              // 垂直滑动
-              if (Math.abs(diffY) > 30) {
-                if (diffY > 0 && rowIndex < gameState.boardSize - 1) {
-                  // 向下滑动，与下方方块交换
-                  handleSwipe(rowIndex, colIndex, rowIndex + 1, colIndex);
-                } else if (diffY < 0 && rowIndex > 0) {
-                  // 向上滑动，与上方方块交换
-                  handleSwipe(rowIndex, colIndex, rowIndex - 1, colIndex);
-                }
-              } else {
-                // 滑动距离太小，视为点击
-                handleTileClick(rowIndex, colIndex);
-              }
-            }
-            
-            // 防止触摸事件干扰
-            e.preventDefault();
-          }, { passive: false });
-          
           // 添加悬停效果
           tileElement.addEventListener('mouseenter', () => {
-            if (!tile.selected && !gameState.isAnimating) {
-              tileElement.classList.add('scale-105');
-            }
+            if (!tile.selected) tileElement.classList.add('tile-hover');
           });
           tileElement.addEventListener('mouseleave', () => {
-            if (!tile.selected && !gameState.isAnimating) {
-              tileElement.classList.remove('scale-105');
-            }
+            if (!tile.selected) tileElement.classList.remove('tile-hover');
           });
           
           gameBoardElement.appendChild(tileElement);
@@ -881,124 +406,22 @@
       
       // 更新分数和步数显示
       document.getElementById('game-score').textContent = gameState.score;
-      document.getElementById('target-score').textContent = gameState.levelTarget.count;
-      
-      if (gameState.movesAllowed !== null) {
-        document.getElementById('remaining-moves').textContent = gameState.movesAllowed - gameState.moves;
-        document.getElementById('moves-container').classList.remove('hidden');
-      } else {
-        document.getElementById('moves-container').classList.add('hidden');
-      }
-      
-      if (gameState.timeLimit !== null) {
-        const minutes = Math.floor(gameState.timeRemaining / 60);
-        const seconds = gameState.timeRemaining % 60;
-        document.getElementById('time-remaining').textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-        document.getElementById('time-container').classList.remove('hidden');
-        
-        // 时间不足时警告
-        if (gameState.timeRemaining <= 30) {
-          document.getElementById('time-remaining').classList.add('text-red-500', 'animate-pulse');
-        } else {
-          document.getElementById('time-remaining').classList.remove('text-red-500', 'animate-pulse');
-        }
-      } else {
-        document.getElementById('time-container').classList.add('hidden');
-      }
-    }
-    
-    // 更新关卡目标显示
-    function updateLevelObjectiveDisplay() {
-      const objectiveElement = document.getElementById('level-objective');
-      let objectiveText = '';
-      let objectiveIcon = '';
-      
-      switch (gameState.levelType) {
-        case 'score':
-          objectiveText = `累计获得 ${gameState.levelTarget.count} 分`;
-          objectiveIcon = 'fa-trophy';
-          break;
-        case 'collect':
-          let elementName = '';
-          switch (gameState.levelTarget.type) {
-            case 'flower': elementName = '花朵'; break;
-            case 'star': elementName = '星星'; break;
-            case 'moon': elementName = '月亮'; break;
-            case 'sun': elementName = '太阳'; break;
-            case 'gem': elementName = '宝石'; break;
-            case 'bell': elementName = '铃铛'; break;
-          }
-          objectiveText = `收集 ${gameState.levelTarget.count} 个${elementName}`;
-          objectiveIcon = `fa-${gameState.levelTarget.type === 'flower' ? 'pagelines' : 
-                          gameState.levelTarget.type === 'star' ? 'star' : 
-                          gameState.levelTarget.type === 'moon' ? 'moon-o' : 
-                          gameState.levelTarget.type === 'sun' ? 'sun-o' : 
-                          gameState.levelTarget.type === 'gem' ? 'diamond' : 'bell'}`;
-          break;
-        case 'eliminate':
-          let obstacleName = gameState.levelTarget.type === 'chain' ? '锁链障碍' : '';
-          objectiveText = `消除 ${gameState.levelTarget.count} 个${obstacleName}`;
-          objectiveIcon = 'fa-chain';
-          break;
-        case 'boss':
-          objectiveText = `击败 ${gameState.levelTarget.count} 个BOSS`;
-          objectiveIcon = 'fa-dragon';
-          break;
-      }
-      
-      objectiveElement.innerHTML = `<i class="fa ${objectiveIcon} mr-2"></i>${objectiveText}`;
-    }
-    
-    // 处理滑动交换
-    function handleSwipe(row1, col1, row2, col2) {
-      if (gameState.isAnimating) return;
-      
-      // 检查是否是BOSS元素
-      if (gameState.gameBoard[row1][col1].isBoss || gameState.gameBoard[row2][col2].isBoss) {
-        return;
-      }
-      
-      // 交换方块
-      swapTiles(row1, col1, row2, col2);
-      
-      // 检查是否有匹配
-      const matches = checkForMatches();
-      
-      if (matches.length > 0) {
-        // 有匹配，处理匹配
-        processMatches(matches);
-        gameState.moves++;
-      } else {
-        // 无匹配，交换回来
-        setTimeout(() => {
-          swapTiles(row2, col2, row1, col1);
-          renderGameBoard();
-        }, 300);
-      }
-      
-      // 取消选择
-      deselectAllTiles();
+      document.getElementById('target-score').textContent = gameState.targetScore;
+      document.getElementById('remaining-moves').textContent = gameState.movesAllowed - gameState.moves;
     }
     
     // 处理方块点击
     function handleTileClick(row, col) {
-      if (gameState.isAnimating) return;
-      
-      const tile = gameState.gameBoard[row][col];
-      
-      // 不能选择BOSS元素
-      if (tile.isBoss) return;
+      const selectedTile = gameState.gameBoard[row][col];
       
       // 检查是否有已选中的方块
-      if (gameState.selectedTile) {
-        const [selectedRow, selectedCol] = gameState.selectedTile;
-        
-        // 点击的是已选中的方块，取消选择
-        if (selectedRow === row && selectedCol === col) {
-          deselectAllTiles();
-          renderGameBoard();
-          return;
-        }
+      const alreadySelected = gameState.gameBoard.find(row => 
+        row.find(tile => tile.selected)
+      );
+      
+      if (alreadySelected) {
+        // 找到已选中的方块
+        const [selectedRow, selectedCol] = findSelectedTile();
         
         // 检查是否相邻
         if (isAdjacent(selectedRow, selectedCol, row, col)) {
@@ -1006,7 +429,7 @@
           swapTiles(selectedRow, selectedCol, row, col);
           
           // 检查是否有匹配
-          const matches = checkForMatches();
+          const matches = findMatches();
           
           if (matches.length > 0) {
             // 有匹配，处理匹配
@@ -1025,16 +448,26 @@
         } else {
           // 不相邻，取消之前的选择，选择新的
           deselectAllTiles();
-          tile.selected = true;
-          gameState.selectedTile = [row, col];
+          selectedTile.selected = true;
           renderGameBoard();
         }
       } else {
         // 没有已选中的，选中当前方块
-        tile.selected = true;
-        gameState.selectedTile = [row, col];
+        selectedTile.selected = true;
         renderGameBoard();
       }
+    }
+    
+    // 查找已选中的方块
+    function findSelectedTile() {
+      for (let i = 0; i < gameState.gameBoard.length; i++) {
+        for (let j = 0; j < gameState.gameBoard[i].length; j++) {
+          if (gameState.gameBoard[i][j].selected) {
+            return [i, j];
+          }
+        }
+      }
+      return [-1, -1];
     }
     
     // 检查是否相邻
@@ -1067,50 +500,29 @@
           tile.selected = false;
         });
       });
-      gameState.selectedTile = null;
     }
     
-    // 检查匹配
-    function checkForMatches() {
+    // 查找匹配
+    function findMatches() {
       const matches = [];
-      const rows = gameState.boardSize;
-      const cols = gameState.boardSize;
-      
-      // 重置之前的匹配标记
-      gameState.gameBoard.forEach(row => {
-        row.forEach(tile => {
-          tile.matched = false;
-        });
-      });
       
       // 检查水平匹配
-      for (let i = 0; i < rows; i++) {
+      for (let i = 0; i < gameState.gameBoard.length; i++) {
         let j = 0;
-        while (j < cols - 2) {
+        while (j < gameState.gameBoard[i].length - 2) {
           const current = gameState.gameBoard[i][j];
           const next1 = gameState.gameBoard[i][j+1];
           const next2 = gameState.gameBoard[i][j+2];
           
-          // 跳过BOSS元素
-          if (current.isBoss || next1.isBoss || next2.isBoss) {
-            j++;
-            continue;
-          }
-          
-          if (current.type && current.type === next1.type && current.type === next2.type) {
+          if (current.type === next1.type && current.type === next2.type) {
             const matchLength = findMatchLength(i, j, 0, 1);
             const match = [];
             
             for (let k = 0; k < matchLength; k++) {
               match.push({ row: i, col: j + k });
-              gameState.gameBoard[i][j + k].matched = true;
             }
             
-            matches.push({
-              positions: match,
-              length: matchLength,
-              direction: 'horizontal'
-            });
+            matches.push(match);
             j += matchLength;
           } else {
             j++;
@@ -1119,43 +531,28 @@
       }
       
       // 检查垂直匹配
-      for (let j = 0; j < cols; j++) {
+      for (let j = 0; j < gameState.gameBoard[0].length; j++) {
         let i = 0;
-        while (i < rows - 2) {
+        while (i < gameState.gameBoard.length - 2) {
           const current = gameState.gameBoard[i][j];
           const next1 = gameState.gameBoard[i+1][j];
           const next2 = gameState.gameBoard[i+2][j];
           
-          // 跳过BOSS元素
-          if (current.isBoss || next1.isBoss || next2.isBoss) {
-            i++;
-            continue;
-          }
-          
-          if (current.type && current.type === next1.type && current.type === next2.type) {
+          if (current.type === next1.type && current.type === next2.type) {
             const matchLength = findMatchLength(i, j, 1, 0);
             const match = [];
             
             for (let k = 0; k < matchLength; k++) {
               match.push({ row: i + k, col: j });
-              gameState.gameBoard[i + k][j].matched = true;
             }
             
-            matches.push({
-              positions: match,
-              length: matchLength,
-              direction: 'vertical'
-            });
+            matches.push(match);
             i += matchLength;
           } else {
             i++;
           }
         }
       }
-      
-      // 检查L/T型匹配（十字特效）
-      const crossMatches = findCrossMatches();
-      matches.push(...crossMatches);
       
       return matches;
     }
@@ -1169,10 +566,9 @@
       let currentCol = startCol + colDir;
       
       while (
-        currentRow < gameState.boardSize &&
-        currentCol < gameState.boardSize &&
-        gameState.gameBoard[currentRow][currentCol]?.type === type &&
-        !gameState.gameBoard[currentRow][currentCol].isBoss
+        currentRow < gameState.gameBoard.length &&
+        currentCol < gameState.gameBoard[0].length &&
+        gameState.gameBoard[currentRow][currentCol].type === type
       ) {
         length++;
         currentRow += rowDir;
@@ -1180,118 +576,6 @@
       }
       
       return length;
-    }
-    
-    // 查找L/T型匹配（十字特效）
-    function findCrossMatches() {
-      const matches = [];
-      const rows = gameState.boardSize;
-      const cols = gameState.boardSize;
-      
-      for (let i = 1; i < rows - 1; i++) {
-        for (let j = 1; j < cols - 1; j++) {
-          const center = gameState.gameBoard[i][j];
-          if (!center.type || center.isBoss) continue;
-          
-          // 检查是否已经是匹配的一部分
-          if (center.matched) continue;
-          
-          // 检查T型匹配
-          // 上下和中间
-          if (gameState.gameBoard[i-1][j].type === center.type && 
-              gameState.gameBoard[i+1][j].type === center.type &&
-              !gameState.gameBoard[i-1][j].isBoss &&
-              !gameState.gameBoard[i+1][j].isBoss) {
-              
-              // 左右至少有一个匹配
-              if ((gameState.gameBoard[i][j-1].type === center.type && !gameState.gameBoard[i][j-1].isBoss) ||
-                  (gameState.gameBoard[i][j+1].type === center.type && !gameState.gameBoard[i][j+1].isBoss)) {
-                  
-                  const match = [];
-                  // 添加上下
-                  match.push({row: i-1, col: j});
-                  match.push({row: i, col: j});
-                  match.push({row: i+1, col: j});
-                  
-                  // 添加左右匹配的部分
-                  if (gameState.gameBoard[i][j-1].type === center.type) {
-                    match.push({row: i, col: j-1});
-                  }
-                  if (gameState.gameBoard[i][j+1].type === center.type) {
-                    match.push({row: i, col: j+1});
-                  }
-                  
-                  // 标记为匹配
-                  match.forEach(pos => {
-                    gameState.gameBoard[pos.row][pos.col].matched = true;
-                  });
-                  
-                  matches.push({
-                    positions: match,
-                    length: match.length,
-                    direction: 'cross'
-                  });
-              }
-          }
-          
-          // 检查L型匹配
-          // 上下和右
-          if (gameState.gameBoard[i-1][j].type === center.type && 
-              gameState.gameBoard[i+1][j].type === center.type &&
-              gameState.gameBoard[i][j+1].type === center.type &&
-              !gameState.gameBoard[i-1][j].isBoss &&
-              !gameState.gameBoard[i+1][j].isBoss &&
-              !gameState.gameBoard[i][j+1].isBoss &&
-              !center.matched) {
-              
-              const match = [
-                {row: i-1, col: j},
-                {row: i, col: j},
-                {row: i+1, col: j},
-                {row: i, col: j+1}
-              ];
-              
-              match.forEach(pos => {
-                gameState.gameBoard[pos.row][pos.col].matched = true;
-              });
-              
-              matches.push({
-                positions: match,
-                length: 4,
-                direction: 'cross'
-              });
-          }
-          
-          // 上下和左
-          if (gameState.gameBoard[i-1][j].type === center.type && 
-              gameState.gameBoard[i+1][j].type === center.type &&
-              gameState.gameBoard[i][j-1].type === center.type &&
-              !gameState.gameBoard[i-1][j].isBoss &&
-              !gameState.gameBoard[i+1][j].isBoss &&
-              !gameState.gameBoard[i][j-1].isBoss &&
-              !center.matched) {
-              
-              const match = [
-                {row: i-1, col: j},
-                {row: i, col: j},
-                {row: i+1, col: j},
-                {row: i, col: j-1}
-              ];
-              
-              match.forEach(pos => {
-                gameState.gameBoard[pos.row][pos.col].matched = true;
-              });
-              
-              matches.push({
-                positions: match,
-                length: 4,
-                direction: 'cross'
-              });
-          }
-        }
-      }
-      
-      return matches;
     }
     
     // 处理匹配
@@ -1302,80 +586,22 @@
         return;
       }
       
-      gameState.isAnimating = true;
-      
-      // 计算分数和特效
-      let specialTiles = [];
-      
+      // 标记匹配的方块
       matches.forEach(match => {
-        // 为长匹配创建特效元素
-        if (match.length >= 4) {
-          // 选择中间位置创建特效
-          const centerIndex = Math.floor(match.positions.length / 2);
-          const centerPos = match.positions[centerIndex];
-          
-          // 根据匹配类型和长度确定特效类型
-          let specialType = 'line'; // 4连：直线特效
-          if (match.length >= 5) {
-            specialType = 'bomb'; // 5连：爆炸特效
-          } else if (match.direction === 'cross') {
-            specialType = 'cross'; // L/T型：十字特效
-          }
-          
-          specialTiles.push({
-            row: centerPos.row,
-            col: centerPos.col,
-            type: specialType,
-            elementType: gameState.gameBoard[centerPos.row][centerPos.col].type
-          });
-        }
-        
-        // 计算分数
-        match.positions.forEach(position => {
+        match.forEach(position => {
           const tile = gameState.gameBoard[position.row][position.col];
-          let points = 10;
+          tile.matched = true;
           
-          // 根据匹配长度加分
+          // 根据匹配长度和障碍物类型计算分数
+          let points = 10;
           if (match.length >= 4) points = 20;
           if (match.length >= 5) points = 50;
-          if (match.direction === 'cross') points = 30;
           
-          // 障碍物加分
-          if (tile.obstacle) {
-            if (tile.obstacle.type === 'ice') points += 5;
-            if (tile.obstacle.type === 'chain') points += 10;
-            if (tile.obstacle.type === 'box') points += 15;
-            if (tile.obstacle.type === 'bomb') points += 20;
-          }
+          if (tile.obstacle === 'ice') points += 5;
+          if (tile.obstacle === 'box') points += 15;
+          if (tile.obstacle === 'chain') points += 10;
           
           gameState.score += points;
-          
-          // 显示得分动画
-          showScorePopup(position.row, position.col, points);
-          
-          // 检查关卡目标
-          if (gameState.levelType === 'collect' && tile.type === gameState.levelTarget.type) {
-            gameState.levelTarget.count--;
-          }
-          
-          // 创建消除粒子特效
-          const gameBoardElement = document.getElementById('game-board');
-          const rect = gameBoardElement.getBoundingClientRect();
-          const tileSize = rect.width / gameState.boardSize;
-          const x = rect.left + position.col * tileSize + tileSize / 2;
-          const y = rect.top + position.row * tileSize + tileSize / 2;
-          
-          let color = '';
-          switch (tile.type) {
-            case 'flower': color = '#E91E63'; break;
-            case 'star': color = '#9C27B0'; break;
-            case 'moon': color = '#3F51B5'; break;
-            case 'sun': color = '#FF9800'; break;
-            case 'gem': color = '#4CAF50'; break;
-            case 'bell': color = '#03A9F4'; break;
-          }
-          
-          createParticles(x, y, color);
         });
       });
       
@@ -1384,98 +610,39 @@
       
       // 移除匹配的方块并填充新方块
       setTimeout(() => {
-        removeMatchedTiles(specialTiles);
+        removeMatchedTiles();
         fillEmptySpaces();
-        
-        // 检查炸弹计时器
-        updateBombTimers();
         
         // 检查是否有新的匹配
         setTimeout(() => {
-          const newMatches = checkForMatches();
-          gameState.isAnimating = false;
+          const newMatches = findMatches();
           processMatches(newMatches);
         }, 500);
       }, 500);
     }
     
-    // 显示得分弹窗
-    function showScorePopup(row, col, points) {
-      const popup = document.createElement('div');
-      popup.className = 'absolute text-yellow-600 font-bold animate-slide pointer-events-none z-20';
-      popup.textContent = `+${points}`;
-      
-      const gameBoardElement = document.getElementById('game-board');
-      const rect = gameBoardElement.getBoundingClientRect();
-      const tileSize = rect.width / gameState.boardSize;
-      
-      popup.style.left = `${rect.left + col * tileSize + tileSize / 2}px`;
-      popup.style.top = `${rect.top + row * tileSize + tileSize / 2}px`;
-      popup.style.transform = 'translate(-50%, -50%)';
-      
-      document.body.appendChild(popup);
-      
-      setTimeout(() => {
-        popup.animate([
-          { transform: 'translate(-50%, -50%)', opacity: 1 },
-          { transform: 'translate(-50%, -100%)', opacity: 0 }
-        ], {
-          duration: 1000,
-          easing: 'cubic-bezier(0.1, 0.8, 0.9, 1)'
-        });
-        
-        setTimeout(() => popup.remove(), 1000);
-      }, 100);
-    }
-    
     // 移除匹配的方块
-    function removeMatchedTiles(specialTiles) {
-      for (let i = 0; i < gameState.boardSize; i++) {
-        for (let j = 0; j < gameState.boardSize; j++) {
+    function removeMatchedTiles() {
+      for (let i = 0; i < gameState.gameBoard.length; i++) {
+        for (let j = 0; j < gameState.gameBoard[i].length; j++) {
           if (gameState.gameBoard[i][j].matched) {
             // 处理障碍物
-            if (gameState.gameBoard[i][j].obstacle) {
-              // 减少障碍物生命值
-              gameState.gameBoard[i][j].obstacle.hits--;
-              
-              // 检查障碍物是否被消除
-              if (gameState.gameBoard[i][j].obstacle.hits <= 0) {
-                // 障碍物消除，替换为新方块
-                gameState.gameBoard[i][j] = createNewTile(j, i);
-                
-                // 检查关卡目标（消除障碍）
-                if (gameState.levelType === 'eliminate' && 
-                    gameState.gameBoard[i][j].obstacle?.type === gameState.levelTarget.type) {
-                  gameState.levelTarget.count--;
-                }
-              } else {
-                // 障碍物未消除，保持位置但减少生命值
-                gameState.gameBoard[i][j].matched = false;
-              }
-            } else if (gameState.gameBoard[i][j].isBoss) {
-              // 处理BOSS元素（只能被特效击中）
-              gameState.gameBoard[i][j].bossHits--;
-              gameState.gameBoard[i][j].matched = false;
-              
-              // 检查BOSS是否被击败
-              if (gameState.gameBoard[i][j].bossHits <= 0) {
-                gameState.gameBoard[i][j] = createNewTile(j, i);
-                
-                // 检查关卡目标（击败BOSS）
-                if (gameState.levelType === 'boss') {
-                  gameState.levelTarget.count--;
-                }
-                
-                // 创建BOSS被击败特效
-                const gameBoardElement = document.getElementById('game-board');
-                const rect = gameBoardElement.getBoundingClientRect();
-                const tileSize = rect.width / gameState.boardSize;
-                const x = rect.left + j * tileSize + tileSize / 2;
-                const y = rect.top + i * tileSize + tileSize / 2;
-                createParticles(x, y, '#9C27B0', 30);
-                showScorePopup(i, j, 100);
-                gameState.score += 100;
-              }
+            if (gameState.gameBoard[i][j].obstacle === 'ice') {
+              // 冰障碍物只需要一次匹配即可消除
+              gameState.gameBoard[i][j] = createNewTile(j, i);
+              gameState.gameBoard[i][j].obstacle = null;
+            } else if (gameState.gameBoard[i][j].obstacle === 'box') {
+              // 箱子障碍物需要两次匹配
+              gameState.gameBoard[i][j] = createNewTile(j, i);
+              gameState.gameBoard[i][j].obstacle = 'box_damaged';
+            } else if (gameState.gameBoard[i][j].obstacle === 'box_damaged') {
+              // 受损箱子一次匹配即可消除
+              gameState.gameBoard[i][j] = createNewTile(j, i);
+              gameState.gameBoard[i][j].obstacle = null;
+            } else if (gameState.gameBoard[i][j].obstacle === 'chain') {
+              // 链条障碍物需要一次匹配即可消除
+              gameState.gameBoard[i][j] = createNewTile(j, i);
+              gameState.gameBoard[i][j].obstacle = null;
             } else {
               // 普通方块直接替换
               gameState.gameBoard[i][j] = null;
@@ -1483,27 +650,16 @@
           }
         }
       }
-      
-      // 添加特效方块
-      specialTiles.forEach(special => {
-        if (gameState.gameBoard[special.row][special.col]) {
-          gameState.gameBoard[special.row][special.col].special = special.type;
-          gameState.gameBoard[special.row][special.col].type = special.elementType;
-        }
-      });
     }
     
     // 创建新方块
     function createNewTile(x, y) {
-      const tileTypes = ['flower', 'star', 'moon', 'sun', 'gem', 'bell'];
+      const tileTypes = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
       const type = tileTypes[Math.floor(Math.random() * tileTypes.length)];
       
       return {
         type,
         obstacle: null,
-        isBoss: false,
-        bossHits: 0,
-        special: null,
         x,
         y,
         matched: false,
@@ -1511,54 +667,12 @@
       };
     }
     
-    // 更新炸弹计时器
-    function updateBombTimers() {
-      let bombExploded = false;
-      
-      for (let i = 0; i < gameState.boardSize; i++) {
-        for (let j = 0; j < gameState.boardSize; j++) {
-          const tile = gameState.gameBoard[i][j];
-          if (tile.obstacle && tile.obstacle.type === 'bomb') {
-            tile.obstacle.timer--;
-            
-            // 炸弹倒计时结束，引爆
-            if (tile.obstacle.timer <= 0) {
-              bombExploded = true;
-              
-              // 清除3x3范围内的方块
-              for (let dx = -1; dx <= 1; dx++) {
-                for (let dy = -1; dy <= 1; dy++) {
-                  const nx = j + dx;
-                  const ny = i + dy;
-                  
-                  if (nx >= 0 && nx < gameState.boardSize && ny >= 0 && ny < gameState.boardSize) {
-                    gameState.gameBoard[ny][nx].matched = true;
-                  }
-                }
-              }
-              
-              // 扣分
-              gameState.score = Math.max(0, gameState.score - 50);
-              showToast('炸弹爆炸！扣除50分', 'warning');
-            }
-          }
-        }
-      }
-      
-      // 如果有炸弹爆炸，处理匹配
-      if (bombExploded) {
-        setTimeout(() => {
-          processMatches(checkForMatches());
-        }, 500);
-      }
-    }
-    
     // 填充空白位置
     function fillEmptySpaces() {
       // 处理每一列
-      for (let j = 0; j < gameState.boardSize; j++) {
+      for (let j = 0; j < gameState.gameBoard[0].length; j++) {
         // 下落现有方块
-        for (let i = gameState.boardSize - 1; i >= 0; i--) {
+        for (let i = gameState.gameBoard.length - 1; i >= 0; i--) {
           if (gameState.gameBoard[i][j] === null) {
             // 查找上方最近的非空方块
             for (let k = i - 1; k >= 0; k--) {
@@ -1574,7 +688,7 @@
         }
         
         // 顶部填充新方块
-        for (let i = 0; i < gameState.boardSize; i++) {
+        for (let i = 0; i < gameState.gameBoard.length; i++) {
           if (gameState.gameBoard[i][j] === null) {
             gameState.gameBoard[i][j] = createNewTile(j, i);
           }
@@ -1586,201 +700,18 @@
     
     // 检查游戏是否结束
     function checkGameEnd() {
-      // 检查是否达成目标
-      let levelCompleted = false;
-      
-      if (gameState.levelType === 'score' && gameState.score >= gameState.levelTarget.count) {
-        levelCompleted = true;
-      } else if (gameState.levelType === 'collect' && gameState.levelTarget.count <= 0) {
-        levelCompleted = true;
-      } else if (gameState.levelType === 'eliminate' && gameState.levelTarget.count <= 0) {
-        levelCompleted = true;
-      } else if (gameState.levelType === 'boss' && gameState.levelTarget.count <= 0) {
-        levelCompleted = true;
-      }
-      
-      // 检查是否超时
-      const timeExpired = gameState.timeLimit !== null && gameState.timeRemaining <= 0;
-      
-      // 检查是否步数用完
-      const movesExpired = gameState.movesAllowed !== null && gameState.moves >= gameState.movesAllowed;
-      
-      if (levelCompleted) {
-        // 通关成功
+      if (gameState.moves >= gameState.movesAllowed) {
+        // 步数用完，游戏结束
         gameState.isPlaying = false;
-        if (gameState.timerInterval) {
-          clearInterval(gameState.timerInterval);
-          gameState.timerInterval = null;
-        }
-        showLevelComplete();
-      } else if (timeExpired || movesExpired) {
-        // 未通关
-        gameState.isPlaying = false;
-        if (gameState.timerInterval) {
-          clearInterval(gameState.timerInterval);
-          gameState.timerInterval = null;
-        }
-        showLevelFailed();
-      } else {
-        // 检查是否有可消除的方块，如果没有则自动洗牌
-        if (!hasPossibleMatches(gameState.gameBoard)) {
-          autoShuffle();
+        
+        if (gameState.score >= gameState.targetScore) {
+          // 通关成功
+          showLevelComplete();
+        } else {
+          // 未通关
+          showLevelFailed();
         }
       }
-    }
-    
-    // 使用道具
-    async function usePowerUp(type) {
-      if (!gameState.isPlaying || gameState.isAnimating) return;
-      
-      try {
-        // 调用API使用道具
-        const result = await apiRequest('道具/use', 'POST', {
-          telegram_id: gameState.user.telegram_id,
-          道具_type: type,
-          level_number: gameState.currentLevel
-        });
-        
-        if (!result.success) {
-          showToast(result.error || '使用道具失败', 'error');
-          return;
-        }
-        
-        // 更新余额
-        gameState.balance -= result.cost;
-        updateUserInterface();
-        
-        gameState.isAnimating = true;
-        
-        // 根据道具类型执行相应操作
-        switch (type) {
-          case 'shuffle':
-            // 洗牌道具
-            showToast('使用洗牌道具！', 'success');
-            const gameBoardElement = document.getElementById('game-board');
-            gameBoardElement.classList.add('opacity-0', 'transition-opacity', 'duration-300');
-            
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            // 重新生成棋盘
-            gameState.gameBoard = initializeGameBoard();
-            deselectAllTiles();
-            
-            // 恢复显示
-            gameBoardElement.classList.remove('opacity-0');
-            renderGameBoard();
-            break;
-            
-          case 'bomb':
-            // 爆炸道具 - 让用户选择位置
-            showToast('请选择要爆炸的位置', 'info');
-            document.querySelectorAll('#game-board > div').forEach((tile, index) => {
-              const row = Math.floor(index / gameState.boardSize);
-              const col = index % gameState.boardSize;
-              
-              // 为每个方块添加点击事件
-              tile.addEventListener('click', function handleBombSelection() {
-                // 移除所有点击事件
-                document.querySelectorAll('#game-board > div').forEach(t => {
-                  t.removeEventListener('click', handleBombSelection);
-                });
-                
-                // 执行爆炸效果
-                explodeArea(row, col, 1); // 3x3范围
-                showToast('使用爆炸道具！', 'success');
-                
-                // 处理匹配
-                setTimeout(() => {
-                  processMatches(checkForMatches());
-                }, 500);
-              }, { once: true });
-            });
-            break;
-            
-          case 'add_steps':
-            // 增加步数
-            gameState.movesAllowed += 5;
-            showToast('增加5步！', 'success');
-            renderGameBoard();
-            gameState.isAnimating = false;
-            break;
-            
-          case 'skip_obstacle':
-            // 跳过障碍 - 让用户选择位置
-            showToast('请选择要消除的障碍', 'info');
-            document.querySelectorAll('#game-board > div').forEach((tile, index) => {
-              const row = Math.floor(index / gameState.boardSize);
-              const col = index % gameState.boardSize;
-              
-              // 只允许选择有障碍的方块
-              if (!gameState.gameBoard[row][col].obstacle) {
-                tile.style.pointerEvents = 'none';
-                tile.style.opacity = '0.5';
-                return;
-              }
-              
-              // 为每个方块添加点击事件
-              tile.addEventListener('click', function handleSkipObstacle() {
-                // 移除所有点击事件
-                document.querySelectorAll('#game-board > div').forEach(t => {
-                  t.removeEventListener('click', handleSkipObstacle);
-                  t.style.pointerEvents = 'auto';
-                  t.style.opacity = '1';
-                });
-                
-                // 消除障碍
-                gameState.gameBoard[row][col].obstacle = null;
-                
-                // 检查关卡目标（消除障碍）
-                if (gameState.levelType === 'eliminate') {
-                  gameState.levelTarget.count--;
-                }
-                
-                showToast('障碍已消除！', 'success');
-                renderGameBoard();
-                gameState.isAnimating = false;
-                
-                // 检查游戏是否结束
-                checkGameEnd();
-              }, { once: true });
-            });
-            break;
-        }
-        
-        // 非特殊情况，重置动画状态
-        if (type !== 'bomb' && type !== 'skip_obstacle') {
-          gameState.isAnimating = false;
-        }
-        
-      } catch (error) {
-        console.error('使用道具失败:', error);
-        showToast('使用道具失败: ' + error.message, 'error');
-        gameState.isAnimating = false;
-      }
-    }
-    
-    // 爆炸指定区域
-    function explodeArea(row, col, radius) {
-      for (let dx = -radius; dx <= radius; dx++) {
-        for (let dy = -radius; dy <= radius; dy++) {
-          const nx = col + dx;
-          const ny = row + dy;
-          
-          if (nx >= 0 && nx < gameState.boardSize && ny >= 0 && ny < gameState.boardSize) {
-            gameState.gameBoard[ny][nx].matched = true;
-            
-            // 创建爆炸粒子特效
-            const gameBoardElement = document.getElementById('game-board');
-            const rect = gameBoardElement.getBoundingClientRect();
-            const tileSize = rect.width / gameState.boardSize;
-            const x = rect.left + nx * tileSize + tileSize / 2;
-            const y = rect.top + ny * tileSize + tileSize / 2;
-            createParticles(x, y, '#FF6B6B');
-          }
-        }
-      }
-      
-      renderGameBoard();
     }
     
     // 显示关卡完成
@@ -1790,12 +721,11 @@
       
       // 计算奖励
       const baseReward = gameState.levelData.reward;
-      const bonusPercentage = Math.min(100, Math.floor((gameState.score - gameState.levelTarget.count) / gameState.levelTarget.count * 100));
+      const bonusPercentage = Math.min(100, Math.floor((gameState.score - gameState.targetScore) / gameState.targetScore * 100));
       const bonus = Math.floor(baseReward * (bonusPercentage / 100));
       const totalReward = baseReward + bonus;
       
       document.getElementById('level-reward').textContent = totalReward;
-      document.getElementById('completed-level').textContent = gameState.currentLevel;
       
       // 提交关卡完成
       try {
@@ -1816,89 +746,7 @@
     function showLevelFailed() {
       document.getElementById('level-failed-modal').classList.remove('hidden');
       document.getElementById('failed-score').textContent = gameState.score;
-      
-      // 根据关卡类型显示不同的目标
-      if (gameState.levelType === 'score') {
-        document.getElementById('failed-target').textContent = `需要 ${gameState.levelTarget.count} 分`;
-      } else if (gameState.levelType === 'collect') {
-        let elementName = '';
-        switch (gameState.levelTarget.type) {
-          case 'flower': elementName = '花朵'; break;
-          case 'star': elementName = '星星'; break;
-          case 'moon': elementName = '月亮'; break;
-          case 'sun': elementName = '太阳'; break;
-          case 'gem': elementName = '宝石'; break;
-          case 'bell': elementName = '铃铛'; break;
-        }
-        document.getElementById('failed-target').textContent = `需要收集 ${gameState.levelTarget.count} 个${elementName}`;
-      } else if (gameState.levelType === 'eliminate') {
-        document.getElementById('failed-target').textContent = `需要消除 ${gameState.levelTarget.count} 个锁链障碍`;
-      } else if (gameState.levelType === 'boss') {
-        document.getElementById('failed-target').textContent = `需要击败 ${gameState.levelTarget.count} 个BOSS`;
-      }
-    }
-    
-    // 复活关卡
-    async function reviveLevel(type) {
-      try {
-        const result = await apiRequest('game/revive', 'POST', {
-          telegram_id: gameState.user.telegram_id,
-          level_number: gameState.currentLevel,
-          type
-        });
-        
-        if (result.success) {
-          // 关闭失败模态框
-          document.getElementById('level-failed-modal').classList.add('hidden');
-          
-          // 恢复步数或时间
-          if (gameState.movesAllowed !== null) {
-            gameState.movesAllowed += result.addedSteps;
-          } else if (gameState.timeLimit !== null) {
-            gameState.timeRemaining += 60; // 延长1分钟
-          }
-          
-          // 如果是消耗万花币复活，更新余额
-          if (result.cost) {
-            gameState.balance -= result.cost;
-            updateUserInterface();
-          }
-          
-          // 继续游戏
-          gameState.isPlaying = true;
-          
-          // 重新开始计时器
-          if (gameState.timeLimit !== null && !gameState.timerInterval) {
-            startTimer();
-          }
-          
-          showToast(`成功复活！${type === 'ad' ? '获得5步' : '获得5步，消耗50万花币'}`, 'success');
-          renderGameBoard();
-        } else {
-          showToast(result.message, 'error');
-        }
-      } catch (error) {
-        console.error('复活失败:', error);
-        showToast('复活失败: ' + error.message, 'error');
-      }
-    }
-    
-    // 开始计时器
-    function startTimer() {
-      if (gameState.timerInterval) {
-        clearInterval(gameState.timerInterval);
-      }
-      
-      gameState.timerInterval = setInterval(() => {
-        gameState.timeRemaining--;
-        renderGameBoard();
-        
-        if (gameState.timeRemaining <= 0) {
-          clearInterval(gameState.timerInterval);
-          gameState.timerInterval = null;
-          checkGameEnd();
-        }
-      }, 1000);
+      document.getElementById('failed-target').textContent = gameState.targetScore;
     }
     
     // 开始游戏
@@ -1925,19 +773,7 @@
         gameState.moves = 0;
         gameState.targetScore = levelData.target_score;
         gameState.movesAllowed = levelData.moves_allowed;
-        gameState.timeRemaining = gameState.timeLimit || 0;
-        gameState.gameBoard = initializeGameBoard();
-        
-        // 清除之前的计时器
-        if (gameState.timerInterval) {
-          clearInterval(gameState.timerInterval);
-          gameState.timerInterval = null;
-        }
-        
-        // 开始计时器
-        if (gameState.timeLimit !== null) {
-          startTimer();
-        }
+        gameState.gameBoard = initializeGameBoard(8, 8, levelData.obstacles);
         
         // 渲染游戏
         renderGameBoard();
@@ -2119,134 +955,16 @@
       }
     }
     
-    // 更新个人中心页面
-    function updateProfilePage() {
-      if (!gameState.user) return;
-      
-      // 更新用户信息
-      document.getElementById('profile-username').textContent = gameState.user.username || gameState.user.first_name;
-      document.getElementById('profile-id').textContent = gameState.user.telegram_id;
-      document.getElementById('profile-balance').textContent = gameState.balance;
-      document.getElementById('profile-level').textContent = gameState.currentLevel;
-      document.getElementById('profile-total-score').textContent = gameState.totalScore;
-      document.getElementById('profile-streak').textContent = gameState.checkinStreak;
-      
-      // 更新成就列表
-      const achievementsElement = document.getElementById('achievements-list');
-      achievementsElement.innerHTML = '';
-      
-      if (!gameState.achievements || gameState.achievements.length === 0) {
-        achievementsElement.innerHTML = '<div class="text-center py-4 text-gray-500">暂无成就</div>';
-        return;
-      }
-      
-      // 按完成状态排序，已完成的在前
-      const sortedAchievements = [...gameState.achievements].sort((a, b) => {
-        if (a.completed && !b.completed) return -1;
-        if (!a.completed && b.completed) return 1;
-        return 0;
-      });
-      
-      sortedAchievements.forEach(achievement => {
-        const progressPercent = achievement.target > 0 ? (achievement.progress / achievement.target) * 100 : 100;
-        
-        const achievementElement = document.createElement('div');
-        achievementElement.className = `p-3 mb-2 rounded-lg ${achievement.completed ? 'bg-green-50 border border-green-200' : 'bg-white border'}`;
-        achievementElement.innerHTML = `
-          <div class="flex justify-between items-start mb-2">
-            <div>
-              <div class="font-bold">${achievement.achievement_name}</div>
-              <div class="text-sm text-gray-600">${achievement.description}</div>
-            </div>
-            ${achievement.completed ? 
-              '<i class="fa fa-check-circle text-green-500"></i>' : 
-              `<span class="text-sm bg-gray-100 px-2 py-1 rounded">${achievement.progress}/${achievement.target}</span>`
-            }
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="h-2 rounded-full ${achievement.completed ? 'bg-green-500' : 'bg-primary'}" style="width: ${progressPercent}%"></div>
-          </div>
-          ${achievement.completed ? 
-            `<div class="text-xs text-green-600 mt-1">已获得 ${achievement.reward} 万花币奖励</div>` : 
-            `<div class="text-xs text-gray-500 mt-1">完成奖励: ${achievement.reward} 万花币</div>`
-          }
-        `;
-        
-        achievementsElement.appendChild(achievementElement);
-      });
-    }
-    
-    // 更新商店页面
-    function updateShopPage() {
-      // 道具价格
-      const powerUpPrices = {
-        shuffle: 30,
-        bomb: 60,
-        add_steps: 40,
-        skip_obstacle: 80
-      };
-      
-      // 道具描述
-      const powerUpDescriptions = {
-        shuffle: '重新排列当前棋盘上的所有元素',
-        bomb: '选择一个位置，消除以该位置为中心的3x3范围内所有元素',
-        add_steps: '增加5步游戏步数',
-        skip_obstacle: '直接消除一个指定的障碍'
-      };
-      
-      // 道具图标
-      const powerUpIcons = {
-        shuffle: 'fa-random',
-        bomb: 'fa-bomb',
-        add_steps: 'fa-plus-circle',
-        skip_obstacle: 'fa-eraser'
-      };
-      
-      // 道具名称
-      const powerUpNames = {
-        shuffle: '洗牌道具',
-        bomb: '爆炸道具',
-        add_steps: '步数加成',
-        skip_obstacle: '障碍跳过'
-      };
-      
-      // 更新道具列表
-      const shopItemsElement = document.getElementById('shop-items');
-      shopItemsElement.innerHTML = '';
-      
-      Object.keys(powerUpPrices).forEach(type => {
-        const itemElement = document.createElement('div');
-        itemElement.className = 'bg-white rounded-xl p-4 mb-4 game-shadow flex justify-between items-center';
-        itemElement.innerHTML = `
-          <div class="flex items-center">
-            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-              <i class="fa ${powerUpIcons[type]} text-primary text-xl"></i>
-            </div>
-            <div>
-              <div class="font-bold">${powerUpNames[type]}</div>
-              <div class="text-sm text-gray-500">${powerUpDescriptions[type]}</div>
-            </div>
-          </div>
-          <button onclick="usePowerUp('${type}')" class="bg-primary hover:bg-primary/80 text-white px-4 py-2 rounded-lg flex items-center btn-shadow hover:btn-shadow-hover transition-all">
-            <i class="fa fa-diamond mr-1"></i> ${powerUpPrices[type]}
-          </button>
-        `;
-        
-        shopItemsElement.appendChild(itemElement);
-      });
-    }
-    
     // 页面加载完成后初始化
     window.addEventListener('DOMContentLoaded', () => {
-      // 绑定导航事件 - 修复了原代码中引用不存在元素的问题
+      // 绑定导航事件
+      document.getElementById('home-btn').addEventListener('click', () => navigateTo('home-page'));
       document.getElementById('play-btn').addEventListener('click', () => navigateTo('game-page'));
       document.getElementById('leaderboard-nav-btn').addEventListener('click', () => navigateTo('leaderboard-page'));
       document.getElementById('withdrawal-nav-btn').addEventListener('click', () => {
         navigateTo('withdrawal-page');
         loadWithdrawalHistory();
       });
-      document.getElementById('shop-nav-btn').addEventListener('click', () => navigateTo('shop-page'));
-      document.getElementById('profile-nav-btn').addEventListener('click', () => navigateTo('profile-page'));
       
       // 绑定签到按钮
       document.getElementById('checkin-btn').addEventListener('click', handleCheckin);
@@ -2261,7 +979,6 @@
       // 绑定游戏模态框按钮
       document.getElementById('next-level-btn').addEventListener('click', () => {
         document.getElementById('level-complete-modal').classList.add('hidden');
-        gameState.currentLevel++;
         startGame(gameState.currentLevel);
       });
       
@@ -2276,15 +993,6 @@
         navigateTo('home-page');
       });
       
-      // 绑定复活按钮
-      document.getElementById('revive-ad-btn').addEventListener('click', () => reviveLevel('ad'));
-      document.getElementById('revive-coin-btn').addEventListener('click', () => reviveLevel('coin'));
-      
-      // 绑定道具使用按钮
-      document.getElementById('use-shuffle-btn').addEventListener('click', () => usePowerUp('shuffle'));
-      document.getElementById('use-bomb-btn').addEventListener('click', () => usePowerUp('bomb'));
-      document.getElementById('use-addsteps-btn').addEventListener('click', () => usePowerUp('add_steps'));
-      
       // 初始化用户
       initUser();
     });
@@ -2292,34 +1000,29 @@
   
   <!-- 登录页面 -->
   <div id="login-page" class="page flex flex-col items-center justify-center min-h-screen p-4">
-    <div class="text-center mb-8 animate-slide">
+    <div class="text-center mb-8">
       <h1 class="text-4xl font-bold text-primary mb-2">万花币消消乐</h1>
       <p class="text-gray-600">通过Telegram账号登录</p>
     </div>
-    <button id="telegram-login-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full flex items-center btn-shadow hover:btn-shadow-hover transition-all">
+    <button id="telegram-login-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full flex items-center">
       <i class="fa fa-telegram mr-2 text-xl"></i> 用Telegram登录
     </button>
-    
-    <!-- 页脚 -->
-    <div class="absolute bottom-4 left-0 right-0 text-center text-sm text-gray-500 px-4">
-      本游戏由北京修车【万花楼】赞助 
-      <a href="https://t.me/bjxc010" target="_blank" class="text-primary hover:underline">@bjxc010</a> 开发
-    </div>
   </div>
   
   <!-- 首页 -->
   <div id="home-page" class="page hidden p-4">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-primary">万花币消消乐</h1>
-      <button id="profile-nav-btn" class="bg-white w-10 h-10 rounded-full flex items-center justify-center game-shadow">
-        <i class="fa fa-user text-primary"></i>
-      </button>
+      <div class="bg-primary/10 text-primary px-3 py-1 rounded-full flex items-center">
+        <i class="fa fa-diamond mr-1"></i>
+        <span class="balance-display">0</span> 万花币
+      </div>
     </div>
     
     <div class="bg-white rounded-xl p-5 game-shadow mb-6">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold">当前进度</h2>
-        <button id="checkin-btn" class="bg-accent hover:bg-accent/80 text-dark font-bold py-1 px-4 rounded-full text-sm btn-shadow hover:btn-shadow-hover transition-all">
+        <button id="checkin-btn" class="bg-accent hover:bg-accent/80 text-dark font-bold py-1 px-4 rounded-full text-sm">
           每日签到
         </button>
       </div>
@@ -2338,91 +1041,215 @@
           <div class="text-2xl font-bold" id="remaining-plays">6</div>
         </div>
         <div class="bg-light p-4 rounded-lg border">
-          <div class="text-gray-500 text-sm mb-1">连续签到</div>
-          <div class="text-2xl font-bold text-accent" id="checkin-streak">0</div>
+          <div class="text-gray-500 text-sm mb-1">兑换比例</div>
+          <div class="text-2xl font-bold">1000:10元</div>
         </div>
       </div>
       
-      <button id="play-btn" class="w-full bg-gradient-to-r from-primary to-pink-500 text-white font-bold py-3 rounded-lg text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all animate-pulse-slow">
+      <button id="play-btn" class="w-full bg-primary hover:bg-primary/80 text-white font-bold py-3 rounded-lg text-lg pulse-animation">
         开始游戏
       </button>
     </div>
     
     <div class="grid grid-cols-2 gap-4 mb-6">
-      <button id="watch-ad-btn" class="bg-white p-4 rounded-xl game-shadow flex flex-col items-center justify-center hover:shadow-lg transform hover:-translate-y-1 transition-all">
+      <button id="watch-ad-btn" class="bg-white p-4 rounded-xl game-shadow flex flex-col items-center justify-center">
         <i class="fa fa-play-circle text-xl text-blue-500 mb-2"></i>
         <span>观看广告</span>
         <span class="text-sm text-gray-500">+2次游戏机会</span>
       </button>
-      <button id="share-btn" class="bg-white p-4 rounded-xl game-shadow flex flex-col items-center justify-center hover:shadow-lg transform hover:-translate-y-1 transition-all">
+      <button id="share-btn" class="bg-white p-4 rounded-xl game-shadow flex flex-col items-center justify-center">
         <i class="fa fa-share-alt text-xl text-green-500 mb-2"></i>
         <span>分享游戏</span>
         <span class="text-sm text-gray-500">+2次游戏机会</span>
       </button>
     </div>
     
-    <div class="grid grid-cols-2 gap-4">
-      <button id="leaderboard-nav-btn" class="bg-white p-4 rounded-xl game-shadow flex flex-col items-center justify-center hover:shadow-lg transform hover:-translate-y-1 transition-all">
-        <i class="fa fa-trophy text-2xl text-yellow-500 mb-2"></i>
-        <span class="font-bold">排行榜</span>
-        <span class="text-sm text-gray-500">月度奖励</span>
-      </button>
-      <button id="shop-nav-btn" class="bg-white p-4 rounded-xl game-shadow flex flex-col items-center justify-center hover:shadow-lg transform hover:-translate-y-1 transition-all">
-        <i class="fa fa-shopping-bag text-2xl text-purple-500 mb-2"></i>
-        <span class="font-bold">道具商店</span>
-        <span class="text-sm text-gray-500">购买道具</span>
-      </button>
-      <button id="withdrawal-nav-btn" class="bg-white p-4 rounded-xl game-shadow flex flex-col items-center justify-center hover:shadow-lg transform hover:-translate-y-1 transition-all col-span-2">
-        <i class="fa fa-money text-2xl text-green-600 mb-2"></i>
-        <span class="font-bold">提现中心</span>
-        <span class="text-sm text-gray-500">兑换现金 (1000:10元)</span>
-      </button>
-    </div>
-    
-    <!-- 底部导航 -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-4 flex justify-around items-center">
-      <button id="home-nav-btn" class="flex flex-col items-center text-primary" onclick="navigateTo('home-page')">
-        <i class="fa fa-home text-xl"></i>
-        <span class="text-xs mt-1">首页</span>
-      </button>
-      <button class="flex flex-col items-center text-gray-500" onclick="navigateTo('game-page')">
-        <i class="fa fa-gamepad text-xl"></i>
-        <span class="text-xs mt-1">游戏</span>
-      </button>
-      <button class="flex flex-col items-center text-gray-500" onclick="navigateTo('leaderboard-page')">
-        <i class="fa fa-trophy text-xl"></i>
-        <span class="text-xs mt-1">排行</span>
-      </button>
-      <button class="flex flex-col items-center text-gray-500" onclick="navigateTo('withdrawal-page')">
-        <i class="fa fa-money text-xl"></i>
-        <span class="text-xs mt-1">提现</span>
-      </button>
-    </div>
-    
-    <!-- 页脚 -->
-    <div class="absolute bottom-16 left-0 right-0 text-center text-sm text-gray-500 px-4">
-      本游戏由北京修车【万花楼】赞助 
-      <a href="https://t.me/bjxc010" target="_blank" class="text-primary hover:underline">@bjxc010</a> 开发
+    <div class="bg-white rounded-xl p-4 game-shadow">
+      <div class="grid grid-cols-2 gap-4">
+        <button id="leaderboard-nav-btn" class="p-4 border rounded-lg flex flex-col items-center justify-center">
+          <i class="fa fa-trophy text-2xl text-yellow-500 mb-2"></i>
+          <span class="font-bold">排行榜</span>
+          <span class="text-sm text-gray-500">月度奖励</span>
+        </button>
+        <button id="withdrawal-nav-btn" class="p-4 border rounded-lg flex flex-col items-center justify-center">
+          <i class="fa fa-money text-2xl text-green-600 mb-2"></i>
+          <span class="font-bold">提现</span>
+          <span class="text-sm text-gray-500">兑换现金</span>
+        </button>
+      </div>
     </div>
   </div>
   
   <!-- 游戏页面 -->
-  <div id="game-page" class="page hidden p-4">
-    <div class="flex justify-between items-center mb-4">
-      <button id="home-btn" class="bg-white w-10 h-10 rounded-full flex items-center justify-center game-shadow" onclick="navigateTo('home-page')">
-        <i class="fa fa-arrow-left text-primary"></i>
+  <div id="game-page" class="page hidden p-2">
+    <div class="flex justify-between items-center mb-2">
+      <button id="home-btn" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full">
+        <i class="fa fa-home"></i>
       </button>
       <div class="text-center">
-        <h2 class="font-bold text-lg">关卡 <span id="current-game-level">1</span></h2>
-        <div id="level-objective" class="text-sm text-gray-600"></div>
+        <h2 class="font-bold">关卡 <span id="current-game-level">1</span></h2>
       </div>
-      <div class="w-10"></div> <!-- 占位元素，保持布局平衡 -->
+      <div class="bg-primary/10 text-primary px-2 py-1 rounded-full text-sm flex items-center">
+        <i class="fa fa-diamond mr-1"></i>
+        <span class="balance-display">0</span>
+      </div>
     </div>
     
-    <!-- 游戏信息 -->
-    <div class="grid grid-cols-3 gap-2 mb-4">
-      <div class="bg-white rounded-lg p-2 text-center game-shadow">
-        <div class="text-xs text-gray-500">当前得分</div>
-        <div class="font-bold text-lg" id="game-score">0</div>
+    <div class="bg-white rounded-lg p-3 mb-3 game-shadow">
+      <div class="grid grid-cols-2 gap-2 text-center">
+        <div class="bg-light p-2 rounded">
+          <div class="text-sm text-gray-500">当前得分</div>
+          <div class="font-bold text-lg" id="game-score">0</div>
+        </div>
+        <div class="bg-light p-2 rounded">
+          <div class="text-sm text-gray-500">目标得分</div>
+          <div class="font-bold text-lg" id="target-score">0</div>
+        </div>
+        <div class="bg-light p-2 rounded col-span-2">
+          <div class="text-sm text-gray-500">剩余步数</div>
+          <div class="font-bold text-lg" id="remaining-moves">0</div>
+        </div>
       </div>
-      <div class="bg-white rounded-lg p-2 text-center game-shadow
+    </div>
+    
+    <div id="game-board" class="w-full aspect-square bg-light rounded-lg game-shadow grid gap-1 p-1 mb-3 overflow-hidden"></div>
+    
+    <div class="flex justify-between">
+      <button id="game-exit-btn" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg" onclick="navigateTo('home-page')">
+        退出
+      </button>
+      <button id="game-restart-btn" class="bg-accent hover:bg-accent/80 px-4 py-2 rounded-lg" onclick="startGame(gameState.currentLevel)">
+        重新开始
+      </button>
+    </div>
+  </div>
+  
+  <!-- 关卡完成模态框 -->
+  <div id="level-complete-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full text-center">
+      <div class="text-green-500 text-5xl mb-4">
+        <i class="fa fa-check-circle"></i>
+      </div>
+      <h2 class="text-2xl font-bold mb-2">关卡完成！</h2>
+      <p class="mb-4">恭喜你通过了关卡 <span id="completed-level">1</span></p>
+      <div class="bg-light p-4 rounded-lg mb-4">
+        <div class="mb-2">你的得分: <span id="level-complete-score" class="font-bold">0</span></div>
+        <div class="text-green-600 font-bold">获得奖励: <span id="level-reward">0</span> 万花币</div>
+      </div>
+      <div class="flex gap-2">
+        <button id="exit-level-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded-lg">
+          返回首页
+        </button>
+        <button id="next-level-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white py-2 rounded-lg">
+          下一关
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 关卡失败模态框 -->
+  <div id="level-failed-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full text-center">
+      <div class="text-red-500 text-5xl mb-4">
+        <i class="fa fa-times-circle"></i>
+      </div>
+      <h2 class="text-2xl font-bold mb-2">挑战失败</h2>
+      <p class="mb-4">再接再厉，争取通过关卡！</p>
+      <div class="bg-light p-4 rounded-lg mb-4">
+        <div class="mb-2">你的得分: <span id="failed-score" class="font-bold">0</span></div>
+        <div class="text-red-600">目标得分: <span id="failed-target" class="font-bold">0</span></div>
+      </div>
+      <div class="flex gap-2">
+        <button id="exit-level-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded-lg">
+          返回首页
+        </button>
+        <button id="retry-level-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white py-2 rounded-lg">
+          再试一次
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 排行榜页面 -->
+  <div id="leaderboard-page" class="page hidden p-4">
+    <div class="flex justify-between items-center mb-6">
+      <button id="home-btn-2" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full" onclick="navigateTo('home-page')">
+        <i class="fa fa-arrow-left"></i>
+      </button>
+      <h1 class="text-2xl font-bold text-primary">全服排行榜</h1>
+      <div class="w-8"></div> <!-- 占位 -->
+    </div>
+    
+    <div class="bg-white rounded-xl p-5 game-shadow mb-6">
+      <h2 class="text-xl font-bold mb-4 text-center">本月排名</h2>
+      <div id="leaderboard-list" class="space-y-2"></div>
+      <div id="leaderboard-rewards"></div>
+    </div>
+  </div>
+  
+  <!-- 提现页面 -->
+  <div id="withdrawal-page" class="page hidden p-4">
+    <div class="flex justify-between items-center mb-6">
+      <button id="home-btn-3" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full" onclick="navigateTo('home-page')">
+        <i class="fa fa-arrow-left"></i>
+      </button>
+      <h1 class="text-2xl font-bold text-primary">提现中心</h1>
+      <div class="bg-primary/10 text-primary px-3 py-1 rounded-full flex items-center">
+        <i class="fa fa-diamond mr-1"></i>
+        <span class="balance-display">0</span> 万花币
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-5 game-shadow mb-6">
+      <h2 class="text-xl font-bold mb-4">申请提现</h2>
+      <form id="withdrawal-form" class="space-y-4">
+        <div>
+          <label class="block text-gray-700 mb-1">提现金额 (万花币)</label>
+          <input 
+            type="number" 
+            id="withdrawal-amount" 
+            class="w-full p-2 border rounded-lg" 
+            placeholder="1000" 
+            step="1000" 
+            min="1000"
+          >
+          <p class="text-sm text-gray-500 mt-1">最低1000万花币，必须是1000的倍数</p>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 mb-1">支付宝账号</label>
+          <input 
+            type="text" 
+            id="alipay-account" 
+            class="w-full p-2 border rounded-lg" 
+            placeholder="请输入支付宝账号"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 mb-1">支付宝姓名</label>
+          <input 
+            type="text" 
+            id="alipay-name" 
+            class="w-full p-2 border rounded-lg" 
+            placeholder="请输入真实姓名"
+          >
+        </div>
+        
+        <button 
+          type="button" 
+          id="submit-withdrawal-btn" 
+          class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg"
+        >
+          提交提现申请
+        </button>
+      </form>
+    </div>
+    
+    <div class="bg-white rounded-xl p-5 game-shadow">
+      <h2 class="text-xl font-bold mb-4">提现历史</h2>
+      <div id="withdrawal-history"></div>
+    </div>
+  </div>
+</body>
+</html>
