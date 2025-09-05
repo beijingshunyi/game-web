@@ -32,17 +32,18 @@
       padding-bottom: 60px; /* 为底部栏留出空间 */
     }
     
-    /* 游戏元素样式 */
+    /* 游戏元素样式 - 优化动画性能 */
     .game-tile {
       border-radius: 10px;
       position: relative;
       overflow: hidden;
-      transition: all 0.3s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.8rem;
+      will-change: transform; /* 提示浏览器该元素将会变化，优化性能 */
     }
     
     .game-tile:hover {
@@ -1138,7 +1139,7 @@
           // 分享逻辑 - 使用Telegram Web App的分享功能
           const shareText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！`;
           
-          if (tg.shareText) {
+          try {
             // 使用Telegram Web App的shareText方法
             tg.shareText(shareText);
             
@@ -1158,7 +1159,8 @@
                 showToast(result.message);
               }
             }, 2000);
-          } else {
+          } catch (e) {
+            console.error('分享失败:', e);
             showToast('分享功能暂不可用', 'error');
           }
         }
@@ -1171,11 +1173,12 @@
     function inviteFriends() {
       const inviteText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！`;
       
-      if (tg.shareText) {
+      try {
         // 使用Telegram Web App的shareText方法
         tg.shareText(inviteText);
         showToast('邀请链接已分享', 'success');
-      } else {
+      } catch (e) {
+        console.error('分享失败:', e);
         showToast('分享功能暂不可用', 'error');
       }
     }
@@ -1289,12 +1292,18 @@
       return board;
     }
     
-    // 渲染游戏板
+    // 渲染游戏板 - 优化性能
     function renderGameBoard() {
       const gameBoardElement = document.getElementById('game-board');
       if (!gameBoardElement) return;
       
-      gameBoardElement.innerHTML = '';
+      // 使用文档片段减少DOM操作
+      const fragment = document.createDocumentFragment();
+      
+      // 清空游戏板
+      while (gameBoardElement.firstChild) {
+        gameBoardElement.removeChild(gameBoardElement.firstChild);
+      }
       
       // 设置网格尺寸
       gameBoardElement.style.gridTemplateColumns = `repeat(${gameState.gameBoard[0].length}, 1fr)`;
@@ -1335,38 +1344,103 @@
             }
           }
           
-          // 添加触摸/鼠标事件
-          tileElement.addEventListener('mousedown', (e) => handleTileMouseDown(rowIndex, colIndex));
-          tileElement.addEventListener('mouseenter', (e) => handleTileMouseEnter(rowIndex, colIndex));
-          tileElement.addEventListener('mouseup', (e) => handleTileMouseUp(rowIndex, colIndex));
+          // 使用事件委托而不是为每个方块添加事件监听器
+          tileElement.dataset.row = rowIndex;
+          tileElement.dataset.col = colIndex;
           
-          // 触摸事件
-          tileElement.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            handleTileMouseDown(rowIndex, colIndex);
-          });
-          tileElement.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-            if (elementBelow && elementBelow.classList.contains('game-tile')) {
-              const index = Array.from(elementBelow.parentNode.children).indexOf(elementBelow);
-              const row = Math.floor(index / gameState.boardSize);
-              const col = index % gameState.boardSize;
-              handleTileMouseEnter(row, col);
-            }
-          });
-          tileElement.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            handleTileMouseUp(rowIndex, colIndex);
-          });
-          
-          gameBoardElement.appendChild(tileElement);
+          fragment.appendChild(tileElement);
         });
       });
       
+      // 一次性添加所有方块
+      gameBoardElement.appendChild(fragment);
+      
+      // 使用事件委托处理方块点击
+      gameBoardElement.onmousedown = handleTileMouseDownDelegate;
+      gameBoardElement.onmouseenter = handleTileMouseEnterDelegate;
+      gameBoardElement.onmouseup = handleTileMouseUpDelegate;
+      
+      // 触摸事件
+      gameBoardElement.ontouchstart = handleTileTouchStartDelegate;
+      gameBoardElement.ontouchmove = handleTileTouchMoveDelegate;
+      gameBoardElement.ontouchend = handleTileTouchEndDelegate;
+      
       // 更新游戏信息显示
       updateGameInfo();
+    }
+    
+    // 事件委托处理函数
+    function handleTileMouseDownDelegate(e) {
+      if (gameState.isProcessing) return;
+      
+      const tile = e.target.closest('.game-tile');
+      if (!tile) return;
+      
+      const row = parseInt(tile.dataset.row);
+      const col = parseInt(tile.dataset.col);
+      
+      handleTileMouseDown(row, col);
+    }
+    
+    function handleTileMouseEnterDelegate(e) {
+      if (gameState.isProcessing || !gameState.isDragging || !gameState.dragStartTile) return;
+      
+      const tile = e.target.closest('.game-tile');
+      if (!tile) return;
+      
+      const row = parseInt(tile.dataset.row);
+      const col = parseInt(tile.dataset.col);
+      
+      handleTileMouseEnter(row, col);
+    }
+    
+    function handleTileMouseUpDelegate(e) {
+      const tile = e.target.closest('.game-tile');
+      if (!tile) return;
+      
+      const row = parseInt(tile.dataset.row);
+      const col = parseInt(tile.dataset.col);
+      
+      handleTileMouseUp(row, col);
+    }
+    
+    function handleTileTouchStartDelegate(e) {
+      e.preventDefault();
+      
+      const tile = e.target.closest('.game-tile');
+      if (!tile) return;
+      
+      const row = parseInt(tile.dataset.row);
+      const col = parseInt(tile.dataset.col);
+      
+      handleTileMouseDown(row, col);
+    }
+    
+    function handleTileTouchMoveDelegate(e) {
+      e.preventDefault();
+      
+      const touch = e.touches[0];
+      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const tile = elementBelow?.closest('.game-tile');
+      
+      if (!tile) return;
+      
+      const row = parseInt(tile.dataset.row);
+      const col = parseInt(tile.dataset.col);
+      
+      handleTileMouseEnter(row, col);
+    }
+    
+    function handleTileTouchEndDelegate(e) {
+      e.preventDefault();
+      
+      const tile = e.target.closest('.game-tile');
+      if (!tile) return;
+      
+      const row = parseInt(tile.dataset.row);
+      const col = parseInt(tile.dataset.col);
+      
+      handleTileMouseUp(row, col);
     }
     
     // 更新游戏信息显示
@@ -1653,11 +1727,11 @@
           if (match.length === 4) {
             // 4连消除：直线特效
             tile.special = 'line';
-            createLineEffect(centerTile.row, centerTile.col);
+            // 不在这里立即创建特效，而是在移除方块时创建
           } else if (match.length === 5) {
             // 5连消除：爆炸特效
             tile.special = 'bomb';
-            createBombEffect(centerTile.row, centerTile.col);
+            // 不在这里立即创建特效，而是在移除方块时创建
           }
         }
         
@@ -1685,8 +1759,8 @@
           gameState.isProcessing = false;
           const newMatches = findMatches();
           processMatches(newMatches);
-        }, 500);
-      }, 500);
+        }, 300); // 减少延迟时间，提高响应速度
+      }, 300); // 减少延迟时间，提高响应速度
     }
     
     // 创建直线特效
@@ -1772,7 +1846,7 @@
     function removeMatchedTiles() {
       for (let i = 0; i < gameState.gameBoard.length; i++) {
         for (let j = 0; j < gameState.gameBoard[i].length; j++) {
-          if (gameState.gameBoard[i][j].matched) {
+          if (gameState.gameBoard[i][j] && gameState.gameBoard[i][j].matched) {
             // 处理特殊元素
             if (gameState.gameBoard[i][j].special) {
               // 触发特殊效果
@@ -1795,7 +1869,7 @@
         if (direction === 'horizontal') {
           // 消除整行
           for (let j = 0; j < gameState.gameBoard[row].length; j++) {
-            if (j !== col) {
+            if (j !== col && gameState.gameBoard[row][j]) {
               gameState.gameBoard[row][j].matched = true;
               gameState.score += 5;
             }
@@ -1803,7 +1877,7 @@
         } else {
           // 消除整列
           for (let i = 0; i < gameState.gameBoard.length; i++) {
-            if (i !== row) {
+            if (i !== row && gameState.gameBoard[i][col]) {
               gameState.gameBoard[i][col].matched = true;
               gameState.score += 5;
             }
@@ -1814,8 +1888,10 @@
         for (let i = Math.max(0, row - 1); i <= Math.min(gameState.gameBoard.length - 1, row + 1); i++) {
           for (let j = Math.max(0, col - 1); j <= Math.min(gameState.gameBoard[0].length - 1, col + 1); j++) {
             if (i !== row || j !== col) {
-              gameState.gameBoard[i][j].matched = true;
-              gameState.score += 8;
+              if (gameState.gameBoard[i][j]) {
+                gameState.gameBoard[i][j].matched = true;
+                gameState.score += 8;
+              }
             }
           }
         }
@@ -1823,7 +1899,7 @@
         // 十字特效：消除交叉两行两列
         // 消除整行
         for (let j = 0; j < gameState.gameBoard[row].length; j++) {
-          if (j !== col) {
+          if (j !== col && gameState.gameBoard[row][j]) {
             gameState.gameBoard[row][j].matched = true;
             gameState.score += 5;
           }
@@ -1831,7 +1907,7 @@
         
         // 消除整列
         for (let i = 0; i < gameState.gameBoard.length; i++) {
-          if (i !== row) {
+          if (i !== row && gameState.gameBoard[i][col]) {
             gameState.gameBoard[i][col].matched = true;
             gameState.score += 5;
           }
@@ -2064,8 +2140,10 @@
           // 触发爆炸效果
           for (let i = Math.max(0, row - 1); i <= Math.min(gameState.gameBoard.length - 1, row + 1); i++) {
             for (let j = Math.max(0, col - 1); j <= Math.min(gameState.gameBoard[0].length - 1, col + 1); j++) {
-              gameState.gameBoard[i][j].matched = true;
-              gameState.score += 10;
+              if (gameState.gameBoard[i][j]) {
+                gameState.gameBoard[i][j].matched = true;
+                gameState.score += 10;
+              }
             }
           }
           
@@ -3382,8 +3460,8 @@
   </div>
   
   <!-- 底部版权信息 -->
-  <div class="footer-info">
-    <p>© 2023 万花楼消消乐 | <a href="#" class="footer-link">用户协议</a> | <a href="#" class="footer-link">隐私政策</a></p>
+  <div class="footer-info show">
+    <p>本游戏由北京修车【万花楼】赞助 由 <a href="https://t.me/bjxc010" target="_blank" class="footer-link">@bjxc010</a> 开发</p>
   </div>
 </body>
 </html>
