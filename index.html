@@ -39,6 +39,10 @@
       overflow: hidden;
       transition: all 0.3s ease;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
     }
     
     .game-tile:hover {
@@ -52,6 +56,7 @@
       z-index: 10;
     }
     
+    /* 方块类型样式 */
     .game-tile.flower {
       background: linear-gradient(135deg, #FF9A8B 0%, #FF6B6B 100%);
     }
@@ -88,6 +93,7 @@
       align-items: center;
       justify-content: center;
       border-radius: 10px;
+      z-index: 2;
     }
     
     .obstacle-box {
@@ -102,6 +108,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 2;
     }
     
     .obstacle-chain {
@@ -114,6 +121,7 @@
       align-items: center;
       justify-content: center;
       border-radius: 10px;
+      z-index: 2;
     }
     
     .obstacle-chain::before {
@@ -128,6 +136,7 @@
     .obstacle-chain::after {
       content: "🔒";
       font-size: 1.5rem;
+      z-index: 3;
     }
     
     /* 特效元素样式 */
@@ -287,6 +296,11 @@
       to { transform: translateY(0); opacity: 1; }
     }
     
+    @keyframes explode {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+    
     .pulse-animation {
       animation: pulse 1.5s infinite;
     }
@@ -301,6 +315,10 @@
     
     .slide-up {
       animation: slideUp 0.5s;
+    }
+    
+    .explode-animation {
+      animation: explode 0.5s forwards;
     }
     
     /* 游戏板样式 */
@@ -553,6 +571,45 @@
     .powerup-bar.hidden {
       transform: translateY(100%);
     }
+    
+    /* 特效动画 */
+    @keyframes lineEffect {
+      0% { transform: scaleX(0); opacity: 1; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
+    
+    @keyframes bombEffect {
+      0% { transform: scale(0); opacity: 1; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+    
+    .line-effect {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 50;
+    }
+    
+    .horizontal-line {
+      height: 3px;
+      width: 100%;
+      left: 0;
+      animation: lineEffect 0.5s forwards;
+    }
+    
+    .vertical-line {
+      width: 3px;
+      height: 100%;
+      top: 0;
+      animation: lineEffect 0.5s forwards;
+    }
+    
+    .bomb-effect {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,100,100,0.8) 0%, rgba(255,100,100,0) 70%);
+      z-index: 50;
+      animation: bombEffect 0.5s forwards;
+    }
   </style>
   <script>
     // 配置Tailwind
@@ -619,7 +676,8 @@
       timeLimit: null,
       timeRemaining: null,
       timerInterval: null,
-      isLoggedIn: false // 用户登录状态
+      isLoggedIn: false, // 用户登录状态
+      isProcessing: false // 防止重复处理
     };
     
     // API基础URL
@@ -681,7 +739,10 @@
       });
       
       // 显示目标页面
-      document.getElementById(pageId).classList.remove('hidden');
+      const targetPage = document.getElementById(pageId);
+      if (targetPage) {
+        targetPage.classList.remove('hidden');
+      }
       
       // 更新导航栏状态
       document.querySelectorAll('.nav-item').forEach(item => {
@@ -699,7 +760,8 @@
       };
       
       if (navMap[pageId]) {
-        document.getElementById(navMap[pageId]).classList.add('active');
+        const navItem = document.getElementById(navMap[pageId]);
+        if (navItem) navItem.classList.add('active');
       }
       
       // 特殊页面处理
@@ -755,8 +817,11 @@
         gameState.boardSize = gameState.currentLevel > 20 ? 6 : 5;
         
         // 显示底部导航栏和版权信息
-        document.querySelector('.bottom-nav').classList.add('show');
-        document.querySelector('.footer-info').classList.add('show');
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) bottomNav.classList.add('show');
+        
+        const footerInfo = document.querySelector('.footer-info');
+        if (footerInfo) footerInfo.classList.add('show');
         
         // 更新UI
         updateUserInterface();
@@ -882,9 +947,12 @@
           }, 3000);
         } else if (type === 'share') {
           // 分享逻辑
-          if (tg.ShareButton) {
-            tg.ShareButton.show();
-            tg.onEvent('shareCompleted', async () => {
+          if (tg.shareURL) {
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，可以积累提现！')}`;
+            tg.openLink(shareUrl);
+            
+            // 分享完成后增加游戏次数
+            setTimeout(async () => {
               const result = await apiRequest('add-plays', 'POST', {
                 telegram_id: gameState.user.telegram_id,
                 type
@@ -897,13 +965,25 @@
               } else {
                 showToast(result.message);
               }
-            });
+            }, 2000);
           } else {
-            showToast('分享功能暂不可用');
+            showToast('分享功能暂不可用', 'error');
           }
         }
       } catch (error) {
         console.error('增加游戏次数失败:', error);
+      }
+    }
+    
+    // 邀请好友
+    function inviteFriends() {
+      if (tg.shareURL) {
+        const inviteText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，可以积累提现！\n\n邀请链接: ${window.location.href}`;
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(inviteText)}`;
+        tg.openLink(shareUrl);
+        showToast('邀请链接已分享', 'success');
+      } else {
+        showToast('分享功能暂不可用', 'error');
       }
     }
     
@@ -951,6 +1031,14 @@
     function initializeGameBoard() {
       const board = [];
       const tileTypes = ['flower', 'star', 'moon', 'sun', 'gem', 'bell'];
+      const tileIcons = {
+        'flower': '🌸',
+        'star': '⭐',
+        'moon': '🌙',
+        'sun': '☀️',
+        'gem': '💎',
+        'bell': '🔔'
+      };
       
       for (let i = 0; i < gameState.boardSize; i++) {
         const row = [];
@@ -991,6 +1079,7 @@
           
           row.push({
             type,
+            icon: tileIcons[type],
             obstacle: hasObstacle,
             x: j,
             y: i,
@@ -1023,6 +1112,9 @@
           tileElement.className = `game-tile aspect-square flex items-center justify-center tile-transition cursor-pointer ${
             tile.selected ? 'selected' : ''
           } ${tile.type}`;
+          
+          // 添加方块图标
+          tileElement.textContent = tile.icon;
           
           // 添加特殊效果
           if (tile.special === 'line') {
@@ -1123,6 +1215,8 @@
     
     // 处理方块鼠标按下
     function handleTileMouseDown(row, col) {
+      if (gameState.isProcessing) return;
+      
       gameState.isDragging = true;
       gameState.dragStartTile = { row, col };
       gameState.selectedTiles = [{ row, col }];
@@ -1134,35 +1228,35 @@
     
     // 处理方块鼠标进入
     function handleTileMouseEnter(row, col) {
-      if (gameState.isDragging && gameState.dragStartTile) {
-        // 检查是否与起始方块相邻
-        if (isAdjacent(gameState.dragStartTile.row, gameState.dragStartTile.col, row, col)) {
-          gameState.dragEndTile = { row, col };
-          
-          // 交换方块
-          swapTiles(gameState.dragStartTile.row, gameState.dragStartTile.col, row, col);
-          
-          // 检查是否有匹配
-          const matches = findMatches();
-          
-          if (matches.length > 0) {
-            // 有匹配，处理匹配
-            processMatches(matches);
-            gameState.moves++;
-          } else {
-            // 无匹配，交换回来
-            setTimeout(() => {
-              swapTiles(row, col, gameState.dragStartTile.row, gameState.dragStartTile.col);
-              renderGameBoard();
-            }, 300);
-          }
-          
-          // 重置拖动状态
-          gameState.isDragging = false;
-          gameState.dragStartTile = null;
-          gameState.dragEndTile = null;
-          deselectAllTiles();
+      if (gameState.isProcessing || !gameState.isDragging || !gameState.dragStartTile) return;
+      
+      // 检查是否与起始方块相邻
+      if (isAdjacent(gameState.dragStartTile.row, gameState.dragStartTile.col, row, col)) {
+        gameState.dragEndTile = { row, col };
+        
+        // 交换方块
+        swapTiles(gameState.dragStartTile.row, gameState.dragStartTile.col, row, col);
+        
+        // 检查是否有匹配
+        const matches = findMatches();
+        
+        if (matches.length > 0) {
+          // 有匹配，处理匹配
+          processMatches(matches);
+          gameState.moves++;
+        } else {
+          // 无匹配，交换回来
+          setTimeout(() => {
+            swapTiles(row, col, gameState.dragStartTile.row, gameState.dragStartTile.col);
+            renderGameBoard();
+          }, 300);
         }
+        
+        // 重置拖动状态
+        gameState.isDragging = false;
+        gameState.dragStartTile = null;
+        gameState.dragEndTile = null;
+        deselectAllTiles();
       }
     }
     
@@ -1283,9 +1377,14 @@
     
     // 处理匹配
     function processMatches(matches) {
+      if (gameState.isProcessing) return;
+      
+      gameState.isProcessing = true;
+      
       if (matches.length === 0) {
         // 检查游戏是否结束
         checkGameEnd();
+        gameState.isProcessing = false;
         return;
       }
       
@@ -1350,9 +1449,11 @@
           if (match.length === 4) {
             // 4连消除：直线特效
             tile.special = 'line';
+            createLineEffect(centerTile.row, centerTile.col);
           } else if (match.length === 5) {
             // 5连消除：爆炸特效
             tile.special = 'bomb';
+            createBombEffect(centerTile.row, centerTile.col);
           }
         }
         
@@ -1377,9 +1478,61 @@
         
         // 检查是否有新的匹配
         setTimeout(() => {
+          gameState.isProcessing = false;
           const newMatches = findMatches();
           processMatches(newMatches);
         }, 500);
+      }, 500);
+    }
+    
+    // 创建直线特效
+    function createLineEffect(row, col) {
+      const gameBoard = document.getElementById('game-board');
+      if (!gameBoard) return;
+      
+      const direction = Math.random() > 0.5 ? 'horizontal' : 'vertical';
+      const effect = document.createElement('div');
+      
+      if (direction === 'horizontal') {
+        effect.className = 'line-effect horizontal-line';
+        effect.style.top = `${row * 100 / gameState.boardSize + 50 / gameState.boardSize}%`;
+      } else {
+        effect.className = 'line-effect vertical-line';
+        effect.style.left = `${col * 100 / gameState.boardSize + 50 / gameState.boardSize}%`;
+      }
+      
+      gameBoard.appendChild(effect);
+      
+      // 动画结束后移除特效
+      setTimeout(() => {
+        effect.remove();
+      }, 500);
+    }
+    
+    // 创建爆炸特效
+    function createBombEffect(row, col) {
+      const gameBoard = document.getElementById('game-board');
+      if (!gameBoard) return;
+      
+      const effect = document.createElement('div');
+      effect.className = 'bomb-effect';
+      
+      // 计算特效位置和大小
+      const tileSize = 100 / gameState.boardSize;
+      const size = tileSize * 3;
+      const left = col * tileSize - tileSize;
+      const top = row * tileSize - tileSize;
+      
+      effect.style.width = `${size}%`;
+      effect.style.height = `${size}%`;
+      effect.style.left = `${left}%`;
+      effect.style.top = `${top}%`;
+      
+      gameBoard.appendChild(effect);
+      
+      // 动画结束后移除特效
+      setTimeout(() => {
+        effect.remove();
       }, 500);
     }
     
@@ -1480,10 +1633,20 @@
     // 创建新方块
     function createNewTile(x, y) {
       const tileTypes = ['flower', 'star', 'moon', 'sun', 'gem', 'bell'];
+      const tileIcons = {
+        'flower': '🌸',
+        'star': '⭐',
+        'moon': '🌙',
+        'sun': '☀️',
+        'gem': '💎',
+        'bell': '🔔'
+      };
+      
       const type = tileTypes[Math.floor(Math.random() * tileTypes.length)];
       
       return {
         type,
+        icon: tileIcons[type],
         obstacle: null,
         x,
         y,
@@ -1815,6 +1978,7 @@
         gameState.collectedItems = {};
         gameState.destroyedObstacles = 0;
         gameState.bossHits = {};
+        gameState.isProcessing = false;
         
         // 设置计时器
         if (gameState.timeLimit > 0) {
@@ -2334,6 +2498,10 @@
       const shareBtn = document.getElementById('share-btn');
       if (shareBtn) shareBtn.addEventListener('click', () => addGamePlays('share'));
       
+      // 绑定邀请好友按钮
+      const inviteFriendsBtn = document.getElementById('invite-friends-btn');
+      if (inviteFriendsBtn) inviteFriendsBtn.addEventListener('click', inviteFriends);
+      
       // 绑定提现按钮
       const submitWithdrawalBtn = document.getElementById('submit-withdrawal-btn');
       if (submitWithdrawalBtn) submitWithdrawalBtn.addEventListener('click', submitWithdrawal);
@@ -2408,13 +2576,13 @@
   
   <!-- 登录页面 -->
   <div id="login-page" class="page flex flex-col items-center justify-center min-h-screen p-4">
-    <div class="text-center mb-8 fade-in">
-      <h1 class="text-5xl font-bold text-primary mb-4">万花楼消消乐</h1>
-      <p class="text-gray-600 text-lg">通过Telegram账号登录</p>
+    <div class="text-center mb-8 fade-in max-w-md">
+      <h1 class="text-5xl font-bold text-primary mb-6">万花楼消消乐</h1>
+      <p class="text-gray-600 text-lg mb-8">经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！</p>
+      <button id="telegram-login-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-10 rounded-full flex items-center text-lg pulse-animation">
+        <i class="fa fa-telegram mr-3 text-2xl"></i> 用Telegram登录
+      </button>
     </div>
-    <button id="telegram-login-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-10 rounded-full flex items-center text-lg pulse-animation">
-      <i class="fa fa-telegram mr-3 text-2xl"></i> 用Telegram登录
-    </button>
   </div>
   
   <!-- 首页 -->
@@ -2435,7 +2603,7 @@
         </button>
       </div>
       
-      <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="grid grid-cols-2 gap-6 mb-6">
         <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200">
           <div class="text-blue-500 text-sm mb-2">当前关卡</div>
           <div class="text-3xl font-bold text-blue-700" id="current-level-display">1</div>
@@ -2459,7 +2627,7 @@
       </button>
     </div>
     
-    <div class="grid grid-cols-2 gap-4 mb-6">
+    <div class="grid grid-cols-2 gap-6 mb-6">
       <button id="watch-ad-btn" class="bg-white p-5 rounded-2xl game-shadow flex flex-col items-center justify-center slide-up">
         <i class="fa fa-play-circle text-3xl text-blue-500 mb-3"></i>
         <span class="font-bold">观看广告</span>
@@ -2473,7 +2641,7 @@
     </div>
     
     <div class="bg-white rounded-2xl p-5 game-shadow">
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 gap-6">
         <button id="leaderboard-nav-btn" class="p-4 border border-gray-200 rounded-xl flex flex-col items-center justify-center hover:bg-gray-50 transition">
           <i class="fa fa-trophy text-3xl text-yellow-500 mb-2"></i>
           <span class="font-bold">排行榜</span>
@@ -2485,6 +2653,13 @@
           <span class="text-sm text-gray-500 mt-1">兑换现金</span>
         </button>
       </div>
+    </div>
+    
+    <div class="bg-white rounded-2xl p-5 game-shadow mt-6">
+      <h3 class="text-xl font-bold mb-4">邀请好友</h3>
+      <button id="invite-friends-btn" class="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold py-3 rounded-lg flex items-center justify-center">
+        <i class="fa fa-user-plus mr-2"></i> 邀请好友获得奖励
+      </button>
     </div>
   </div>
   
@@ -2642,7 +2817,7 @@
       <div class="text-center py-8 text-gray-500">
         <i class="fa fa-users text-4xl mb-3"></i>
         <p>暂无好友数据</p>
-        <button class="mt-3 bg-primary text-white px-4 py-2 rounded-lg">邀请好友</button>
+        <button class="mt-3 bg-primary text-white px-4 py-2 rounded-lg" id="invite-friends-btn-2">邀请好友</button>
       </div>
     </div>
   </div>
@@ -2959,6 +3134,43 @@
     
     .slider.round:before {
       border-radius: 50%;
+    }
+    
+    /* 邀请好友按钮样式 */
+    #invite-friends-btn, #invite-friends-btn-2 {
+      background: linear-gradient(135deg, #8A2BE2, #4B0082);
+      transition: all 0.3s ease;
+    }
+    
+    #invite-friends-btn:hover, #invite-friends-btn-2:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+    }
+    
+    /* BOSS元素样式 */
+    .boss-element {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      z-index: 2;
+    }
+    
+    .boss-hits {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      background: rgba(255, 0, 0, 0.7);
+      color: white;
+      font-size: 0.6rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      z-index: 3;
     }
   </style>
 </body>
