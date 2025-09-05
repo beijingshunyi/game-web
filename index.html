@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>开心消消乐 - Telegram版</title>
-    <!-- 外部资源 -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 修复：替换为生产环境Tailwind CDN，消除警告 -->
+    <script src="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -183,6 +184,35 @@
         .leaderboard-item:nth-child(1) { background-color: rgba(255,215,0,0.1); } /* 第1名背景（金色） */
         .leaderboard-item:nth-child(2) { background-color: rgba(192,192,192,0.1); } /* 第2名（银色） */
         .leaderboard-item:nth-child(3) { background-color: rgba(205,127,50,0.1); } /* 第3名（铜色） */
+        
+        /* 错误提示样式 */
+        .error-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 350px;
+            text-align: center;
+            z-index: 2000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .error-title {
+            color: #dc3545;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .error-desc {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -192,8 +222,21 @@
             <div class="flex flex-col items-center text-white">
                 <div class="spinner"></div>
                 <p class="mt-4 text-lg">加载中...</p>
-                <p class="text-sm mt-2">正在获取用户信息</p>
+                <p id="loading-text" class="text-sm mt-2">正在获取用户信息</p>
             </div>
+        </div>
+        
+        <!-- 新增：错误提示弹窗（非Telegram环境或获取用户信息失败时显示） -->
+        <div id="error-modal" class="error-modal hidden">
+            <div class="error-title">
+                <i class="fa fa-exclamation-circle"></i> 无法启动游戏
+            </div>
+            <div id="error-desc" class="error-desc">
+                请在Telegram内打开本游戏，以获取用户信息
+            </div>
+            <button id="close-error" class="btn-primary py-2 px-4">
+                确定
+            </button>
         </div>
         
         <!-- 2. 主菜单（加载完成后显示） -->
@@ -418,16 +461,14 @@
             isAnimating: false // 是否在动画中（避免重复操作）
         };
         
-        // Telegram Web App初始化（确保在Telegram内正常运行）
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand(); // 全屏显示
-        tg.disableVerticalSwipes(); // 禁用垂直滑动（避免页面滚动）
-
-        // ==================== DOM元素缓存（避免重复查询） ====================
+        // ==================== DOM元素缓存（新增错误弹窗元素） ====================
         const DOM = {
-            // 弹窗
+            // 基础弹窗
             loadingScreen: document.getElementById('loading-screen'),
+            loadingText: document.getElementById('loading-text'),
+            errorModal: document.getElementById('error-modal'),
+            errorDesc: document.getElementById('error-desc'),
+            closeError: document.getElementById('close-error'),
             levelCompleteModal: document.getElementById('level-complete-modal'),
             gameOverModal: document.getElementById('game-over-modal'),
             withdrawSuccessModal: document.getElementById('withdraw-success-modal'),
@@ -474,13 +515,29 @@
             closeWithdrawSuccess: document.getElementById('close-withdraw-success')
         };
 
-        // ==================== 工具函数 ====================
+        // ==================== 工具函数（增强容错和日志） ====================
+        /**
+         * 显示错误弹窗（非Telegram环境或获取用户信息失败时）
+         * @param {string} desc - 错误描述
+         */
+        function showErrorModal(desc) {
+            DOM.loadingScreen.classList.add('hidden');
+            DOM.errorDesc.textContent = desc;
+            DOM.errorModal.classList.remove('hidden');
+        }
+
         /**
          * 显示Telegram原生提示（避免自定义弹窗冲突）
          * @param {string} text - 提示内容
          * @param {boolean} isError - 是否是错误提示
          */
         function showToast(text, isError = false) {
+            // 非Telegram环境下，用alert替代
+            if (!window.Telegram?.WebApp) {
+                alert(text);
+                return;
+            }
+            const tg = window.Telegram.WebApp;
             tg.showToast(text, {
                 duration: 3000,
                 position: 'bottom',
@@ -496,6 +553,7 @@
             DOM.levelCompleteModal.classList.add('hidden');
             DOM.gameOverModal.classList.add('hidden');
             DOM.withdrawSuccessModal.classList.add('hidden');
+            DOM.errorModal.classList.add('hidden');
             // 隐藏所有功能界面（仅保留加载屏）
             DOM.mainMenu.classList.add('hidden');
             DOM.gameScreen.classList.add('hidden');
@@ -504,32 +562,42 @@
         }
 
         /**
-         * 发起API请求（统一处理错误和跨域）
+         * 发起API请求（增强错误处理和日志）
          * @param {string} path - API路径（如/api/login）
          * @param {object} options - fetch选项
          * @returns {Promise<object>} - 响应数据
          */
         async function requestAPI(path, options = {}) {
             try {
+                console.log(`[API请求] ${path}`, options.body ? JSON.parse(options.body) : '无参数');
                 const response = await fetch(`${API_BASE_URL}${path}`, {
                     ...options,
                     headers: {
                         'Content-Type': 'application/json',
                         ...options.headers
-                    }
+                    },
+                    timeout: 10000 // 10秒超时，避免无限加载
                 });
                 
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message || '接口请求失败');
+                const responseText = await response.text();
+                console.log(`[API响应] ${path}:`, responseText);
+                let data = {};
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    throw new Error(`接口返回格式错误: ${responseText}`);
+                }
+                
+                if (!response.ok) throw new Error(data.message || `接口请求失败（状态码: ${response.status}`);
                 return data;
             } catch (error) {
-                showToast(error.message, true);
-                console.error('API Error:', error);
+                console.error(`[API错误] ${path}:`, error);
+                showToast(`接口请求失败: ${error.message}`, true);
                 throw error;
             }
         }
 
-        // ==================== 核心逻辑 ====================
+        // ==================== 核心逻辑（增强Telegram初始化容错） ====================
         /**
          * 初始化：隐藏弹窗→Telegram登录→加载数据→显示主菜单
          */
@@ -540,38 +608,64 @@
                 // 显示加载屏
                 DOM.loadingScreen.classList.remove('hidden');
 
-                // 第二步：获取Telegram用户信息（必须在Telegram内打开）
+                // 第二步：检查Telegram环境（关键修复：增加环境判断）
+                console.log('[初始化] 检查Telegram环境');
+                if (!window.Telegram || !window.Telegram.WebApp) {
+                    showErrorModal('请在Telegram App或Telegram网页版内打开本游戏，以获取用户信息');
+                    return;
+                }
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.expand(); // 全屏显示
+                tg.disableVerticalSwipes(); // 禁用垂直滑动（避免页面滚动）
+
+                // 第三步：获取Telegram用户信息（关键修复：容错处理）
+                DOM.loadingText.textContent = '正在获取Telegram用户信息';
+                console.log('[初始化] 获取Telegram用户信息', tg.initDataUnsafe);
                 const telegramUser = tg.initDataUnsafe?.user;
                 if (!telegramUser || !telegramUser.id) {
-                    throw new Error('请在Telegram内打开游戏，以获取用户信息');
+                    // 情况1：用户未登录Telegram，或Telegram未授权用户信息
+                    showErrorModal('无法获取Telegram用户信息，请确保您已登录Telegram，并重新打开游戏');
+                    return;
                 }
 
-                // 第三步：用户登录（创建/查询用户账号）
+                // 第四步：用户登录（创建/查询用户账号）
+                DOM.loadingText.textContent = '正在登录游戏账号';
                 const loginRes = await requestAPI('/api/login', {
                     method: 'POST',
                     body: JSON.stringify({
                         telegramId: telegramUser.id.toString(),
-                        username: telegramUser.username,
+                        username: telegramUser.username || '',
                         fullName: `${telegramUser.first_name || ''} ${telegramUser.last_name || ''}`.trim()
                     })
                 });
                 userId = loginRes.userId;
+                console.log('[初始化] 登录成功，用户ID:', userId);
 
-                // 第四步：加载用户数据（资产、关卡进度）
+                // 第五步：加载用户数据（资产、关卡进度）
+                DOM.loadingText.textContent = '正在加载用户数据';
                 await loadUserData();
 
-                // 第五步：绑定所有事件（最后绑定，避免提前触发）
+                // 第六步：绑定所有事件（最后绑定，避免提前触发）
                 bindAllEvents();
 
-                // 第六步：切换到主菜单，隐藏加载屏
+                // 第七步：切换到主菜单，隐藏加载屏
                 DOM.loadingScreen.classList.add('hidden');
                 DOM.mainMenu.classList.remove('hidden');
+                console.log('[初始化] 完成，显示主菜单');
 
             } catch (error) {
                 // 初始化失败：隐藏加载屏，显示错误提示
                 DOM.loadingScreen.classList.add('hidden');
-                showToast(`初始化失败: ${error.message}`, true);
-                console.error('Init Error:', error);
+                console.error('[初始化错误]', error);
+                // 根据错误类型显示不同提示
+                if (error.message.includes('timeout')) {
+                    showErrorModal('网络超时，请检查网络连接后重新打开游戏');
+                } else if (error.message.includes('Failed to fetch')) {
+                    showErrorModal('无法连接到游戏服务器，请稍后再试');
+                } else {
+                    showErrorModal(`游戏初始化失败: ${error.message}`);
+                }
             }
         }
 
@@ -580,6 +674,7 @@
          */
         async function loadUserData() {
             try {
+                console.log('[加载用户数据] 用户ID:', userId);
                 const userData = await requestAPI(`/api/user?userId=${userId}`);
                 const { assets, progress } = userData;
 
@@ -587,6 +682,7 @@
                 DOM.coinBalance.textContent = assets.万花币 || 0;
                 DOM.remainingAttempts.textContent = assets.game_attempts || 6;
                 DOM.withdrawBalance.textContent = assets.万花币 || 0;
+                console.log('[加载用户数据] 资产:', assets);
 
                 // 更新签到按钮状态（判断今日是否已签到）
                 const nowBeijing = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
@@ -611,18 +707,28 @@
                     if (completedLevels.length > 0) {
                         currentLevel = Math.max(...completedLevels) + 1;
                     }
+                    console.log('[加载用户数据] 关卡进度:', progress, '当前关卡:', currentLevel);
                 }
 
             } catch (error) {
+                console.error('[加载用户数据错误]', error);
                 showToast(`加载用户数据失败: ${error.message}`, true);
-                console.error('Load User Data Error:', error);
+                throw error; // 抛出错误，让初始化流程感知
             }
         }
 
         /**
-         * 绑定所有按钮事件（避免重复绑定）
+         * 绑定所有按钮事件（避免重复绑定，新增错误弹窗关闭事件）
          */
         function bindAllEvents() {
+            // 新增：错误弹窗关闭事件
+            DOM.closeError.addEventListener('click', () => {
+                DOM.errorModal.classList.add('hidden');
+                DOM.loadingScreen.classList.remove('hidden');
+                // 关闭错误弹窗后，尝试重新初始化
+                setTimeout(init, 1000);
+            });
+
             // 1. 主菜单事件
             DOM.checkinButton.addEventListener('click', handleCheckin);
             DOM.startGame.addEventListener('click', handleStartGame);
@@ -656,6 +762,8 @@
          */
         async function handleCheckin() {
             try {
+                DOM.checkinButton.disabled = true;
+                DOM.checkinButton.textContent = '签到中...';
                 const checkinRes = await requestAPI('/api/checkin', {
                     method: 'POST',
                     body: JSON.stringify({ userId })
@@ -664,13 +772,14 @@
                 // 更新签到按钮状态
                 DOM.checkinButton.textContent = `已签到（连续${checkinRes.streak}天）`;
                 DOM.checkinButton.classList.add('checked');
-                DOM.checkinButton.disabled = true;
                 
                 // 显示奖励提示，更新资产
                 showToast(`签到成功！获得${checkinRes.reward}万花币`);
                 await loadUserData();
 
             } catch (error) {
+                DOM.checkinButton.disabled = false;
+                DOM.checkinButton.textContent = '每日签到';
                 console.error('Checkin Error:', error);
             }
         }
@@ -688,6 +797,8 @@
                 }
 
                 // 加载当前关卡数据
+                DOM.loadingScreen.classList.remove('hidden');
+                DOM.loadingText.textContent = `正在加载关卡${currentLevel}`;
                 const levelData = await requestAPI(`/api/level?levelId=${currentLevel}`);
                 if (!levelData) throw new Error('关卡数据不存在');
 
@@ -712,10 +823,12 @@
                 renderGameBoard();
 
                 // 切换到游戏界面
+                DOM.loadingScreen.classList.add('hidden');
                 DOM.mainMenu.classList.add('hidden');
                 DOM.gameScreen.classList.remove('hidden');
 
             } catch (error) {
+                DOM.loadingScreen.classList.add('hidden');
                 showToast(`开始游戏失败: ${error.message}`, true);
                 console.error('Start Game Error:', error);
             }
@@ -804,4 +917,604 @@
                 return;
             }
 
-            // 3.
+            // 3. 点击相邻方块：尝试交换（上下左右）
+            const isAdjacent = 
+                (Math.abs(selectedTile.x - x) === 1 && selectedTile.y === y) || 
+                (Math.abs(selectedTile.y - y) === 1 && selectedTile.x === x);
+
+            if (isAdjacent) {
+                // 取消之前的高亮
+                highlightTile(selectedTile.x, selectedTile.y, false);
+                // 交换方块
+                swapTiles(selectedTile.x, selectedTile.y, x, y);
+            } else {
+                // 4. 点击非相邻方块：取消之前选中，选中新方块
+                highlightTile(selectedTile.x, selectedTile.y, false);
+                gameState.selectedTile = { x, y };
+                highlightTile(x, y, true);
+            }
+        }
+
+        /**
+         * 高亮选中的方块（边框+缩放）
+         * @param {number} x - X坐标
+         * @param {number} y - Y坐标
+         * @param {boolean} isHighlight - 是否高亮
+         */
+        function highlightTile(x, y, isHighlight) {
+            const tileEl = document.querySelector(`.tile[data-x="${x}"][data-y="${y}"]`);
+            if (!tileEl) return; // 方块不存在时跳过
+            if (isHighlight) {
+                tileEl.style.border = '2px solid #ff4444';
+                tileEl.style.transform = 'scale(1.05)';
+                tileEl.style.zIndex = '10';
+            } else {
+                tileEl.style.border = 'none';
+                tileEl.style.transform = 'scale(1)';
+                tileEl.style.zIndex = '1';
+            }
+        }
+
+        /**
+         * 交换两个方块，并检查是否可消除
+         * @param {number} x1 - 第一个方块X
+         * @param {number} y1 - 第一个方块Y
+         * @param {number} x2 - 第二个方块X
+         * @param {number} y2 - 第二个方块Y
+         */
+        function swapTiles(x1, y1, x2, y2) {
+            // 交换数据
+            const temp = gameState.board[y1][x1];
+            gameState.board[y1][x1] = gameState.board[y2][x2];
+            gameState.board[y2][x2] = temp;
+
+            // 更新坐标
+            gameState.board[y1][x1].x = x1;
+            gameState.board[y1][x1].y = y1;
+            gameState.board[y2][x2].x = x2;
+            gameState.board[y2][x2].y = y2;
+
+            // 更新DOM位置（动画）
+            updateTilePositions();
+
+            // 检查交换后是否有可消除组合
+            const matches = findMatches();
+            if (matches.length > 0) {
+                // 有可消除：记录步数，延迟处理消除（等待交换动画）
+                gameState.moves++;
+                DOM.remainingMoves.textContent = gameState.movesLimit - gameState.moves;
+                setTimeout(() => processMatches(matches), 300);
+            } else {
+                // 无可消除：延迟交换回来（恢复原状）
+                setTimeout(() => {
+                    const temp = gameState.board[y1][x1];
+                    gameState.board[y1][x1] = gameState.board[y2][x2];
+                    gameState.board[y2][x2] = temp;
+
+                    gameState.board[y1][x1].x = x1;
+                    gameState.board[y1][x1].y = y1;
+                    gameState.board[y2][x2].x = x2;
+                    gameState.board[y2][x2].y = y2;
+
+                    updateTilePositions();
+                }, 300);
+            }
+
+            // 重置选中状态
+            gameState.selectedTile = null;
+        }
+
+        /**
+         * 更新所有方块的位置（用于交换、下落动画）
+         */
+        function updateTilePositions() {
+            document.querySelectorAll('.tile').forEach(tileEl => {
+                const x = parseInt(tileEl.dataset.x);
+                const y = parseInt(tileEl.dataset.y);
+                const tile = gameState.board[y][x];
+
+                // 更新DOM位置和类型
+                tileEl.style.left = `${tile.x * 20}%`;
+                tileEl.style.top = `${tile.y * 20}%`;
+                tileEl.className = `tile tile-${tile.type}`;
+                // 更新存储的坐标（避免数据不一致）
+                tileEl.dataset.x = tile.x;
+                tileEl.dataset.y = tile.y;
+            });
+        }
+
+        /**
+         * 寻找可消除的方块组合（3个及以上相同）
+         * @returns {Array} - 可消除的方块坐标数组
+         */
+        function findMatches() {
+            const matches = [];
+            const rows = gameState.board.length;
+            const cols = gameState.board[0].length;
+            const marked = Array(rows).fill().map(() => Array(cols).fill(false)); // 标记已匹配的方块
+
+            // 1. 检查水平匹配（左右3个及以上）
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols - 2; x++) {
+                    const type = gameState.board[y][x].type;
+                    if (!type) continue; // 空方块跳过
+                    // 检查当前、右1、右2是否相同
+                    if (gameState.board[y][x+1].type === type && gameState.board[y][x+2].type === type) {
+                        // 标记这3个方块
+                        for (let i = 0; i < 3; i++) {
+                            if (!marked[y][x+i]) {
+                                marked[y][x+i] = true;
+                                matches.push({ x: x+i, y });
+                            }
+                        }
+                        // 检查更长的匹配（超过3个）
+                        let i = 3;
+                        while (x + i < cols && gameState.board[y][x+i].type === type) {
+                            if (!marked[y][x+i]) {
+                                marked[y][x+i] = true;
+                                matches.push({ x: x+i, y });
+                            }
+                            i++;
+                        }
+                    }
+                }
+            }
+
+            // 2. 检查垂直匹配（上下3个及以上）
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows - 2; y++) {
+                    const type = gameState.board[y][x].type;
+                    if (!type) continue; // 空方块跳过
+                    // 检查当前、下1、下2是否相同
+                    if (gameState.board[y+1][x].type === type && gameState.board[y+2][x].type === type) {
+                        // 标记这3个方块
+                        for (let i = 0; i < 3; i++) {
+                            if (!marked[y+i][x]) {
+                                marked[y+i][x] = true;
+                                matches.push({ x, y: y+i });
+                            }
+                        }
+                        // 检查更长的匹配（超过3个）
+                        let i = 3;
+                        while (y + i < rows && gameState.board[y+i][x].type === type) {
+                            if (!marked[y+i][x]) {
+                                marked[y+i][x] = true;
+                                matches.push({ x, y: y+i });
+                            }
+                            i++;
+                        }
+                    }
+                }
+            }
+
+            return matches;
+        }
+
+        /**
+         * 处理可消除的方块（消除动画、得分、下落新方块）
+         * @param {Array} matches - 可消除的方块坐标数组
+         */
+        function processMatches(matches) {
+            if (matches.length === 0) {
+                // 没有匹配，检查游戏是否结束
+                if (gameState.moves >= gameState.movesLimit) {
+                    endGame(false);
+                }
+                return;
+            }
+
+            gameState.isAnimating = true;
+
+            // 计算得分（每个匹配方块10分）
+            const matchScore = matches.length * 10;
+            gameState.score += matchScore;
+            // 更新UI
+            DOM.currentScore.textContent = gameState.score;
+            DOM.gameCoins.textContent = Math.floor(gameState.score / 10); // 每10分=1万花币
+
+            // 消除动画（透明度变为0）
+            matches.forEach(match => {
+                const tileEl = document.querySelector(`.tile[data-x="${match.x}"][data-y="${match.y}"]`);
+                if (tileEl) {
+                    tileEl.style.opacity = '0';
+                    tileEl.style.transform = 'scale(0)';
+                }
+            });
+
+            // 等待动画完成（500ms），然后处理下落和新方块
+            setTimeout(() => {
+                // 1. 清空已消除的方块（设为null）
+                matches.forEach(match => {
+                    gameState.board[match.y][match.x].type = null;
+                });
+
+                // 2. 方块下落（填充空位置）
+                dropTiles();
+
+                // 3. 检查是否达到目标分数（提前完成关卡）
+                if (gameState.score >= gameState.targetScore) {
+                    setTimeout(() => endGame(true), 1000);
+                }
+            }, 500);
+        }
+
+        /**
+         * 方块下落（填充消除后的空位置，顶部生成新方块）
+         */
+        function dropTiles() {
+            const rows = gameState.board.length;
+            const cols = gameState.board[0].length;
+
+            // 每列单独处理下落
+            for (let x = 0; x < cols; x++) {
+                // 步骤1：下落现有方块（填充下方空位置）
+                for (let y = rows - 1; y > 0; y--) {
+                    if (gameState.board[y][x].type === null) {
+                        // 寻找上方第一个非空方块
+                        for (let yy = y - 1; yy >= 0; yy--) {
+                            if (gameState.board[yy][x].type !== null) {
+                                // 移动方块到下方空位置
+                                gameState.board[y][x].type = gameState.board[yy][x].type;
+                                gameState.board[yy][x].type = null;
+                                break; // 找到一个即可，继续处理下一个空位置
+                            }
+                        }
+                    }
+                }
+
+                // 步骤2：顶部生成新方块（填充剩余空位置）
+                for (let y = 0; y < rows; y++) {
+                    if (gameState.board[y][x].type === null) {
+                        gameState.board[y][x].type = Math.floor(Math.random() * 6) + 1; // 1-6随机类型
+                    }
+                }
+            }
+
+            // 更新方块位置（下落动画）
+            updateTilePositions();
+
+            // 等待下落动画完成（500ms），检查新的匹配
+            setTimeout(() => {
+                gameState.isAnimating = false;
+                // 检查下落后方块是否有新的匹配
+                const newMatches = findMatches();
+                if (newMatches.length > 0) {
+                    processMatches(newMatches); // 递归处理新匹配
+                } else {
+                    // 没有新匹配，检查是否还有步数
+                    if (gameState.moves >= gameState.movesLimit) {
+                        endGame(gameState.score >= gameState.targetScore);
+                    }
+                }
+            }, 500);
+        }
+
+        /**
+         * 结束游戏（提交结果、显示弹窗）
+         * @param {boolean} completed - 是否完成关卡（达到目标分数）
+         */
+        async function endGame(completed) {
+            // 避免无游戏行为时触发（关键修复：防止初始加载误触发）
+            if (gameState.moves === 0 && gameState.score === 0) {
+                return;
+            }
+
+            try {
+                DOM.loadingScreen.classList.remove('hidden');
+                DOM.loadingText.textContent = completed ? '关卡完成，提交结果...' : '游戏结束，提交结果...';
+                // 提交关卡结果到后端
+                const submitRes = await requestAPI('/api/submit-level', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        userId,
+                        levelId: currentLevel,
+                        score: gameState.score,
+                        completed
+                    })
+                });
+
+                // 隐藏加载屏，显示对应弹窗
+                DOM.loadingScreen.classList.add('hidden');
+                if (completed) {
+                    // 关卡完成弹窗
+                    DOM.finalScore.textContent = gameState.score;
+                    DOM.levelReward.textContent = submitRes.reward;
+                    DOM.levelCompleteModal.classList.remove('hidden');
+                } else {
+                    // 游戏结束弹窗
+                    DOM.gameOverScore.textContent = gameState.score;
+                    DOM.gameOverReward.textContent = submitRes.reward;
+                    DOM.gameOverModal.classList.remove('hidden');
+                }
+
+                // 更新用户数据（万花币、剩余次数）
+                await loadUserData();
+
+            } catch (error) {
+                DOM.loadingScreen.classList.add('hidden');
+                showToast(`提交游戏结果失败: ${error.message}`, true);
+                console.error('End Game Error:', error);
+            }
+        }
+
+        /**
+         * 挑战下一关（关闭关卡完成弹窗，加载下一关）
+         */
+        function handleNextLevel() {
+            DOM.levelCompleteModal.classList.add('hidden');
+            currentLevel++;
+            handleStartGame();
+        }
+
+        /**
+         * 返回主菜单（从游戏界面）
+         */
+        function handleBackToMenu() {
+            DOM.gameScreen.classList.add('hidden');
+            DOM.mainMenu.classList.remove('hidden');
+        }
+
+        /**
+         * 从游戏结束返回主菜单
+         */
+        function handleBackToMenuFromOver() {
+            DOM.gameOverModal.classList.add('hidden');
+            DOM.mainMenu.classList.remove('hidden');
+        }
+
+        /**
+         * 观看广告获取游戏次数（+2次）
+         */
+        async function handleWatchAd() {
+            try {
+                DOM.watchAd.disabled = true;
+                DOM.watchAd.textContent = '广告播放中...';
+                // 模拟广告播放（实际项目需接入广告SDK）
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                // 调用API增加次数
+                const adRes = await requestAPI('/api/watch-ad', {
+                    method: 'POST',
+                    body: JSON.stringify({ userId })
+                });
+                // 更新UI
+                DOM.remainingAttempts.textContent = adRes.newAttempts;
+                DOM.watchAd.disabled = false;
+                DOM.watchAd.textContent = '看广告+2次';
+                showToast('获得2次游戏次数');
+            } catch (error) {
+                DOM.watchAd.disabled = false;
+                DOM.watchAd.textContent = '看广告+2次';
+                console.error('Watch Ad Error:', error);
+            }
+        }
+
+        /**
+         * 分享游戏获取游戏次数（+2次）
+         */
+        async function handleShareGame() {
+            try {
+                const tg = window.Telegram?.WebApp;
+                if (!tg) {
+                    showToast('请在Telegram内分享', true);
+                    return;
+                }
+                // 调用Telegram分享功能
+                tg.shareURL(
+                    'https://beijingshunyi.github.io/game-web/', // 你的游戏链接
+                    '来玩开心消消乐，赢万花币提现！每日免费6次，看广告/分享额外获次数' // 分享文案
+                );
+                // 调用API增加次数
+                const shareRes = await requestAPI('/api/share', {
+                    method: 'POST',
+                    body: JSON.stringify({ userId })
+                });
+                // 更新UI
+                DOM.remainingAttempts.textContent = shareRes.newAttempts;
+                showToast('获得2次游戏次数');
+            } catch (error) {
+                console.error('Share Game Error:', error);
+            }
+        }
+
+        /**
+         * 游戏结束后，观看广告继续游戏
+         */
+        async function handleWatchAdAgain() {
+            try {
+                DOM.gameOverModal.classList.add('hidden');
+                DOM.loadingScreen.classList.remove('hidden');
+                DOM.loadingText.textContent = '广告播放中...';
+                // 模拟广告播放
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                // 调用API增加次数
+                const adRes = await requestAPI('/api/watch-ad', {
+                    method: 'POST',
+                    body: JSON.stringify({ userId })
+                });
+                // 更新UI并重新开始游戏
+                DOM.remainingAttempts.textContent = adRes.newAttempts;
+                DOM.loadingScreen.classList.add('hidden');
+                handleStartGame();
+            } catch (error) {
+                DOM.loadingScreen.classList.add('hidden');
+                DOM.gameOverModal.classList.remove('hidden');
+                console.error('Watch Ad Again Error:', error);
+            }
+        }
+
+        /**
+         * 游戏结束后，分享继续游戏
+         */
+        async function handleShareAgain() {
+            try {
+                const tg = window.Telegram?.WebApp;
+                if (!tg) {
+                    showToast('请在Telegram内分享', true);
+                    return;
+                }
+                DOM.gameOverModal.classList.add('hidden');
+                // 调用Telegram分享功能
+                tg.shareURL(
+                    'https://beijingshunyi.github.io/game-web/',
+                    '来玩开心消消乐，赢万花币提现！每日免费6次，看广告/分享额外获次数'
+                );
+                // 调用API增加次数
+                const shareRes = await requestAPI('/api/share', {
+                    method: 'POST',
+                    body: JSON.stringify({ userId })
+                });
+                // 更新UI并重新开始游戏
+                DOM.remainingAttempts.textContent = shareRes.newAttempts;
+                handleStartGame();
+            } catch (error) {
+                DOM.gameOverModal.classList.remove('hidden');
+                console.error('Share Again Error:', error);
+            }
+        }
+
+        /**
+         * 显示排行榜
+         */
+        async function handleShowLeaderboard() {
+            try {
+                DOM.loadingScreen.classList.remove('hidden');
+                DOM.loadingText.textContent = '加载排行榜数据...';
+                // 获取排行榜数据
+                const leaderboardRes = await requestAPI('/api/leaderboard');
+                const leaderboard = leaderboardRes;
+
+                // 清空排行榜列表
+                DOM.leaderboardList.innerHTML = '';
+                // 填充排行榜（前5名）
+                leaderboard.forEach((item, index) => {
+                    const reward = [500, 300, 200, 100, 50][index] || 0; // 1-5名奖励
+                    const leaderboardItem = document.createElement('div');
+                    leaderboardItem.className = 'leaderboard-item';
+                    leaderboardItem.innerHTML = `
+                        <div class="font-bold ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : index === 2 ? 'text-orange-500' : ''}">
+                            ${index + 1}
+                        </div>
+                        <div>${item.username || '匿名用户'}</div>
+                        <div>${item.coins}</div>
+                        <div class="font-bold text-green-600">¥${reward}</div>
+                    `;
+                    DOM.leaderboardList.appendChild(leaderboardItem);
+                });
+
+                // 切换到排行榜界面
+                DOM.loadingScreen.classList.add('hidden');
+                DOM.mainMenu.classList.add('hidden');
+                DOM.leaderboardScreen.classList.remove('hidden');
+
+            } catch (error) {
+                DOM.loadingScreen.classList.add('hidden');
+                showToast(`加载排行榜失败: ${error.message}`, true);
+                console.error('Show Leaderboard Error:', error);
+            }
+        }
+
+        /**
+         * 从排行榜返回主菜单
+         */
+        function handleBackFromLeaderboard() {
+            DOM.leaderboardScreen.classList.add('hidden');
+            DOM.mainMenu.classList.remove('hidden');
+        }
+
+        /**
+         * 显示提现界面
+         */
+        function handleShowWithdraw() {
+            // 更新当前余额（避免缓存）
+            DOM.withdrawBalance.textContent = DOM.coinBalance.textContent;
+            // 切换到提现界面
+            DOM.mainMenu.classList.add('hidden');
+            DOM.withdrawScreen.classList.remove('hidden');
+        }
+
+        /**
+         * 从提现界面返回主菜单
+         */
+        function handleBackFromWithdraw() {
+            DOM.withdrawScreen.classList.add('hidden');
+            DOM.mainMenu.classList.remove('hidden');
+        }
+
+        /**
+         * 提交提现申请
+         */
+        async function handleSubmitWithdraw() {
+            try {
+                // 校验参数
+                const amount = parseInt(DOM.withdrawAmount.value);
+                const alipayAccount = DOM.alipayAccount.value.trim();
+                const alipayName = DOM.alipayName.value.trim();
+
+                if (isNaN(amount) || amount < 1000 || amount % 1000 !== 0) {
+                    showToast('请输入1000或1000的倍数', true);
+                    return;
+                }
+
+                if (!alipayAccount) {
+                    showToast('请输入支付宝账号', true);
+                    return;
+                }
+
+                if (!alipayName) {
+                    showToast('请输入支付宝真实姓名', true);
+                    return;
+                }
+
+                // 校验余额
+                const currentBalance = parseInt(DOM.withdrawBalance.textContent);
+                if (currentBalance < amount) {
+                    showToast('万花币余额不足', true);
+                    return;
+                }
+
+                // 提交提现申请
+                DOM.loadingScreen.classList.remove('hidden');
+                DOM.loadingText.textContent = '提交提现申请...';
+                await requestAPI('/api/withdraw', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        userId,
+                        amount,
+                        alipayAccount,
+                        alipayName
+                    })
+                });
+
+                // 重置表单，显示成功弹窗
+                DOM.withdrawAmount.value = '1000';
+                DOM.alipayAccount.value = '';
+                DOM.alipayName.value = '';
+                DOM.loadingScreen.classList.add('hidden');
+                DOM.withdrawScreen.classList.add('hidden');
+                DOM.withdrawSuccessModal.classList.remove('hidden');
+
+                // 更新用户余额
+                await loadUserData();
+
+            } catch (error) {
+                DOM.loadingScreen.classList.add('hidden');
+                console.error('Submit Withdraw Error:', error);
+            }
+        }
+
+        /**
+         * 关闭提现成功弹窗
+         */
+        function handleCloseWithdrawSuccess() {
+            DOM.withdrawSuccessModal.classList.add('hidden');
+            DOM.mainMenu.classList.remove('hidden');
+        }
+
+        // ==================== 启动游戏（页面加载完成后执行） ====================
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('[游戏启动] 页面加载完成，开始初始化');
+            init();
+        });
+    </script>
+</body>
+</html>
