@@ -329,6 +329,9 @@
       background: rgba(255, 255, 255, 0.8);
       border-radius: 15px;
       box-shadow: var(--card-shadow);
+      max-width: 90vw;
+      max-height: 70vh;
+      margin: 0 auto;
     }
     
     /* 消除特效 */
@@ -610,6 +613,89 @@
       z-index: 50;
       animation: bombEffect 0.5s forwards;
     }
+    
+    /* 登录页面样式 */
+    .login-container {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .login-container::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+      animation: rotate 30s linear infinite;
+    }
+    
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .login-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+      z-index: 10;
+      text-align: center;
+    }
+    
+    .login-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    
+    .login-subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    
+    .login-features {
+      display: flex;
+      justify-content: space-around;
+      margin: 30px 0;
+    }
+    
+    .login-feature {
+      text-align: center;
+    }
+    
+    .login-feature-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+      color: white;
+      font-size: 1.5rem;
+    }
+    
+    .login-feature-text {
+      font-size: 0.9rem;
+      color: #666;
+    }
   </style>
   <script>
     // 配置Tailwind
@@ -677,7 +763,14 @@
       timeRemaining: null,
       timerInterval: null,
       isLoggedIn: false, // 用户登录状态
-      isProcessing: false // 防止重复处理
+      isProcessing: false, // 防止重复处理
+      monthlyRewards: {
+        1: 50,
+        2: 40,
+        3: 30,
+        4: 20,
+        5: 10
+      }
     };
     
     // API基础URL
@@ -947,8 +1040,10 @@
           }, 3000);
         } else if (type === 'share') {
           // 分享逻辑
-          if (tg.shareURL) {
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，可以积累提现！')}`;
+          const shareText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！\n\n游戏链接: ${window.location.href}`;
+          
+          if (tg.openLink) {
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(shareText)}`;
             tg.openLink(shareUrl);
             
             // 分享完成后增加游戏次数
@@ -977,8 +1072,9 @@
     
     // 邀请好友
     function inviteFriends() {
-      if (tg.shareURL) {
-        const inviteText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，可以积累提现！\n\n邀请链接: ${window.location.href}`;
+      const inviteText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！\n\n邀请链接: ${window.location.href}`;
+      
+      if (tg.openLink) {
         const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(inviteText)}`;
         tg.openLink(shareUrl);
         showToast('邀请链接已分享', 'success');
@@ -2064,23 +2160,23 @@
               <div class="space-y-2">
                 <div class="flex justify-between items-center p-2 bg-yellow-50 rounded-lg">
                   <span class="flex items-center"><i class="fa fa-trophy text-yellow-500 mr-2"></i>第1名</span>
-                  <span class="font-bold">¥100</span>
+                  <span class="font-bold">¥${gameState.monthlyRewards[1]}</span>
                 </div>
                 <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
                   <span class="flex items-center"><i class="fa fa-trophy text-gray-400 mr-2"></i>第2名</span>
-                  <span class="font-bold">¥50</span>
+                  <span class="font-bold">¥${gameState.monthlyRewards[2]}</span>
                 </div>
                 <div class="flex justify-between items-center p-2 bg-orange-50 rounded-lg">
                   <span class="flex items-center"><i class="fa fa-trophy text-orange-600 mr-2"></i>第3名</span>
-                  <span class="font-bold">¥30</span>
+                  <span class="font-bold">¥${gameState.monthlyRewards[3]}</span>
                 </div>
                 <div class="flex justify-between items-center p-2 bg-blue-50 rounded-lg">
                   <span>第4名</span>
-                  <span class="font-bold">¥20</span>
+                  <span class="font-bold">¥${gameState.monthlyRewards[4]}</span>
                 </div>
                 <div class="flex justify-between items-center p-2 bg-green-50 rounded-lg">
                   <span>第5名</span>
-                  <span class="font-bold">¥10</span>
+                  <span class="font-bold">¥${gameState.monthlyRewards[5]}</span>
                 </div>
               </div>
               <div class="text-sm text-gray-500 mt-3 text-center">
@@ -2502,6 +2598,9 @@
       const inviteFriendsBtn = document.getElementById('invite-friends-btn');
       if (inviteFriendsBtn) inviteFriendsBtn.addEventListener('click', inviteFriends);
       
+      const inviteFriendsBtn2 = document.getElementById('invite-friends-btn-2');
+      if (inviteFriendsBtn2) inviteFriendsBtn2.addEventListener('click', inviteFriends);
+      
       // 绑定提现按钮
       const submitWithdrawalBtn = document.getElementById('submit-withdrawal-btn');
       if (submitWithdrawalBtn) submitWithdrawalBtn.addEventListener('click', submitWithdrawal);
@@ -2575,10 +2674,32 @@
   </script>
   
   <!-- 登录页面 -->
-  <div id="login-page" class="page flex flex-col items-center justify-center min-h-screen p-4">
-    <div class="text-center mb-8 fade-in max-w-md">
-      <h1 class="text-5xl font-bold text-primary mb-6">万花楼消消乐</h1>
-      <p class="text-gray-600 text-lg mb-8">经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！</p>
+  <div id="login-page" class="page login-container">
+    <div class="login-card">
+      <h1 class="login-title">万花楼消消乐</h1>
+      <p class="login-subtitle">经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！</p>
+      
+      <div class="login-features">
+        <div class="login-feature">
+          <div class="login-feature-icon">
+            <i class="fa fa-gamepad"></i>
+          </div>
+          <div class="login-feature-text">经典玩法</div>
+        </div>
+        <div class="login-feature">
+          <div class="login-feature-icon">
+            <i class="fa fa-diamond"></i>
+          </div>
+          <div class="login-feature-text">赚取奖励</div>
+        </div>
+        <div class="login-feature">
+          <div class="login-feature-icon">
+            <i class="fa fa-money"></i>
+          </div>
+          <div class="login-feature-text">轻松提现</div>
+        </div>
+      </div>
+      
       <button id="telegram-login-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-10 rounded-full flex items-center text-lg pulse-animation">
         <i class="fa fa-telegram mr-3 text-2xl"></i> 用Telegram登录
       </button>
@@ -3025,153 +3146,4 @@
         <button id="revive-btn" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-lg font-bold">
           复活
         </button>
-        <button id="retry-level-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white py-3 rounded-lg font-bold">
-          再试一次
-        </button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- 复活模态框 -->
-  <div id="revive-modal" class="modal">
-    <div class="modal-content">
-      <h2 class="text-2xl font-bold mb-5 text-center">选择复活方式</h2>
-      <div class="space-y-4">
-        <button id="revive-ad-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-bold flex items-center justify-center">
-          <i class="fa fa-play-circle mr-2"></i> 观看广告复活
-        </button>
-        <button id="revive-coins-btn" class="w-full bg-primary hover:bg-primary/80 text-white py-4 rounded-xl font-bold flex items-center justify-center">
-          <i class="fa fa-diamond mr-2"></i> 消耗50万花币复活
-        </button>
-        <button id="revive-cancel-btn" class="w-full bg-gray-200 hover:bg-gray-300 py-4 rounded-xl font-bold">
-          取消
-        </button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- 底部导航栏 -->
-  <div class="bottom-nav">
-    <div id="nav-home" class="nav-item">
-      <i class="fa fa-home text-xl mb-1"></i>
-      <span class="text-xs">首页</span>
-    </div>
-    <div id="nav-game" class="nav-item">
-      <i class="fa fa-gamepad text-xl mb-1"></i>
-      <span class="text-xs">游戏</span>
-    </div>
-    <div id="nav-profile" class="nav-item">
-      <i class="fa fa-user text-xl mb-1"></i>
-      <span class="text-xs">个人</span>
-    </div>
-    <div id="nav-leaderboard" class="nav-item">
-      <i class="fa fa-trophy text-xl mb-1"></i>
-      <span class="text-xs">排行</span>
-    </div>
-    <div id="nav-tasks" class="nav-item">
-      <i class="fa fa-tasks text-xl mb-1"></i>
-      <span class="text-xs">任务</span>
-    </div>
-    <div id="nav-shop" class="nav-item">
-      <i class="fa fa-shopping-cart text-xl mb-1"></i>
-      <span class="text-xs">商店</span>
-    </div>
-  </div>
-  
-  <!-- 底部版权信息 -->
-  <div class="footer-info">
-    本游戏由北京修车【万花楼】赞助 由 <a href="javascript:void(0)" onclick="openTelegramChat()" class="footer-link">@bjxc010</a> 开发
-  </div>
-  
-  <style>
-    /* 开关样式 */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 24px;
-    }
-    
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-    }
-    
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 16px;
-      width: 16px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: .4s;
-    }
-    
-    input:checked + .slider {
-      background-color: var(--primary);
-    }
-    
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
-    
-    .slider.round {
-      border-radius: 24px;
-    }
-    
-    .slider.round:before {
-      border-radius: 50%;
-    }
-    
-    /* 邀请好友按钮样式 */
-    #invite-friends-btn, #invite-friends-btn-2 {
-      background: linear-gradient(135deg, #8A2BE2, #4B0082);
-      transition: all 0.3s ease;
-    }
-    
-    #invite-friends-btn:hover, #invite-friends-btn-2:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
-    }
-    
-    /* BOSS元素样式 */
-    .boss-element {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      z-index: 2;
-    }
-    
-    .boss-hits {
-      position: absolute;
-      bottom: 2px;
-      right: 2px;
-      background: rgba(255, 0, 0, 0.7);
-      color: white;
-      font-size: 0.6rem;
-      padding: 2px 4px;
-      border-radius: 4px;
-      z-index: 3;
-    }
-  </style>
-</body>
-</html>
+        <button id="retry-level-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white py-3 rounded-lg font-bold
