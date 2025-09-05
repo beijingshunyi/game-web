@@ -45,7 +45,7 @@
             box-sizing: border-box;
         }
         
-        /* 方块类型图片（替换为实际消消乐元素图） */
+        /* 方块类型图片（消消乐风格图标） */
         .tile-1 { background-image: url('https://picsum.photos/id/1/100/100'); }
         .tile-2 { background-image: url('https://picsum.photos/id/2/100/100'); }
         .tile-3 { background-image: url('https://picsum.photos/id/3/100/100'); }
@@ -69,7 +69,7 @@
             box-sizing: border-box;
         }
         
-        /* 分数栏：固定顶部，背景色匹配消消乐风格 */
+        /* 分数栏：固定顶部，消消乐风格 */
         .score-bar {
             display: flex;
             justify-content: space-between;
@@ -180,9 +180,9 @@
             border-bottom: 1px solid #eee;
         }
         
-        .leaderboard-item:nth-child(1) { background-color: rgba(255,215,0,0.1); } /* 第1名背景 */
-        .leaderboard-item:nth-child(2) { background-color: rgba(192,192,192,0.1); } /* 第2名背景 */
-        .leaderboard-item:nth-child(3) { background-color: rgba(205,127,50,0.1); } /* 第3名背景 */
+        .leaderboard-item:nth-child(1) { background-color: rgba(255,215,0,0.1); } /* 第1名背景（金色） */
+        .leaderboard-item:nth-child(2) { background-color: rgba(192,192,192,0.1); } /* 第2名（银色） */
+        .leaderboard-item:nth-child(3) { background-color: rgba(205,127,50,0.1); } /* 第3名（铜色） */
     </style>
 </head>
 <body>
@@ -403,11 +403,11 @@
     </div>
 
     <script>
-        // ==================== 全局配置与状态 ====================
-        const API_BASE_URL = 'https://你的CloudflareWorker域名'; // 替换为你的Worker域名（如xxx.workers.dev）
+        // ==================== 已填入你的Cloudflare Worker域名 ====================
+        const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev'; // 你的Worker域名（无末尾斜杠）
         let userId = null; // 当前用户ID（从Telegram登录获取）
         let currentLevel = 1; // 当前关卡
-        // 游戏状态（初始化空值，避免误触发）
+        // 游戏状态（初始化空值，避免误触发弹窗）
         const gameState = {
             board: [], // 5x5方块矩阵
             score: 0, // 当前得分
@@ -418,7 +418,7 @@
             isAnimating: false // 是否在动画中（避免重复操作）
         };
         
-        // Telegram Web App初始化（确保在页面加载完成后执行）
+        // Telegram Web App初始化（确保在Telegram内正常运行）
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand(); // 全屏显示
@@ -476,9 +476,9 @@
 
         // ==================== 工具函数 ====================
         /**
-         * 显示提示消息（基于Telegram原生弹窗）
-         * @param {string} text - 消息内容
-         * @param {boolean} isError - 是否是错误消息
+         * 显示Telegram原生提示（避免自定义弹窗冲突）
+         * @param {string} text - 提示内容
+         * @param {boolean} isError - 是否是错误提示
          */
         function showToast(text, isError = false) {
             tg.showToast(text, {
@@ -489,14 +489,14 @@
         }
 
         /**
-         * 隐藏所有界面和弹窗（初始化时调用）
+         * 隐藏所有界面和弹窗（解决初始化弹窗异常）
          */
         function hideAllElements() {
             // 隐藏所有弹窗
             DOM.levelCompleteModal.classList.add('hidden');
             DOM.gameOverModal.classList.add('hidden');
             DOM.withdrawSuccessModal.classList.add('hidden');
-            // 隐藏所有功能界面
+            // 隐藏所有功能界面（仅保留加载屏）
             DOM.mainMenu.classList.add('hidden');
             DOM.gameScreen.classList.add('hidden');
             DOM.leaderboardScreen.classList.add('hidden');
@@ -504,10 +504,10 @@
         }
 
         /**
-         * 发起API请求（统一处理错误和JSON解析）
+         * 发起API请求（统一处理错误和跨域）
          * @param {string} path - API路径（如/api/login）
          * @param {object} options - fetch选项
-         * @returns {Promise<object>} - API响应数据
+         * @returns {Promise<object>} - 响应数据
          */
         async function requestAPI(path, options = {}) {
             try {
@@ -520,7 +520,7 @@
                 });
                 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.message || 'API Request Failed');
+                if (!response.ok) throw new Error(data.message || '接口请求失败');
                 return data;
             } catch (error) {
                 showToast(error.message, true);
@@ -531,7 +531,7 @@
 
         // ==================== 核心逻辑 ====================
         /**
-         * 初始化：隐藏弹窗→获取Telegram用户→登录→加载数据→显示主菜单
+         * 初始化：隐藏弹窗→Telegram登录→加载数据→显示主菜单
          */
         async function init() {
             try {
@@ -546,7 +546,7 @@
                     throw new Error('请在Telegram内打开游戏，以获取用户信息');
                 }
 
-                // 第三步：用户登录（Telegram ID授权）
+                // 第三步：用户登录（创建/查询用户账号）
                 const loginRes = await requestAPI('/api/login', {
                     method: 'POST',
                     body: JSON.stringify({
@@ -563,11 +563,12 @@
                 // 第五步：绑定所有事件（最后绑定，避免提前触发）
                 bindAllEvents();
 
-                // 第六步：显示主菜单，隐藏加载屏
+                // 第六步：切换到主菜单，隐藏加载屏
                 DOM.loadingScreen.classList.add('hidden');
                 DOM.mainMenu.classList.remove('hidden');
 
             } catch (error) {
+                // 初始化失败：隐藏加载屏，显示错误提示
                 DOM.loadingScreen.classList.add('hidden');
                 showToast(`初始化失败: ${error.message}`, true);
                 console.error('Init Error:', error);
@@ -575,14 +576,14 @@
         }
 
         /**
-         * 加载用户数据（资产、关卡进度）
+         * 加载用户数据（资产、签到状态、关卡进度）
          */
         async function loadUserData() {
             try {
                 const userData = await requestAPI(`/api/user?userId=${userId}`);
                 const { assets, progress } = userData;
 
-                // 更新资产显示
+                // 更新资产显示（万花币、剩余次数）
                 DOM.coinBalance.textContent = assets.万花币 || 0;
                 DOM.remainingAttempts.textContent = assets.game_attempts || 6;
                 DOM.withdrawBalance.textContent = assets.万花币 || 0;
@@ -619,7 +620,7 @@
         }
 
         /**
-         * 绑定所有事件（避免重复绑定）
+         * 绑定所有按钮事件（避免重复绑定）
          */
         function bindAllEvents() {
             // 1. 主菜单事件
@@ -651,7 +652,31 @@
         }
 
         /**
-         * 开始游戏：加载关卡数据→初始化游戏状态→渲染棋盘
+         * 处理每日签到（获取万花币奖励）
+         */
+        async function handleCheckin() {
+            try {
+                const checkinRes = await requestAPI('/api/checkin', {
+                    method: 'POST',
+                    body: JSON.stringify({ userId })
+                });
+                
+                // 更新签到按钮状态
+                DOM.checkinButton.textContent = `已签到（连续${checkinRes.streak}天）`;
+                DOM.checkinButton.classList.add('checked');
+                DOM.checkinButton.disabled = true;
+                
+                // 显示奖励提示，更新资产
+                showToast(`签到成功！获得${checkinRes.reward}万花币`);
+                await loadUserData();
+
+            } catch (error) {
+                console.error('Checkin Error:', error);
+            }
+        }
+
+        /**
+         * 处理开始游戏（加载关卡数据，渲染棋盘）
          */
         async function handleStartGame() {
             try {
@@ -666,7 +691,7 @@
                 const levelData = await requestAPI(`/api/level?levelId=${currentLevel}`);
                 if (!levelData) throw new Error('关卡数据不存在');
 
-                // 初始化游戏状态（重置为初始值，避免残留）
+                // 初始化游戏状态（重置为初始值）
                 gameState.score = 0;
                 gameState.moves = 0;
                 gameState.targetScore = levelData.target_score;
@@ -739,7 +764,7 @@
                 row.forEach(tile => {
                     const tileEl = document.createElement('div');
                     tileEl.className = `tile tile-${tile.type}`;
-                    // 计算位置（20%宽度+间距）
+                    // 计算位置（20%宽度，无间距）
                     tileEl.style.left = `${tile.x * 20}%`;
                     tileEl.style.top = `${tile.y * 20}%`;
                     // 存储坐标（用于点击事件）
@@ -754,7 +779,7 @@
         }
 
         /**
-         * 选择方块：处理选中、取消选中、交换逻辑
+         * 处理选择方块（选中、取消、交换逻辑）
          * @param {number} x - 方块X坐标
          * @param {number} y - 方块Y坐标
          */
@@ -779,106 +804,4 @@
                 return;
             }
 
-            // 3. 点击相邻方块：尝试交换（上下左右）
-            const isAdjacent = 
-                (Math.abs(selectedTile.x - x) === 1 && selectedTile.y === y) || 
-                (Math.abs(selectedTile.y - y) === 1 && selectedTile.x === x);
-
-            if (isAdjacent) {
-                // 取消之前的高亮
-                highlightTile(selectedTile.x, selectedTile.y, false);
-                // 交换方块
-                swapTiles(selectedTile.x, selectedTile.y, x, y);
-            } else {
-                // 4. 点击非相邻方块：取消之前选中，选中新方块
-                highlightTile(selectedTile.x, selectedTile.y, false);
-                gameState.selectedTile = { x, y };
-                highlightTile(x, y, true);
-            }
-        }
-
-        /**
-         * 高亮选中的方块（边框+缩放）
-         * @param {number} x - X坐标
-         * @param {number} y - Y坐标
-         * @param {boolean} isHighlight - 是否高亮
-         */
-        function highlightTile(x, y, isHighlight) {
-            const tileEl = document.querySelector(`.tile[data-x="${x}"][data-y="${y}"]`);
-            if (isHighlight) {
-                tileEl.style.border = '2px solid #ff4444';
-                tileEl.style.transform = 'scale(1.05)';
-                tileEl.style.zIndex = '10';
-            } else {
-                tileEl.style.border = 'none';
-                tileEl.style.transform = 'scale(1)';
-                tileEl.style.zIndex = '1';
-            }
-        }
-
-        /**
-         * 交换两个方块，并检查是否可消除
-         * @param {number} x1 - 第一个方块X
-         * @param {number} y1 - 第一个方块Y
-         * @param {number} x2 - 第二个方块X
-         * @param {number} y2 - 第二个方块Y
-         */
-        function swapTiles(x1, y1, x2, y2) {
-            // 交换数据
-            const temp = gameState.board[y1][x1];
-            gameState.board[y1][x1] = gameState.board[y2][x2];
-            gameState.board[y2][x2] = temp;
-
-            // 更新坐标
-            gameState.board[y1][x1].x = x1;
-            gameState.board[y1][x1].y = y1;
-            gameState.board[y2][x2].x = x2;
-            gameState.board[y2][x2].y = y2;
-
-            // 更新DOM位置（动画）
-            updateTilePositions();
-
-            // 检查交换后是否有可消除组合
-            const matches = findMatches();
-            if (matches.length > 0) {
-                // 有可消除：记录步数，延迟处理消除（等待交换动画）
-                gameState.moves++;
-                DOM.remainingMoves.textContent = gameState.movesLimit - gameState.moves;
-                setTimeout(() => processMatches(matches), 300);
-            } else {
-                // 无可消除：延迟交换回来（恢复原状）
-                setTimeout(() => {
-                    const temp = gameState.board[y1][x1];
-                    gameState.board[y1][x1] = gameState.board[y2][x2];
-                    gameState.board[y2][x2] = temp;
-
-                    gameState.board[y1][x1].x = x1;
-                    gameState.board[y1][x1].y = y1;
-                    gameState.board[y2][x2].x = x2;
-                    gameState.board[y2][x2].y = y2;
-
-                    updateTilePositions();
-                }, 300);
-            }
-
-            // 重置选中状态
-            gameState.selectedTile = null;
-        }
-
-        /**
-         * 更新所有方块的位置（用于交换、下落动画）
-         */
-        function updateTilePositions() {
-            document.querySelectorAll('.tile').forEach(tileEl => {
-                const x = parseInt(tileEl.dataset.x);
-                const y = parseInt(tileEl.dataset.y);
-                const tile = gameState.board[y][x];
-
-                // 更新DOM位置和类型
-                tileEl.style.left = `${tile.x * 20}%`;
-                tileEl.style.top = `${tile.y * 20}%`;
-                tileEl.className = `tile tile-${tile.type}`;
-                // 更新存储的坐标（避免数据不一致）
-                tileEl.dataset.x = tile.x;
-                tileEl.dataset.y = tile.y;
-            });
+            // 3.
