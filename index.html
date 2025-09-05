@@ -698,6 +698,13 @@
       color: #666;
     }
     
+    /* 登录按钮样式 */
+    .login-button-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    
     /* 开关样式 */
     .switch {
       position: relative;
@@ -770,6 +777,37 @@
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
+    
+    // 音效管理
+    const soundManager = {
+      // 音效文件URL - 替换为实际音效文件路径
+      sounds: {
+        match: 'https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3',
+        special: 'https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3',
+        click: 'https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3',
+        complete: 'https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3',
+        fail: 'https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'
+      },
+      
+      // 播放音效
+      play: function(soundName) {
+        try {
+          const audio = new Audio(this.sounds[soundName]);
+          audio.play().catch(e => console.log('音效播放失败:', e));
+        } catch (e) {
+          console.log('音效加载失败:', e);
+        }
+      },
+      
+      // 静音状态
+      muted: false,
+      
+      // 切换静音
+      toggleMute: function() {
+        this.muted = !this.muted;
+        return this.muted;
+      }
+    };
     
     // 全局状态管理
     const gameState = {
@@ -873,6 +911,11 @@
     
     // 页面导航
     function navigateTo(pageId) {
+      // 播放点击音效
+      if (!soundManager.muted) {
+        soundManager.play('click');
+      }
+      
       // 隐藏所有页面
       document.querySelectorAll('.page').forEach(page => {
         page.classList.add('hidden');
@@ -1092,12 +1135,12 @@
             }
           }, 3000);
         } else if (type === 'share') {
-          // 分享逻辑
-          const shareText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！\n\n游戏链接: ${window.location.href}`;
+          // 分享逻辑 - 使用Telegram Web App的分享功能
+          const shareText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！`;
           
-          if (tg.openLink) {
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(shareText)}`;
-            tg.openLink(shareUrl);
+          if (tg.shareText) {
+            // 使用Telegram Web App的shareText方法
+            tg.shareText(shareText);
             
             // 分享完成后增加游戏次数
             setTimeout(async () => {
@@ -1126,11 +1169,11 @@
     
     // 邀请好友
     function inviteFriends() {
-      const inviteText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！\n\n邀请链接: ${window.location.href}`;
+      const inviteText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！`;
       
-      if (tg.openLink) {
-        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(inviteText)}`;
-        tg.openLink(shareUrl);
+      if (tg.shareText) {
+        // 使用Telegram Web App的shareText方法
+        tg.shareText(inviteText);
         showToast('邀请链接已分享', 'success');
       } else {
         showToast('分享功能暂不可用', 'error');
@@ -1368,6 +1411,11 @@
     function handleTileMouseDown(row, col) {
       if (gameState.isProcessing) return;
       
+      // 播放点击音效
+      if (!soundManager.muted) {
+        soundManager.play('click');
+      }
+      
       gameState.isDragging = true;
       gameState.dragStartTile = { row, col };
       gameState.selectedTiles = [{ row, col }];
@@ -1526,7 +1574,7 @@
       return length;
     }
     
-    // 处理匹配
+    // 处理匹配 - 修复卡顿问题
     function processMatches(matches) {
       if (gameState.isProcessing) return;
       
@@ -1537,6 +1585,11 @@
         checkGameEnd();
         gameState.isProcessing = false;
         return;
+      }
+      
+      // 播放匹配音效
+      if (!soundManager.muted) {
+        soundManager.play('match');
       }
       
       // 标记匹配的方块
@@ -1592,7 +1645,7 @@
           }
         });
         
-        // 创建特殊元素
+        // 创建特殊元素 - 修复卡顿问题
         if (match.length >= 4) {
           const centerTile = match[Math.floor(match.length / 2)];
           const tile = gameState.gameBoard[centerTile.row][centerTile.col];
@@ -1660,7 +1713,7 @@
       }, 500);
     }
     
-    // 创建爆炸特效
+    // 创建爆炸特效 - 修复卡顿问题
     function createBombEffect(row, col) {
       const gameBoard = document.getElementById('game-board');
       if (!gameBoard) return;
@@ -1680,6 +1733,11 @@
       effect.style.top = `${top}%`;
       
       gameBoard.appendChild(effect);
+      
+      // 播放特殊音效
+      if (!soundManager.muted) {
+        soundManager.play('special');
+      }
       
       // 动画结束后移除特效
       setTimeout(() => {
@@ -2048,6 +2106,11 @@
     
     // 显示关卡完成
     async function showLevelComplete() {
+      // 播放完成音效
+      if (!soundManager.muted) {
+        soundManager.play('complete');
+      }
+      
       const modal = document.getElementById('level-complete-modal');
       if (modal) modal.classList.add('show');
       
@@ -2080,6 +2143,11 @@
     
     // 显示关卡失败
     function showLevelFailed() {
+      // 播放失败音效
+      if (!soundManager.muted) {
+        soundManager.play('fail');
+      }
+      
       const modal = document.getElementById('level-failed-modal');
       if (modal) modal.classList.add('show');
       
@@ -2594,6 +2662,9 @@
     
     // 页面加载完成后初始化
     window.addEventListener('DOMContentLoaded', () => {
+      // 尝试自动登录
+      tryAutoLogin();
+      
       // 绑定登录按钮
       const telegramLoginBtn = document.getElementById('telegram-login-btn');
       if (telegramLoginBtn) {
@@ -2729,9 +2800,57 @@
       const withdrawalNavBtn = document.getElementById('withdrawal-nav-btn');
       if (withdrawalNavBtn) withdrawalNavBtn.addEventListener('click', () => navigateTo('withdrawal-page'));
       
-      // 初始化用户
-      initUser();
+      // 绑定音效开关
+      const soundToggle = document.getElementById('sound-toggle');
+      if (soundToggle) {
+        soundToggle.addEventListener('change', () => {
+          soundManager.toggleMute();
+        });
+      }
     });
+    
+    // 尝试自动登录
+    async function tryAutoLogin() {
+      try {
+        // 从URL获取用户信息
+        const urlParams = new URLSearchParams(window.location.search);
+        const telegramId = urlParams.get('user_id');
+        
+        if (telegramId) {
+          // 如果URL中有用户ID，直接初始化用户
+          await initUser();
+          return;
+        }
+        
+        // 尝试从Telegram Web App获取用户信息
+        if (tg.initDataUnsafe?.user) {
+          const user = tg.initDataUnsafe.user;
+          await apiRequest('login', 'POST', {
+            queryId: tg.initDataUnsafe.query_id,
+            userId: user.id,
+            firstName: user.first_name,
+            lastName: user.last_name || '',
+            username: user.username || ''
+          });
+          
+          // 更新URL参数但不刷新页面
+          const newUrl = new URL(window.location);
+          newUrl.searchParams.set('user_id', user.id);
+          newUrl.searchParams.set('username', user.username || '');
+          window.history.pushState({}, '', newUrl);
+          
+          // 初始化用户
+          await initUser();
+          return;
+        }
+        
+        // 如果无法自动登录，显示登录页面
+        navigateTo('login-page');
+      } catch (error) {
+        console.error('自动登录失败:', error);
+        navigateTo('login-page');
+      }
+    }
   </script>
   
   <!-- 登录页面 -->
@@ -2761,9 +2880,11 @@
         </div>
       </div>
       
-      <button id="telegram-login-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-10 rounded-full flex items-center text-lg pulse-animation">
-        <i class="fa fa-telegram mr-3 text-2xl"></i> 用Telegram登录
-      </button>
+      <div class="login-button-container">
+        <button id="telegram-login-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-10 rounded-full flex items-center text-lg pulse-animation">
+          <i class="fa fa-telegram mr-3 text-2xl"></i> 用Telegram登录
+        </button>
+      </div>
     </div>
   </div>
   
@@ -2952,7 +3073,7 @@
         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
           <span>音效</span>
           <label class="switch">
-            <input type="checkbox" checked>
+            <input type="checkbox" id="sound-toggle" checked>
             <span class="slider round"></span>
           </label>
         </div>
