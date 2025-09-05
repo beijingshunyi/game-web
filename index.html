@@ -708,7 +708,7 @@
       gameState.gameBoard.forEach((row, rowIndex) => {
         row.forEach((tile, colIndex) => {
           const tileElement = document.createElement('div');
-          tileElement.className = `relative flex items-center justify-center rounded-md tile-transition cursor-pointer overflow-hidden ${
+          tileElement.className = `relative flex items-center justify-center rounded-md cursor-pointer overflow-hidden ${
             tile.selected ? 'ring-4 ring-accent scale-110 z-10' : ''
           }`;
           
@@ -2238,12 +2238,7 @@
     
     // 页面加载完成后初始化
     window.addEventListener('DOMContentLoaded', () => {
-      // 绑定导航事件
-      document.getElementById('home-btn').addEventListener('click', () => navigateTo('home-page'));
-      document.getElementById('home-btn-2').addEventListener('click', () => navigateTo('home-page'));
-      document.getElementById('home-btn-3').addEventListener('click', () => navigateTo('home-page'));
-      document.getElementById('home-btn-4').addEventListener('click', () => navigateTo('home-page'));
-      
+      // 绑定导航事件 - 修复了原代码中引用不存在元素的问题
       document.getElementById('play-btn').addEventListener('click', () => navigateTo('game-page'));
       document.getElementById('leaderboard-nav-btn').addEventListener('click', () => navigateTo('leaderboard-page'));
       document.getElementById('withdrawal-nav-btn').addEventListener('click', () => {
@@ -2412,4 +2407,22 @@
   </div>
   
   <!-- 游戏页面 -->
-  
+  <div id="game-page" class="page hidden p-4">
+    <div class="flex justify-between items-center mb-4">
+      <button id="home-btn" class="bg-white w-10 h-10 rounded-full flex items-center justify-center game-shadow" onclick="navigateTo('home-page')">
+        <i class="fa fa-arrow-left text-primary"></i>
+      </button>
+      <div class="text-center">
+        <h2 class="font-bold text-lg">关卡 <span id="current-game-level">1</span></h2>
+        <div id="level-objective" class="text-sm text-gray-600"></div>
+      </div>
+      <div class="w-10"></div> <!-- 占位元素，保持布局平衡 -->
+    </div>
+    
+    <!-- 游戏信息 -->
+    <div class="grid grid-cols-3 gap-2 mb-4">
+      <div class="bg-white rounded-lg p-2 text-center game-shadow">
+        <div class="text-xs text-gray-500">当前得分</div>
+        <div class="font-bold text-lg" id="game-score">0</div>
+      </div>
+      <div class="bg-white rounded-lg p-2 text-center game-shadow
