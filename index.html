@@ -21,6 +21,7 @@
     
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
     }
     
     body {
@@ -30,6 +31,10 @@
       overflow-x: hidden;
       position: relative;
       padding-bottom: 60px; /* 为底部栏留出空间 */
+      /* 优化性能 */
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      will-change: transform;
     }
     
     /* 游戏元素样式 */
@@ -37,12 +42,16 @@
       border-radius: 10px;
       position: relative;
       overflow: hidden;
-      transition: all 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease; /* 缩短过渡时间 */
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.8rem;
+      /* 优化性能 */
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      will-change: transform;
     }
     
     .game-tile:hover {
@@ -310,18 +319,18 @@
     }
     
     .fade-in {
-      animation: fadeIn 0.3s;
+      animation: fadeIn 0.5s;
     }
     
     .slide-up {
-      animation: slideUp 0.3s;
+      animation: slideUp 0.5s;
     }
     
     .explode-animation {
-      animation: explode 0.3s forwards;
+      animation: explode 0.5s forwards;
     }
     
-    /* 游戏板样式 */
+    /* 游戏板样式 - 优化性能 */
     #game-board {
       display: grid;
       gap: 5px;
@@ -332,9 +341,13 @@
       max-width: 75vw; /* 缩小游戏区域 */
       max-height: 60vh; /* 缩小游戏区域 */
       margin: 0 auto;
+      /* 优化性能 */
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      will-change: transform;
     }
     
-    /* 消除特效 */
+    /* 消除特效 - 优化性能 */
     .match-effect {
       position: absolute;
       top: 0;
@@ -596,14 +609,14 @@
       height: 3px;
       width: 100%;
       left: 0;
-      animation: lineEffect 0.3s forwards;
+      animation: lineEffect 0.5s forwards;
     }
     
     .vertical-line {
       width: 3px;
       height: 100%;
       top: 0;
-      animation: lineEffect 0.3s forwards;
+      animation: lineEffect 0.5s forwards;
     }
     
     .bomb-effect {
@@ -611,7 +624,7 @@
       border-radius: 50%;
       background: radial-gradient(circle, rgba(255,100,100,0.8) 0%, rgba(255,100,100,0) 70%);
       z-index: 50;
-      animation: bombEffect 0.3s forwards;
+      animation: bombEffect 0.5s forwards;
     }
     
     /* 登录页面样式 */
@@ -1138,25 +1151,30 @@
           // 分享逻辑 - 使用Telegram Web App的分享功能
           const shareText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！`;
           
-          // 使用Telegram Web App的shareText方法
-          tg.shareText(shareText);
-          
-          // 分享完成后增加游戏次数
-          setTimeout(async () => {
-            const result = await apiRequest('add-plays', 'POST', {
-              telegram_id: gameState.user.telegram_id,
-              type
-            });
+          try {
+            // 使用Telegram Web App的shareText方法
+            tg.shareText(shareText);
             
-            if (result.success) {
-              gameState.gamePlays = result.gamePlays;
-              updateUserInterface();
-              const remainingPlays = Math.max(0, 6 - result.gamePlays.free_plays_used);
-              showToast(`获得2次游戏机会！剩余次数: ${remainingPlays}`, 'success');
-            } else {
-              showToast(result.message);
-            }
-          }, 2000);
+            // 分享完成后增加游戏次数
+            setTimeout(async () => {
+              const result = await apiRequest('add-plays', 'POST', {
+                telegram_id: gameState.user.telegram_id,
+                type
+              });
+              
+              if (result.success) {
+                gameState.gamePlays = result.gamePlays;
+                updateUserInterface();
+                const remainingPlays = Math.max(0, 6 - result.gamePlays.free_plays_used);
+                showToast(`获得2次游戏机会！剩余次数: ${remainingPlays}`, 'success');
+              } else {
+                showToast(result.message);
+              }
+            }, 2000);
+          } catch (error) {
+            console.error('分享失败:', error);
+            showToast('分享功能暂不可用', 'error');
+          }
         }
       } catch (error) {
         console.error('增加游戏次数失败:', error);
@@ -1167,11 +1185,12 @@
     function inviteFriends() {
       const inviteText = `来玩万花楼消消乐，经典消消乐强势登陆Telegram平台，游戏的同时可以赚取"万花币"，轻松积累提现！`;
       
-      if (tg.shareText) {
+      try {
         // 使用Telegram Web App的shareText方法
         tg.shareText(inviteText);
         showToast('邀请链接已分享', 'success');
-      } else {
+      } catch (error) {
+        console.error('分享失败:', error);
         showToast('分享功能暂不可用', 'error');
       }
     }
@@ -1285,11 +1304,13 @@
       return board;
     }
     
-    // 渲染游戏板
+    // 渲染游戏板 - 优化性能
     function renderGameBoard() {
       const gameBoardElement = document.getElementById('game-board');
       if (!gameBoardElement) return;
       
+      // 使用文档片段减少DOM重绘
+      const fragment = document.createDocumentFragment();
       gameBoardElement.innerHTML = '';
       
       // 设置网格尺寸
@@ -1357,9 +1378,11 @@
             handleTileMouseUp(rowIndex, colIndex);
           });
           
-          gameBoardElement.appendChild(tileElement);
+          fragment.appendChild(tileElement);
         });
       });
+      
+      gameBoardElement.appendChild(fragment);
       
       // 更新游戏信息显示
       updateGameInfo();
@@ -1680,13 +1703,9 @@
         setTimeout(() => {
           gameState.isProcessing = false;
           const newMatches = findMatches();
-          if (newMatches.length > 0) {
-            processMatches(newMatches);
-          } else {
-            checkGameEnd();
-          }
-        }, 300);
-      }, 300);
+          processMatches(newMatches);
+        }, 500);
+      }, 500);
     }
     
     // 创建直线特效
@@ -1710,7 +1729,7 @@
       // 动画结束后移除特效
       setTimeout(() => {
         effect.remove();
-      }, 300);
+      }, 500);
     }
     
     // 创建爆炸特效 - 修复卡顿问题
@@ -1742,7 +1761,7 @@
       // 动画结束后移除特效
       setTimeout(() => {
         effect.remove();
-      }, 300);
+      }, 500);
     }
     
     // 检查L/T型消除
@@ -1786,7 +1805,7 @@
       }
     }
     
-    // 触发特殊效果
+    // 触发特殊效果 - 修复卡顿问题
     function triggerSpecialEffect(row, col, specialType) {
       if (specialType === 'line') {
         // 直线特效：消除整行或整列
@@ -1867,7 +1886,7 @@
       };
     }
     
-    // 填充空白位置
+    // 填充空白位置 - 优化性能
     function fillEmptySpaces() {
       // 处理每一列
       for (let j = 0; j < gameState.gameBoard[0].length; j++) {
@@ -2434,16 +2453,16 @@
       }
     }
     
-    // 加载商店
+    // 加载商店 - 调整道具价格
     async function loadShop() {
       try {
-        // 模拟商品数据 - 调整道具价格
+        // 模拟商品数据 - 调整价格
         const items = [
           { id: 1, name: '洗牌道具', description: '重新排列当前棋盘', icon: 'fa-random', cost: 20, count: gameState.powerups.shuffle },
           { id: 2, name: '爆炸道具', description: '消除3x3范围内的所有元素', icon: 'fa-bomb', cost: 40, count: gameState.powerups.bomb },
           { id: 3, name: '步数道具', description: '增加5步额外步数', icon: 'fa-plus', cost: 30, count: gameState.powerups.steps },
-          { id: 4, name: '花朵皮肤', description: '炫彩花朵元素皮肤', icon: 'fa-paint-brush', cost: 100, owned: false },
-          { id: 5, name: '夏日背景', description: '夏日海滩主题背景', icon: 'fa-image', cost: 150, owned: false }
+          { id: 4, name: '花朵皮肤', description: '炫彩花朵元素皮肤', icon: 'fa-paint-brush', cost: 150, owned: false },
+          { id: 5, name: '夏日背景', description: '夏日海滩主题背景', icon: 'fa-image', cost: 200, owned: false }
         ];
         
         const shopElement = document.getElementById('shop-items');
@@ -3349,9 +3368,9 @@
     </div>
   </div>
   
-  <!-- 底部版权信息 - 修改为指定内容 -->
+  <!-- 底部版权信息 -->
   <div class="footer-info">
-    <p>本游戏由北京修车【万花楼】赞助 由 <a href="javascript:void(0)" onclick="openTelegramChat()" class="footer-link">@bjxc010</a> 开发</p>
+    <p>本游戏由北京修车【万花楼】赞助 由 <a href="https://t.me/bjxc010" target="_blank" class="footer-link">@bjxc010</a> 开发</p>
   </div>
 </body>
 </html>
