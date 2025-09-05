@@ -8,19 +8,30 @@
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    // 配置Tailwind
+    // Tailwind配置（万花主题色+游戏风格）
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            primary: '#FF6B6B',
-            secondary: '#4ECDC4',
-            accent: '#FFD166',
-            dark: '#292F36',
-            light: '#F7FFF7'
+            primary: '#E879F9', // 粉紫主色
+            secondary: '#60A5FA', // 浅蓝辅助色
+            accent: '#FBBF24', // 暖黄强调色
+            dark: '#1E293B',
+            light: '#F8FAFC',
+            flower: '#EC4899', // 花朵红
+            star: '#F59E0B', // 星星黄
+            moon: '#8B5CF6', // 月亮紫
+            sun: '#EF4444', // 太阳红
+            gem: '#10B981', // 宝石绿
+            bell: '#3B82F6' // 铃铛蓝
           },
           fontFamily: {
-            game: ['"Comic Sans MS"', '"Marker Felt"', 'sans-serif']
+            game: ['"PingFang SC"', '"Microsoft YaHei"', 'sans-serif']
+          },
+          boxShadow: {
+            'game': '0 8px 24px rgba(149, 157, 165, 0.2)',
+            'card': '0 4px 12px rgba(149, 157, 165, 0.15)',
+            'btn': '0 2px 8px rgba(232, 121, 249, 0.4)'
           }
         }
       }
@@ -28,65 +39,691 @@
   </script>
   <style type="text/tailwindcss">
     @layer utilities {
-      .content-auto {
-        content-visibility: auto;
+      .content-auto { content-visibility: auto; }
+      .text-shadow { text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+      .bg-gradient-game { background: linear-gradient(135deg, #F0ABFC 0%, #60A5FA 100%); }
+      .tile-hover { transform: scale(1.08); transition: transform 0.2s ease; }
+      .tile-active { transform: scale(1.1); box-shadow: 0 0 12px rgba(232, 121, 249, 0.6); }
+      .particle { position: absolute; pointer-events: none; animation: particle 0.8s ease-out forwards; }
+      .shuffle-animation { animation: shuffle 0.5s ease-in-out; }
+      .progress-bar { transition: width 0.5s ease; }
+      .btn-hover { transition: all 0.3s ease; }
+      .btn-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(232, 121, 249, 0.5); }
+      .card-hover { transition: all 0.3s ease; }
+      .card-hover:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(149, 157, 165, 0.2); }
+      .level-lock { position: relative; }
+      .level-lock::after {
+        content: '\f023';
+        font-family: 'FontAwesome';
+        position: absolute;
+        inset-0 flex items-center justify-center;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        font-size: 24px;
+        border-radius: 8px;
       }
-      .game-shadow {
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
-      }
-      .tile-transition {
-        transition: all 0.2s ease-in-out;
-      }
-      .tile-hover {
-        transform: scale(1.05);
-      }
-      .pulse-animation {
-        animation: pulse 1.5s infinite;
-      }
-      @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-      }
+    }
+
+    /* 粒子特效（消除反馈） */
+    @keyframes particle {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-50px) scale(0.5); }
+    }
+
+    /* 洗牌动画 */
+    @keyframes shuffle {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(10deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    /* 消除动画 */
+    @keyframes eliminate {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    .eliminate { animation: eliminate 0.3s ease-out forwards; }
+
+    /* 特效动画（直线/爆炸/十字） */
+    @keyframes lineEffect {
+      0% { transform: scaleX(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
+
+    .line-effect { animation: lineEffect 0.5s ease-out forwards; transform-origin: left; }
+
+    @keyframes bombEffect {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.5); opacity: 0.8; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+
+    .bomb-effect { 
+      animation: bombEffect 0.6s ease-out forwards; 
+      position: absolute; 
+      border-radius: 50%; 
+      background: rgba(245, 158, 11, 0.6); 
+      z-index: 10;
+    }
+
+    @keyframes crossEffect {
+      0% { transform: scale(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    .cross-effect { 
+      animation: crossEffect 0.6s ease-out forwards; 
+      position: absolute; 
+      z-index: 10;
     }
   </style>
 </head>
 <body class="bg-light min-h-screen font-game text-dark overflow-x-hidden">
-  <!-- Telegram Web App初始化 -->
+  <!-- 公共底部（所有页面都会显示） -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white py-2 px-4 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-40">
+    <div class="text-center text-sm text-gray-600">
+      本游戏由北京修车【万花楼】赞助 
+      <a href="tg://resolve?domain=bjxc010" class="text-primary font-medium hover:underline" target="_blank">
+        由 @bjxc010 开发
+      </a>
+    </div>
+  </div>
+
+  <!-- 页面容器（底部留空避免被遮挡） -->
+  <div class="pb-12">
+    <!-- 1. 登录页面 -->
+    <div id="login-page" class="page flex flex-col items-center justify-center min-h-screen p-4">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <div class="w-24 h-24 bg-gradient-game rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa fa-pagelines text-white text-4xl"></i>
+          </div>
+          <h1 class="text-3xl font-bold text-dark text-shadow mb-2">万花币消消乐</h1>
+          <p class="text-gray-500">通过Telegram账号快速登录</p>
+        </div>
+        <div class="bg-white rounded-2xl p-6 shadow-game">
+          <button id="telegram-login-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center btn-hover">
+            <i class="fa fa-telegram mr-2 text-xl"></i> 用Telegram账号登录
+          </button>
+          <div class="text-center text-xs text-gray-400 mt-4">
+            登录即表示同意游戏用户协议
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 首页 -->
+    <div id="home-page" class="page hidden p-4">
+      <!-- 顶部导航（含个人中心入口） -->
+      <div class="flex justify-between items-center mb-6 pt-2">
+        <h1 class="text-2xl font-bold text-dark text-shadow">万花币消消乐</h1>
+        <div class="flex items-center gap-3">
+          <!-- 余额显示 -->
+          <div class="bg-primary/10 text-primary px-3 py-1.5 rounded-full flex items-center text-sm">
+            <i class="fa fa-diamond mr-1"></i>
+            <span class="balance-display">0</span> 万花币
+          </div>
+          <!-- 个人中心入口（右上角） -->
+          <button id="personal-center-btn" class="w-10 h-10 rounded-full bg-white shadow-card flex items-center justify-center btn-hover" onclick="navigateTo('personal-center-page')">
+            <i class="fa fa-user text-primary"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 游戏进度卡片 -->
+      <div class="bg-white rounded-2xl p-5 shadow-game mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold">当前进度</h2>
+          <button id="checkin-btn" class="bg-accent hover:bg-accent/80 text-dark font-bold py-1.5 px-4 rounded-full text-sm btn-hover flex items-center">
+            <i class="fa fa-calendar mr-1"></i> 每日签到
+            <span class="ml-1 bg-white text-xs px-1.5 py-0.5 rounded-full">x<span id="checkin-streak">0</span></span>
+          </button>
+        </div>
+
+        <!-- 进度数据 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <div class="bg-light p-4 rounded-xl border border-gray-100 card-hover">
+            <div class="text-gray-500 text-xs mb-1">当前关卡</div>
+            <div class="text-2xl font-bold current-level-display">1</div>
+          </div>
+          <div class="bg-light p-4 rounded-xl border border-gray-100 card-hover">
+            <div class="text-gray-500 text-xs mb-1">总得分</div>
+            <div class="text-2xl font-bold total-score-display">0</div>
+          </div>
+          <div class="bg-light p-4 rounded-xl border border-gray-100 card-hover">
+            <div class="text-gray-500 text-xs mb-1">今日剩余次数</div>
+            <div class="text-2xl font-bold remaining-plays">6</div>
+          </div>
+          <div class="bg-light p-4 rounded-xl border border-gray-100 card-hover">
+            <div class="text-gray-500 text-xs mb-1">兑换比例</div>
+            <div class="text-2xl font-bold">1000:10元</div>
+          </div>
+        </div>
+
+        <!-- 开始游戏按钮 -->
+        <button id="play-btn" class="w-full bg-gradient-game text-white font-bold py-3.5 rounded-xl text-lg btn-hover shadow-btn flex items-center justify-center" onclick="navigateTo('game-page')">
+          <i class="fa fa-play-circle mr-2"></i> 开始游戏
+        </button>
+      </div>
+
+      <!-- 功能入口（广告/分享/排行榜/提现） -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <button id="watch-ad-btn" class="bg-white p-4 rounded-2xl shadow-card flex flex-col items-center justify-center btn-hover">
+          <div class="w-12 h-12 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mb-2">
+            <i class="fa fa-play-circle text-xl"></i>
+          </div>
+          <span class="font-medium">观看广告</span>
+          <span class="text-xs text-gray-500">+2次游戏机会</span>
+        </button>
+        <button id="share-btn" class="bg-white p-4 rounded-2xl shadow-card flex flex-col items-center justify-center btn-hover">
+          <div class="w-12 h-12 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-2">
+            <i class="fa fa-share-alt text-xl"></i>
+          </div>
+          <span class="font-medium">分享游戏</span>
+          <span class="text-xs text-gray-500">+2次游戏机会</span>
+        </button>
+        <button id="leaderboard-nav-btn" class="bg-white p-4 rounded-2xl shadow-card flex flex-col items-center justify-center btn-hover" onclick="navigateTo('leaderboard-page')">
+          <div class="w-12 h-12 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center mb-2">
+            <i class="fa fa-trophy text-xl"></i>
+          </div>
+          <span class="font-medium">排行榜</span>
+          <span class="text-xs text-gray-500">月度现金奖励</span>
+        </button>
+        <button id="withdrawal-nav-btn" class="bg-white p-4 rounded-2xl shadow-card flex flex-col items-center justify-center btn-hover" onclick="navigateTo('withdrawal-page')">
+          <div class="w-12 h-12 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-2">
+            <i class="fa fa-money text-xl"></i>
+          </div>
+          <span class="font-medium">提现</span>
+          <span class="text-xs text-gray-500">支付宝兑换</span>
+        </button>
+      </div>
+
+      <!-- 关卡预览（前5关） -->
+      <div class="bg-white rounded-2xl p-5 shadow-game">
+        <h2 class="text-xl font-bold mb-4">关卡预览</h2>
+        <div class="grid grid-cols-5 gap-2">
+          <button class="level-btn bg-primary/10 text-primary rounded-lg p-2 flex items-center justify-center font-bold btn-hover" onclick="startGame(1)">1</button>
+          <button class="level-btn bg-primary/10 text-primary rounded-lg p-2 flex items-center justify-center font-bold btn-hover" onclick="startGame(2)">2</button>
+          <button class="level-btn bg-primary/10 text-primary rounded-lg p-2 flex items-center justify-center font-bold btn-hover" onclick="startGame(3)">3</button>
+          <button class="level-btn bg-primary/10 text-primary rounded-lg p-2 flex items-center justify-center font-bold btn-hover" onclick="startGame(4)">4</button>
+          <button class="level-btn bg-primary/10 text-primary rounded-lg p-2 flex items-center justify-center font-bold btn-hover" onclick="startGame(5)">5</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 游戏页面 -->
+    <div id="game-page" class="page hidden p-4">
+      <!-- 顶部导航 -->
+      <div class="flex justify-between items-center mb-4 pt-2">
+        <button id="game-home-btn" class="w-10 h-10 rounded-full bg-white shadow-card flex items-center justify-center btn-hover" onclick="navigateTo('home-page')">
+          <i class="fa fa-arrow-left text-dark"></i>
+        </button>
+        <div class="text-center">
+          <h2 class="font-bold text-lg">关卡 <span id="current-game-level" class="current-level-display">1</span></h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- 余额显示 -->
+          <div class="bg-primary/10 text-primary px-2.5 py-1 rounded-full flex items-center text-xs">
+            <i class="fa fa-diamond mr-1"></i>
+            <span class="balance-display">0</span>
+          </div>
+          <!-- 个人中心入口 -->
+          <button class="w-8 h-8 rounded-full bg-white shadow-card flex items-center justify-center btn-hover" onclick="navigateTo('personal-center-page')">
+            <i class="fa fa-user text-primary text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 游戏状态面板 -->
+      <div class="bg-white rounded-2xl p-4 shadow-game mb-4 mx-auto max-w-md">
+        <div class="grid grid-cols-2 gap-3">
+          <!-- 得分 -->
+          <div class="bg-light p-3 rounded-xl">
+            <div class="text-gray-500 text-xs mb-1">当前得分</div>
+            <div class="font-bold text-lg" id="game-score">0</div>
+          </div>
+          <!-- 目标 -->
+          <div class="bg-light p-3 rounded-xl">
+            <div class="text-gray-500 text-xs mb-1" id="target-label">目标得分</div>
+            <div class="font-bold text-lg" id="target-value">0</div>
+          </div>
+          <!-- 步数 -->
+          <div class="bg-light p-3 rounded-xl">
+            <div class="text-gray-500 text-xs mb-1">剩余步数</div>
+            <div class="font-bold text-lg" id="remaining-moves">0</div>
+          </div>
+          <!-- 时间（限时关卡显示） -->
+          <div class="bg-light p-3 rounded-xl hidden" id="time-container">
+            <div class="text-gray-500 text-xs mb-1">剩余时间</div>
+            <div class="font-bold text-lg text-red-500" id="time-left">00:00</div>
+          </div>
+        </div>
+
+        <!-- 进度条 -->
+        <div class="mt-3">
+          <div class="w-full bg-gray-200 rounded-full h-1.5 mb-1">
+            <div id="game-progress-bar" class="bg-primary h-1.5 rounded-full progress-bar" style="width: 0%"></div>
+          </div>
+          <div class="text-xs text-gray-500" id="progress-text">0/0</div>
+        </div>
+      </div>
+
+      <!-- 游戏棋盘（居中） -->
+      <div class="flex justify-center mb-4">
+        <div id="game-board" class="grid gap-1 p-2 bg-gray-100 rounded-2xl shadow-game"></div>
+      </div>
+
+      <!-- 道具栏 -->
+      <div class="max-w-md mx-auto bg-white rounded-2xl p-3 shadow-game mb-4 overflow-x-auto">
+        <div class="flex gap-2">
+          <button id="道具-shuffle-btn" class="flex-shrink-0 bg-light rounded-xl px-3 py-2 flex items-center btn-hover" onclick="use道具('shuffle')">
+            <i class="fa fa-refresh text-primary mr-1"></i>
+            <span class="text-sm">洗牌道具 (30币)</span>
+          </button>
+          <button id="道具-bomb-btn" class="flex-shrink-0 bg-light rounded-xl px-3 py-2 flex items-center btn-hover" onclick="use道具('bomb')">
+            <i class="fa fa-bomb text-accent mr-1"></i>
+            <span class="text-sm">爆炸特效 (60币)</span>
+          </button>
+          <button id="道具-add_steps-btn" class="flex-shrink-0 bg-light rounded-xl px-3 py-2 flex items-center btn-hover" onclick="use道具('add_steps')">
+            <i class="fa fa-plus text-green-500 mr-1"></i>
+            <span class="text-sm">步数加成 (40币)</span>
+          </button>
+          <button id="道具-skip_obstacle-btn" class="flex-shrink-0 bg-light rounded-xl px-3 py-2 flex items-center btn-hover" onclick="use道具('skip_obstacle')">
+            <i class="fa fa-ban text-red-500 mr-1"></i>
+            <span class="text-sm">障碍跳过 (80币)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 底部操作按钮 -->
+      <div class="max-w-md mx-auto flex gap-3">
+        <button id="game-restart-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-dark font-bold py-2.5 rounded-xl btn-hover" onclick="startGame(gameState.currentLevel)">
+          <i class="fa fa-refresh mr-1"></i> 重新开始
+        </button>
+        <button id="game-exit-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white font-bold py-2.5 rounded-xl btn-hover" onclick="navigateTo('home-page')">
+          <i class="fa fa-home mr-1"></i> 退出关卡
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. 个人中心页面 -->
+    <div id="personal-center-page" class="page hidden p-4">
+      <!-- 顶部导航 -->
+      <div class="flex justify-between items-center mb-6 pt-2">
+        <button class="w-10 h-10 rounded-full bg-white shadow-card flex items-center justify-center btn-hover" onclick="navigateTo('home-page')">
+          <i class="fa fa-arrow-left text-dark"></i>
+        </button>
+        <h1 class="text-2xl font-bold text-dark text-shadow">个人中心</h1>
+        <div class="w-10"></div> <!-- 占位 -->
+      </div>
+
+      <!-- 用户信息卡片 -->
+      <div class="bg-white rounded-2xl p-5 shadow-game mb-6">
+        <div class="flex items-center gap-4">
+          <!-- 用户头像 -->
+          <div class="w-20 h-20 rounded-full overflow-hidden border-4 border-primary/20">
+            <img id="user-avatar" src="https://via.placeholder.com/100" alt="用户头像" class="w-full h-full object-cover">
+          </div>
+          <!-- 用户信息 -->
+          <div>
+            <h2 id="user-name" class="text-xl font-bold">未登录</h2>
+            <p id="user-telegram-id" class="text-gray-500 text-sm">@telegram_id</p>
+            <div class="mt-2 flex items-center gap-2">
+              <div class="bg-primary/10 text-primary px-3 py-1 rounded-full flex items-center text-sm">
+                <i class="fa fa-diamond mr-1"></i>
+                <span class="balance-display">0</span> 万花币
+              </div>
+              <div class="bg-accent/10 text-accent px-3 py-1 rounded-full flex items-center text-sm">
+                <i class="fa fa-calendar mr-1"></i>
+                连续签到 <span id="personal-streak">0</span> 天
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 游戏统计 -->
+      <div class="bg-white rounded-2xl p-5 shadow-game mb-6">
+        <h2 class="text-xl font-bold mb-4">游戏统计</h2>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-light p-4 rounded-xl border border-gray-100 card-hover">
+            <div class="text-gray-500 text-xs mb-1">已通关卡</div>
+            <div class="text-2xl font-bold" id="stat-levels">0</div>
+          </div>
+          <div class="bg-light p-4 rounded-xl border border-gray-100 card-hover">
+            <div class="text-gray-500 text-xs mb-1">总得分</div>
+            <div class="text-2xl font-bold" id="stat-score">0</div>
+          </div>
+          <div class="bg-light p-4 rounded-xl border border-gray-100 card-hover">
+            <div class="text-gray-500 text-xs mb-1">最长签到</div>
+            <div class="text-2xl font-bold" id="stat-streak">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 成就列表 -->
+      <div class="bg-white rounded-2xl p-5 shadow-game">
+        <h2 class="text-xl font-bold mb-4">我的成就</h2>
+        <div id="achievements-list" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+          <!-- 成就内容由JS动态生成 -->
+          <div class="text-center py-8 text-gray-500">加载成就中...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 排行榜页面 -->
+    <div id="leaderboard-page" class="page hidden p-4">
+      <!-- 顶部导航 -->
+      <div class="flex justify-between items-center mb-6 pt-2">
+        <button class="w-10 h-10 rounded-full bg-white shadow-card flex items-center justify-center btn-hover" onclick="navigateTo('home-page')">
+          <i class="fa fa-arrow-left text-dark"></i>
+        </button>
+        <h1 class="text-2xl font-bold text-dark text-shadow">全服排行榜</h1>
+        <div class="w-10"></div> <!-- 占位 -->
+      </div>
+
+      <!-- 奖励说明 -->
+      <div class="bg-white rounded-2xl p-5 shadow-game mb-6">
+        <h2 class="text-xl font-bold mb-3">月度奖励</h2>
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div class="bg-yellow-50 rounded-xl p-3 text-center card-hover border-2 border-yellow-200">
+            <div class="text-yellow-500 font-bold text-lg mb-1">第1名</div>
+            <div class="text-2xl font-bold text-dark">¥100</div>
+            <div class="text-xs text-gray-500 mt-1">现金奖励</div>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3 text-center card-hover border-2 border-gray-200">
+            <div class="text-gray-500 font-bold text-lg mb-1">第2名</div>
+            <div class="text-2xl font-bold text-dark">¥50</div>
+            <div class="text-xs text-gray-500 mt-1">现金奖励</div>
+          </div>
+          <div class="bg-orange-50 rounded-xl p-3 text-center card-hover border-2 border-orange-200">
+            <div class="text-orange-500 font-bold text-lg mb-1">第3名</div>
+            <div class="text-2xl font-bold text-dark">¥30</div>
+            <div class="text-xs text-gray-500 mt-1">现金奖励</div>
+          </div>
+          <div class="bg-green-50 rounded-xl p-3 text-center card-hover border-2 border-green-200">
+            <div class="text-green-500 font-bold text-lg mb-1">第4名</div>
+            <div class="text-2xl font-bold text-dark">¥20</div>
+            <div class="text-xs text-gray-500 mt-1">现金奖励</div>
+          </div>
+          <div class="bg-blue-50 rounded-xl p-3 text-center card-hover border-2 border-blue-200">
+            <div class="text-blue-500 font-bold text-lg mb-1">第5名</div>
+            <div class="text-2xl font-bold text-dark">¥10</div>
+            <div class="text-xs text-gray-500 mt-1">现金奖励</div>
+          </div>
+        </div>
+        <div class="text-center text-xs text-gray-500 mt-3">
+          奖励将在每月最后一天通过支付宝发放
+        </div>
+      </div>
+
+      <!-- 排行榜列表 -->
+      <div class="bg-white rounded-2xl p-5 shadow-game">
+        <h2 class="text-xl font-bold mb-4">本月排名</h2>
+        <div id="leaderboard-list" class="space-y-3">
+          <!-- 排行榜内容由JS动态生成 -->
+          <div class="text-center py-8 text-gray-500">加载排行榜中...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. 提现页面 -->
+    <div id="withdrawal-page" class="page hidden p-4">
+      <!-- 顶部导航 -->
+      <div class="flex justify-between items-center mb-6 pt-2">
+        <button class="w-10 h-10 rounded-full bg-white shadow-card flex items-center justify-center btn-hover" onclick="navigateTo('home-page')">
+          <i class="fa fa-arrow-left text-dark"></i>
+        </button>
+        <h1 class="text-2xl font-bold text-dark text-shadow">提现中心</h1>
+        <div class="bg-primary/10 text-primary px-3 py-1.5 rounded-full flex items-center text-sm">
+          <i class="fa fa-diamond mr-1"></i>
+          <span class="balance-display">0</span> 万花币
+        </div>
+      </div>
+
+      <!-- 提现表单 -->
+      <div class="bg-white rounded-2xl p-5 shadow-game mb-6 max-w-md mx-auto">
+        <h2 class="text-xl font-bold mb-4">申请提现</h2>
+        <form id="withdrawal-form" class="space-y-4">
+          <div>
+            <label class="block text-gray-700 text-sm mb-1.5">提现金额 (万花币)</label>
+            <div class="relative">
+              <input 
+                type="number" 
+                id="withdrawal-amount" 
+                class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary" 
+                placeholder="1000" 
+                step="1000" 
+                min="1000"
+              >
+              <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                最低1000，1000的倍数
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">1000万花币 = 10元人民币</p>
+          </div>
+          
+          <div>
+            <label class="block text-gray-700 text-sm mb-1.5">支付宝账号</label>
+            <input 
+              type="text" 
+              id="alipay-account" 
+              class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary" 
+              placeholder="手机号或邮箱"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-gray-700 text-sm mb-1.5">支付宝姓名</label>
+            <input 
+              type="text" 
+              id="alipay-name" 
+              class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary" 
+              placeholder="真实姓名（与支付宝一致）"
+            >
+          </div>
+          
+          <button 
+            type="button" 
+            id="submit-withdrawal-btn" 
+            class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl btn-hover shadow-btn"
+            onclick="submitWithdrawal()"
+          >
+            提交提现申请
+          </button>
+        </form>
+      </div>
+
+      <!-- 提现历史 -->
+      <div class="bg-white rounded-2xl p-5 shadow-game max-w-md mx-auto">
+        <h2 class="text-xl font-bold mb-4">提现历史</h2>
+        <div id="withdrawal-history" class="space-y-3">
+          <!-- 提现历史由JS动态生成 -->
+          <div class="text-center py-8 text-gray-500">暂无提现记录</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 游戏弹窗：关卡完成 -->
+    <div id="level-complete-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden p-4">
+      <div class="bg-white rounded-2xl p-6 max-w-md w-full text-center shadow-xl transform transition-all">
+        <div class="text-green-500 text-5xl mb-4">
+          <i class="fa fa-check-circle"></i>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">关卡完成！</h2>
+        <p class="mb-4">恭喜你通过了关卡 <span id="completed-level" class="current-level-display">1</span></p>
+        
+        <!-- 奖励信息 -->
+        <div class="bg-light p-4 rounded-xl mb-5">
+          <div class="mb-2 flex justify-between">
+            <span>你的得分:</span>
+            <span id="level-complete-score" class="font-bold">0</span>
+          </div>
+          <div class="mb-2 flex justify-between">
+            <span>三星奖励:</span>
+            <span id="three-star-reward" class="font-bold text-yellow-500">0</span> 万花币
+          </div>
+          <div class="flex justify-between text-green-600 font-bold">
+            <span>总奖励:</span>
+            <span id="level-reward">0</span> 万花币
+          </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="flex gap-3">
+          <button id="exit-level-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 py-3 rounded-xl btn-hover" onclick="navigateTo('home-page')">
+            返回首页
+          </button>
+          <button id="next-level-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white py-3 rounded-xl btn-hover" onclick="startGame(gameState.currentLevel + 1)">
+            下一关
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 游戏弹窗：关卡失败 -->
+    <div id="level-failed-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden p-4">
+      <div class="bg-white rounded-2xl p-6 max-w-md w-full text-center shadow-xl">
+        <div class="text-red-500 text-5xl mb-4">
+          <i class="fa fa-times-circle"></i>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">挑战失败</h2>
+        <p class="mb-4">再接再厉，争取通过关卡！</p>
+        
+        <!-- 分数信息 -->
+        <div class="bg-light p-4 rounded-xl mb-5">
+          <div class="mb-2 flex justify-between">
+            <span>你的得分:</span>
+            <span id="failed-score" class="font-bold">0</span>
+          </div>
+          <div class="flex justify-between text-red-500">
+            <span>目标得分:</span>
+            <span id="failed-target" class="font-bold">0</span>
+          </div>
+        </div>
+        
+        <!-- 复活选项 -->
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <button id="revive-ad-btn" class="bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-xl btn-hover flex items-center justify-center">
+            <i class="fa fa-play-circle mr-1"></i> 看广告复活
+          </button>
+          <button id="revive-coin-btn" class="bg-accent hover:bg-accent/80 text-dark py-2 rounded-xl btn-hover flex items-center justify-center">
+            <i class="fa fa-diamond mr-1"></i> 50币复活
+          </button>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="flex gap-3">
+          <button id="failed-exit-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 py-3 rounded-xl btn-hover" onclick="navigateTo('home-page')">
+            返回首页
+          </button>
+          <button id="retry-level-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white py-3 rounded-xl btn-hover" onclick="startGame(gameState.currentLevel)">
+            再试一次
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 游戏弹窗：道具选择（爆炸/障碍跳过） -->
+    <div id="道具-selection-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden p-4">
+      <div class="bg-white rounded-2xl p-5 max-w-md w-full shadow-xl">
+        <h2 id="道具-selection-title" class="text-xl font-bold mb-3 text-center">选择目标</h2>
+        <p id="道具-selection-desc" class="text-sm text-gray-500 mb-4 text-center">点击棋盘上的元素/障碍进行操作</p>
+        <button id="道具-cancel-btn" class="w-full bg-gray-200 hover:bg-gray-300 py-2.5 rounded-xl btn-hover" onclick="close道具Selection()">
+          取消
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 游戏核心逻辑脚本 -->
   <script>
+    // Telegram Web App初始化
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
-    
-    // 全局状态管理
+    tg.setHeaderColor('#E879F9'); // 顶部栏匹配主色
+    tg.setBackgroundColor('#F8FAFC');
+
+    // 全局状态管理（完整功能）
     const gameState = {
       user: null,
       balance: 0,
       currentLevel: 1,
       totalScore: 0,
       gamePlays: null,
+      checkinStreak: 0,
+      achievements: [],
       isPlaying: false,
       gameBoard: [],
       score: 0,
       moves: 0,
       targetScore: 0,
       movesAllowed: 0,
+      timeLimit: 0,
+      timeLeft: 0,
+      timerInterval: null,
+      targetType: 'score', // score/collect/obstacle_clear/boss_clear
+      targetValue: 0,
+      currentTargetProgress: 0,
       levelData: null,
-      leaderboard: []
+      boardSize: { rows: 5, cols: 5 }, // 20关后切换为6×6
+      selectedTile: null,
+      isAnimating: false,
+      selected道具Type: null, // 当前选中的道具类型
+      道具: {
+        shuffle: { used: 0, max: 2, cost: 30, name: '洗牌道具' },
+        bomb: { used: 0, max: 1, cost: 60, name: '爆炸特效' },
+        add_steps: { used: 0, max: 1, cost: 40, name: '步数加成' },
+        skip_obstacle: { used: 0, max: 1, cost: 80, name: '障碍跳过' }
+      },
+      leaderboard: [],
+      developerLink: 'tg://resolve?domain=bjxc010'
     };
-    
+
     // API基础URL
     const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev/api';
-    
-    // 工具函数 - 发起API请求
+
+    // 元素配置（万花主题：花朵、星星、月亮、太阳、宝石、铃铛）
+    const tileConfig = {
+      'flower': { icon: 'fa-pagelines', color: 'flower' },
+      'star': { icon: 'fa-star', color: 'star' },
+      'moon': { icon: 'fa-moon-o', color: 'moon' },
+      'sun': { icon: 'fa-sun-o', color: 'sun' },
+      'gem': { icon: 'fa-diamond', color: 'gem' },
+      'bell': { icon: 'fa-bell-o', color: 'bell' }
+    };
+
+    // 障碍配置
+    const obstacleConfig = {
+      'ice': { icon: 'fa-snowflake-o', color: 'secondary', clearCount: 1, desc: '冰块（消除1次解冻）' },
+      'chain': { icon: 'fa-link', color: 'dark', clearCount: 2, desc: '锁链（消除2次解锁）' },
+      'boss': { icon: 'fa-dragon', color: 'accent', clearCount: 3, desc: 'BOSS（特效击中3次击败）' }
+    };
+
+    // ====================== 基础工具函数 ======================
+    // API请求（带超时+错误处理）
     async function apiRequest(endpoint, method = 'GET', data = null) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+
         const url = `${API_BASE_URL}/${endpoint}`;
-        const options = { method, headers: { 'Content-Type': 'application/json' } };
+        const options = { 
+          method, 
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal
+        };
         
         if (data) options.body = JSON.stringify(data);
         
         const response = await fetch(url, options);
+        clearTimeout(timeoutId);
+        
         const result = await response.json();
         
         if (!response.ok) throw new Error(result.error || '请求失败');
@@ -94,51 +731,160 @@
         return result;
       } catch (error) {
         console.error('API请求错误:', error);
-        showToast(error.message, 'error');
+        showToast(error.message || '网络请求超时，请重试', 'error');
         throw error;
       }
     }
-    
-    // 显示提示信息
+
+    // 显示提示（带图标+动画）
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      toast.className = `fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg z-50 ${
+      toast.className = `fixed bottom-20 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl z-50 flex items-center gap-2 shadow-lg transition-all duration-300 ${
         type === 'error' ? 'bg-red-500' : 
-        type === 'success' ? 'bg-green-500' : 'bg-blue-500'
-      } text-white`;
-      toast.textContent = message;
+        type === 'success' ? 'bg-green-500' : 
+        type === 'warning' ? 'bg-yellow-500' : 'bg-primary'
+      } text-white font-medium`;
+      
+      const icon = type === 'error' ? 'fa-times-circle' :
+                  type === 'success' ? 'fa-check-circle' :
+                  type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+      
+      toast.innerHTML = `<i class="fa ${icon}"></i> <span>${message}</span>`;
       document.body.appendChild(toast);
       
+      // 入场动画
+      setTimeout(() => toast.classList.add('translate-y-0'), 10);
+      
+      // 退场动画
       setTimeout(() => {
-        toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+        toast.classList.add('opacity-0', 'translate-y-4');
         setTimeout(() => toast.remove(), 300);
       }, 3000);
     }
-    
-    // 页面导航
-    function navigateTo(pageId) {
-      document.querySelectorAll('.page').forEach(page => {
-        page.classList.add('hidden');
-      });
-      document.getElementById(pageId).classList.remove('hidden');
+
+    // 创建消除粒子特效
+    function createParticles(x, y, count, color) {
+      for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        particle.style.width = `${Math.random() * 8 + 4}px`;
+        particle.style.height = `${Math.random() * 8 + 4}px`;
+        particle.style.backgroundColor = `var(--tw-color-${color})`;
+        particle.style.borderRadius = '50%';
+        particle.style.transform = `translate(${(Math.random() - 0.5) * 40}px, ${(Math.random() - 0.5) * 40}px)`;
+        document.body.appendChild(particle);
+        
+        setTimeout(() => particle.remove(), 800);
+      }
+    }
+
+    // 显示特效动画（直线/爆炸/十字）
+    function showEffectAnimation(type, row, col) {
+      const gameBoard = document.getElementById('game-board');
+      const boardRect = gameBoard.getBoundingClientRect();
+      const tileSize = boardRect.width / gameState.boardSize.cols;
       
-      // 特殊页面处理
+      const tileX = boardRect.left + col * tileSize + tileSize / 2;
+      const tileY = boardRect.top + row * tileSize + tileSize / 2;
+      
+      if (type === 'line') {
+        // 直线特效（随机水平/垂直）
+        const isHorizontal = Math.random() > 0.5;
+        const effect = document.createElement('div');
+        effect.className = 'line-effect';
+        effect.style.position = 'absolute';
+        effect.style.height = isHorizontal ? '4px' : '100%';
+        effect.style.width = isHorizontal ? '100%' : '4px';
+        effect.style.backgroundColor = 'rgba(232, 121, 249, 0.8)';
+        effect.style.left = isHorizontal ? boardRect.left : tileX - 2;
+        effect.style.top = isHorizontal ? tileY - 2 : boardRect.top;
+        effect.style.zIndex = '20';
+        
+        document.body.appendChild(effect);
+        setTimeout(() => effect.remove(), 500);
+      } else if (type === 'bomb') {
+        // 爆炸特效
+        const effect = document.createElement('div');
+        effect.className = 'bomb-effect';
+        effect.style.width = `${tileSize * 3}px`;
+        effect.style.height = `${tileSize * 3}px`;
+        effect.style.left = `${tileX - tileSize * 1.5}px`;
+        effect.style.top = `${tileY - tileSize * 1.5}px`;
+        
+        document.body.appendChild(effect);
+        setTimeout(() => effect.remove(), 600);
+      } else if (type === 'cross') {
+        // 十字特效
+        const horizontal = document.createElement('div');
+        horizontal.className = 'cross-effect';
+        horizontal.style.height = '4px';
+        horizontal.style.width = `${tileSize * 3}px`;
+        horizontal.style.backgroundColor = 'rgba(59, 130, 246, 0.8)';
+        horizontal.style.left = `${tileX - tileSize * 1.5}px`;
+        horizontal.style.top = `${tileY - 2}px`;
+        
+        const vertical = document.createElement('div');
+        vertical.className = 'cross-effect';
+        vertical.style.width = '4px';
+        vertical.style.height = `${tileSize * 3}px`;
+        vertical.style.backgroundColor = 'rgba(59, 130, 246, 0.8)';
+        vertical.style.left = `${tileX - 2}px`;
+        vertical.style.top = `${tileY - tileSize * 1.5}px`;
+        
+        document.body.appendChild(horizontal);
+        document.body.appendChild(vertical);
+        setTimeout(() => {
+          horizontal.remove();
+          vertical.remove();
+        }, 600);
+      }
+    }
+
+    // 页面导航（带过渡动画）
+    function navigateTo(pageId) {
+      // 停止游戏计时器
+      if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+      }
+
+      // 隐藏所有页面（退场动画）
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+        setTimeout(() => page.classList.add('hidden'), 300);
+      });
+
+      // 显示目标页面（入场动画）
+      const targetPage = document.getElementById(pageId);
+      setTimeout(() => {
+        targetPage.classList.remove('hidden');
+        setTimeout(() => targetPage.classList.remove('opacity-0'), 10);
+      }, 300);
+
+      // 特殊页面初始化
       if (pageId === 'game-page' && !gameState.isPlaying) {
         startGame(gameState.currentLevel);
       } else if (pageId === 'leaderboard-page') {
         loadLeaderboard();
+      } else if (pageId === 'personal-center-page') {
+        loadPersonalCenter();
+      } else if (pageId === 'withdrawal-page') {
+        loadWithdrawalHistory();
       }
     }
-    
-    // 初始化用户
+
+    // ====================== 用户系统 ======================
+    // 初始化用户（加载完整信息）
     async function initUser() {
       try {
-        // 从URL获取用户信息
+        // 从URL获取用户ID
         const urlParams = new URLSearchParams(window.location.search);
         const telegramId = urlParams.get('user_id');
         
         if (!telegramId) {
-          // 尝试从Telegram Web App获取用户信息
+          // 从Telegram Web App获取用户信息
           if (tg.initDataUnsafe?.user) {
             const user = tg.initDataUnsafe.user;
             await apiRequest('login', 'POST', {
@@ -156,15 +902,22 @@
           }
         }
         
-        // 加载用户数据
-        const userData = await apiRequest(`user?telegram_id=${telegramId}`);
+        // 加载用户详细信息（含成就、签到 streak）
+        const userData = await apiRequest(`user/info?telegram_id=${telegramId}`);
         gameState.user = userData.user;
         gameState.balance = userData.balance.万花币_balance;
         gameState.currentLevel = userData.progress.current_level;
         gameState.totalScore = userData.progress.total_score;
         gameState.gamePlays = userData.gamePlays;
+        gameState.checkinStreak = userData.checkinStreak;
+        gameState.achievements = userData.achievements;
         
-        // 更新UI
+        // 切换棋盘大小（20关后6×6）
+        if (gameState.currentLevel > 20) {
+          gameState.boardSize = { rows: 6, cols: 6 };
+        }
+        
+        // 更新全局UI
         updateUserInterface();
         
         // 导航到首页
@@ -175,129 +928,228 @@
         navigateTo('login-page');
       }
     }
-    
-    // 更新用户界面
+
+    // 更新所有页面的用户UI
     function updateUserInterface() {
-      // 更新余额显示
+      // 余额显示（所有页面）
       document.querySelectorAll('.balance-display').forEach(el => {
-        el.textContent = gameState.balance;
+        el.textContent = gameState.balance.toLocaleString();
       });
       
-      // 更新当前关卡
-      document.getElementById('current-level-display').textContent = gameState.currentLevel;
+      // 当前关卡（所有页面）
+      document.querySelectorAll('.current-level-display').forEach(el => {
+        el.textContent = gameState.currentLevel;
+      });
       
-      // 更新总分数
-      document.getElementById('total-score-display').textContent = gameState.totalScore;
+      // 总分数（所有页面）
+      document.querySelectorAll('.total-score-display').forEach(el => {
+        el.textContent = gameState.totalScore.toLocaleString();
+      });
       
-      // 更新游戏次数
-      if (gameState.gamePlays) {
+      // 游戏次数（首页）
+      if (gameState.gamePlays && document.querySelector('.remaining-plays')) {
         const remainingFreePlays = 6 - gameState.gamePlays.free_plays_used;
-        document.getElementById('remaining-plays').textContent = remainingFreePlays;
+        document.querySelectorAll('.remaining-plays').forEach(el => {
+          el.textContent = remainingFreePlays;
+        });
+      }
+      
+      // 连续签到（首页+个人中心）
+      if (document.getElementById('checkin-streak')) {
+        document.getElementById('checkin-streak').textContent = gameState.checkinStreak;
+      }
+      if (document.getElementById('personal-streak')) {
+        document.getElementById('personal-streak').textContent = gameState.checkinStreak;
+      }
+      
+      // 个人中心用户信息
+      if (gameState.user) {
+        if (document.getElementById('user-avatar')) {
+          document.getElementById('user-avatar').src = gameState.user.avatar_url || 'https://via.placeholder.com/100';
+          document.getElementById('user-avatar').alt = gameState.user.first_name || '用户';
+        }
+        if (document.getElementById('user-name')) {
+          document.getElementById('user-name').textContent = `${gameState.user.first_name || ''} ${gameState.user.last_name || ''}`.trim() || '未知用户';
+        }
+        if (document.getElementById('user-telegram-id')) {
+          document.getElementById('user-telegram-id').textContent = `@${gameState.user.username || gameState.user.telegram_id}`;
+        }
+        if (document.getElementById('stat-levels')) {
+          document.getElementById('stat-levels').textContent = gameState.currentLevel;
+        }
+        if (document.getElementById('stat-score')) {
+          document.getElementById('stat-score').textContent = gameState.totalScore.toLocaleString();
+        }
+        if (document.getElementById('stat-streak')) {
+          document.getElementById('stat-streak').textContent = gameState.checkinStreak;
+        }
+      }
+      
+      // 游戏页面道具按钮状态
+      if (document.getElementById('道具-shuffle-btn')) {
+        Object.keys(gameState.道具).forEach(key => {
+          const btn = document.getElementById(`道具-${key}-btn`);
+          if (btn) {
+            const 道具 = gameState.道具[key];
+            btn.disabled = 道具.used >= 道具.max || gameState.balance < 道具.cost;
+            
+            if (btn.disabled) {
+              btn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+              btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            btn.innerHTML = `<i class="${
+              key === 'shuffle' ? 'fa-refresh text-primary' :
+              key === 'bomb' ? 'fa-bomb text-accent' :
+              key === 'add_steps' ? 'fa-plus text-green-500' : 'fa-ban text-red-500'
+            } mr-1"></i>
+            <span class="text-sm">${道具.name} (${道具.cost}币)</span>
+            <span class="ml-1 text-xs text-gray-500">${道具.used}/${道具.max}</span>`;
+          }
+        });
       }
     }
-    
-    // 处理签到
+
+    // 每日签到
     async function handleCheckin() {
       try {
+        const checkinBtn = document.getElementById('checkin-btn');
+        checkinBtn.disabled = true;
+        checkinBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 签到中...';
+        
         const result = await apiRequest('checkin', 'POST', {
           telegram_id: gameState.user.telegram_id
         });
         
         if (result.success) {
           gameState.balance = result.balance;
+          gameState.checkinStreak = result.streak;
           showToast(`签到成功！获得${result.reward}万花币，连续签到${result.streak}天`, 'success');
-          updateUserInterface();
-          document.getElementById('checkin-btn').disabled = true;
-          document.getElementById('checkin-btn').textContent = '今日已签到';
+          
+          // 签到粒子特效
+          const btnRect = checkinBtn.getBoundingClientRect();
+          createParticles(btnRect.left + btnRect.width/2, btnRect.top + btnRect.height/2, 30, 'accent');
+          
+          // 更新按钮状态
+          checkinBtn.innerHTML = '<i class="fa fa-check mr-1"></i> 今日已签到';
+          checkinBtn.classList.add('bg-green-500');
+          checkinBtn.classList.remove('bg-accent');
         } else {
           showToast(result.message);
+          checkinBtn.disabled = false;
+          checkinBtn.innerHTML = '<i class="fa fa-calendar mr-1"></i> 每日签到 <span class="ml-1 bg-white text-xs px-1.5 py-0.5 rounded-full">x<span id="checkin-streak">0</span></span>';
         }
+        
+        updateUserInterface();
       } catch (error) {
         console.error('签到失败:', error);
+        const checkinBtn = document.getElementById('checkin-btn');
+        checkinBtn.disabled = false;
+        checkinBtn.innerHTML = '<i class="fa fa-calendar mr-1"></i> 每日签到 <span class="ml-1 bg-white text-xs px-1.5 py-0.5 rounded-full">x<span id="checkin-streak">0</span></span>';
       }
     }
-    
-    // 检查是否可以玩游戏
-    async function checkCanPlayGame() {
+
+    // 加载个人中心（成就+统计）
+    async function loadPersonalCenter() {
       try {
-        const result = await apiRequest(`game-plays?telegram_id=${gameState.user.telegram_id}`);
-        return result.canPlay;
-      } catch (error) {
-        console.error('检查游戏次数失败:', error);
-        return false;
-      }
-    }
-    
-    // 记录游戏次数
-    async function recordGamePlay(type) {
-      try {
-        const result = await apiRequest('record-play', 'POST', {
-          telegram_id: gameState.user.telegram_id,
-          type
+        // 更新成就列表
+        const achievementsContainer = document.getElementById('achievements-list');
+        achievementsContainer.innerHTML = '';
+        
+        if (gameState.achievements.length === 0) {
+          achievementsContainer.innerHTML = '<div class="text-center py-8 text-gray-500">暂无成就</div>';
+          return;
+        }
+        
+        gameState.achievements.forEach(ach => {
+          const progressPercent = (ach.progress / ach.target) * 100;
+          
+          const achievementCard = document.createElement('div');
+          achievementCard.className = `bg-white rounded-xl p-4 border border-gray-100 shadow-sm card-hover ${
+            ach.completed ? 'border-green-200 bg-green-50' : ''
+          }`;
+          
+          achievementCard.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-bold text-lg ${ach.completed ? 'text-green-600' : 'text-dark'}">${ach.achievement_name}</h3>
+              ${ach.completed ? '<i class="fa fa-check-circle text-green-500"></i>' : ''}
+            </div>
+            <p class="text-gray-600 text-sm mb-3">${ach.description}</p>
+            <div class="w-full bg-gray-200 rounded-full h-1.5 mb-1">
+              <div class="progress-bar h-1.5 rounded-full ${
+                ach.completed ? 'bg-green-500' : 'bg-primary'
+              }" style="width: ${progressPercent}%"></div>
+            </div>
+            <div class="text-xs text-gray-500 flex justify-between">
+              <span>${ach.progress}/${ach.target}</span>
+              ${ach.completed ? `<span class="text-green-500">已获得 ${ach.reward} 万花币</span>` : ''}
+            </div>
+          `;
+          
+          achievementsContainer.appendChild(achievementCard);
         });
         
-        gameState.gamePlays = result.gamePlays;
-        updateUserInterface();
-        return true;
+        // 更新游戏统计（已在updateUserInterface中处理）
       } catch (error) {
-        console.error('记录游戏次数失败:', error);
-        return false;
+        console.error('加载个人中心失败:', error);
+        showToast('加载个人中心失败，请重试', 'error');
       }
     }
-    
-    // 增加游戏次数 (通过广告或分享)
-    async function addGamePlays(type) {
-      try {
-        if (type === 'ad') {
-          // 显示广告逻辑
-          showToast('广告播放中...');
-          // 模拟广告播放
-          setTimeout(async () => {
-            const result = await apiRequest('add-plays', 'POST', {
-              telegram_id: gameState.user.telegram_id,
-              type
-            });
-            
-            if (result.success) {
-              gameState.gamePlays = result.gamePlays;
-              updateUserInterface();
-              showToast(`获得2次游戏机会！剩余次数: ${6 - result.gamePlays.free_plays_used}`, 'success');
-            } else {
-              showToast(result.message);
-            }
-          }, 3000);
-        } else if (type === 'share') {
-          // 分享逻辑
-          if (tg.ShareButton) {
-            tg.ShareButton.show();
-            tg.onEvent('shareCompleted', async () => {
-              const result = await apiRequest('add-plays', 'POST', {
-                telegram_id: gameState.user.telegram_id,
-                type
-              });
-              
-              if (result.success) {
-                gameState.gamePlays = result.gamePlays;
-                updateUserInterface();
-                showToast(`获得2次游戏机会！剩余次数: ${6 - result.gamePlays.free_plays_used}`, 'success');
-              } else {
-                showToast(result.message);
-              }
-            });
-          } else {
-            showToast('分享功能暂不可用');
-          }
-        }
-      } catch (error) {
-        console.error('增加游戏次数失败:', error);
-      }
-    }
-    
-    // 加载关卡数据
+
+    // ====================== 游戏核心逻辑 ======================
+    // 加载关卡数据（支持多种目标类型）
     async function loadLevelData(levelNumber) {
       try {
         const levelData = await apiRequest(`level?level=${levelNumber}`);
         gameState.levelData = levelData;
+        
+        // 初始化关卡状态
+        gameState.targetType = levelData.target_type;
+        gameState.targetScore = levelData.target_score;
+        gameState.targetValue = levelData.target_value;
+        gameState.currentTargetProgress = 0;
+        gameState.movesAllowed = levelData.moves_allowed;
+        gameState.timeLimit = levelData.time_limit;
+        gameState.timeLeft = levelData.time_limit;
+        
+        // 重置道具使用次数
+        Object.keys(gameState.道具).forEach(key => {
+          gameState.道具[key].used = 0;
+        });
+        
+        // 更新目标标签
+        const targetLabel = document.getElementById('target-label');
+        const progressText = document.getElementById('progress-text');
+        if (targetLabel && progressText) {
+          switch (gameState.targetType) {
+            case 'score':
+              targetLabel.textContent = '目标得分';
+              progressText.textContent = `${gameState.score}/${gameState.targetScore}`;
+              break;
+            case 'collect':
+              const collectType = levelData.obstacles?.collectType || '花朵';
+              targetLabel.textContent = `收集${collectType}`;
+              progressText.textContent = `${gameState.currentTargetProgress}/${gameState.targetValue}`;
+              break;
+            case 'obstacle_clear':
+              targetLabel.textContent = '清除障碍';
+              progressText.textContent = `${gameState.currentTargetProgress}/${gameState.targetValue}`;
+              break;
+            case 'boss_clear':
+              targetLabel.textContent = '击败BOSS';
+              progressText.textContent = `${gameState.currentTargetProgress}/${gameState.targetValue}`;
+              break;
+          }
+        }
+        
+        // 更新目标值显示
+        const targetValueEl = document.getElementById('target-value');
+        if (targetValueEl) {
+          targetValueEl.textContent = gameState.targetType === 'score' ? 
+            gameState.targetScore : gameState.targetValue;
+        }
+        
         return levelData;
       } catch (error) {
         console.error('加载关卡数据失败:', error);
@@ -305,951 +1157,115 @@
         return null;
       }
     }
-    
-    // 初始化游戏板
-    function initializeGameBoard(rows = 8, cols = 8, obstacles = {}) {
+
+    // 初始化游戏棋盘（5×5/6×6 + 障碍 + 无初始匹配）
+    function initializeGameBoard(rows, cols, obstacles) {
       const board = [];
-      const tileTypes = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+      const tileTypes = Object.keys(tileConfig);
       
+      // 初始化空棋盘
       for (let i = 0; i < rows; i++) {
-        const row = [];
+        board.push([]);
         for (let j = 0; j < cols; j++) {
-          // 确保不会初始形成三个相同的连线
+          board[i].push(null);
+        }
+      }
+      
+      // 填充基础元素（确保无初始匹配）
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
           let type;
-          do {
-            type = tileTypes[Math.floor(Math.random() * tileTypes.length)];
-          } while (
-            // 检查水平方向
-            (j >= 2 && row[j-1] === type && row[j-2] === type) ||
-            // 检查垂直方向
-            (i >= 2 && board[i-1][j] === type && board[i-2][j] === type)
-          );
+          let isValid = false;
           
-          // 添加障碍物
-          let hasObstacle = false;
-          if (obstacles.type === 'ice' && Math.random() < 0.1) {
-            hasObstacle = 'ice';
-          } else if (obstacles.type === 'box' && Math.random() < 0.05) {
-            hasObstacle = 'box';
-          } else if (obstacles.type === 'chain' && Math.random() < 0.07) {
-            hasObstacle = 'chain';
-          } else if (obstacles.type === 'multiple' && obstacles.obstacles) {
-            if (Math.random() < 0.15) {
-              const obstacleType = obstacles.obstacles[Math.floor(Math.random() * obstacles.obstacles.length)];
-              hasObstacle = obstacleType;
+          // 尝试生成无初始匹配的元素
+          while (!isValid) {
+            type = tileTypes[Math.floor(Math.random() * tileTypes.length)];
+            board[i][j] = {
+              type,
+              obstacle: null,
+              obstacleClearCount: 0,
+              effect: null, // line/bomb/cross（特效类型）
+              x: j,
+              y: i,
+              matched: false,
+              selected: false
+            };
+            
+            // 检查水平方向是否有3连
+            const hasHorizontalMatch = j >= 2 && 
+              board[i][j-1]?.type === type && 
+              board[i][j-2]?.type === type;
+            
+            // 检查垂直方向是否有3连
+            const hasVerticalMatch = i >= 2 && 
+              board[i-1][j]?.type === type && 
+              board[i-2][j]?.type === type;
+            
+            isValid = !hasHorizontalMatch && !hasVerticalMatch;
+          }
+        }
+      }
+      
+      // 添加障碍（根据关卡配置）
+      if (obstacles && obstacles.type) {
+        // 单一障碍类型
+        if (obstacles.type === 'single' && obstacles.obstacle && obstacles.count > 0) {
+          let added = 0;
+          while (added < obstacles.count) {
+            const i = Math.floor(Math.random() * rows);
+            const j = Math.floor(Math.random() * cols);
+            
+            if (!board[i][j].obstacle) {
+              board[i][j].obstacle = obstacles.obstacle;
+              board[i][j].obstacleClearCount = 0;
+              added++;
             }
           }
-          
-          row.push({
-            type,
-            obstacle: hasObstacle,
-            x: j,
-            y: i,
-            matched: false,
-            selected: false
+        }
+        
+        // 混合障碍类型
+        if (obstacles.type === 'mixed' && obstacles.obstacles && obstacles.counts) {
+          obstacles.obstacles.forEach((obsType, idx) => {
+            const count = obstacles.counts[idx] || 0;
+            let added = 0;
+            while (added < count) {
+              const i = Math.floor(Math.random() * rows);
+              const j = Math.floor(Math.random() * cols);
+              
+              if (!board[i][j].obstacle) {
+                board[i][j].obstacle = obsType;
+                board[i][j].obstacleClearCount = 0;
+                added++;
+              }
+            }
           });
         }
-        board.push(row);
       }
       
       return board;
     }
-    
-    // 渲染游戏板
+
+    // 渲染游戏棋盘（支持触摸+鼠标操作）
     function renderGameBoard() {
-      const gameBoardElement = document.getElementById('game-board');
-      gameBoardElement.innerHTML = '';
+      if (!gameState.isPlaying) return;
       
-      // 设置网格尺寸
-      gameBoardElement.style.gridTemplateColumns = `repeat(${gameState.gameBoard[0].length}, 1fr)`;
+      const gameBoard = document.getElementById('game-board');
+      gameBoard.innerHTML = '';
       
+      // 棋盘尺寸（响应式，最大400px）
+      const boardSize = Math.min(window.innerWidth - 32, 400);
+      gameBoard.style.width = `${boardSize}px`;
+      gameBoard.style.height = `${boardSize}px`;
+      gameBoard.style.gridTemplateColumns = `repeat(${gameState.boardSize.cols}, 1fr)`;
+      gameBoard.style.gridTemplateRows = `repeat(${gameState.boardSize.rows}, 1fr)`;
+      
+      // 渲染每个方块
       gameState.gameBoard.forEach((row, rowIndex) => {
         row.forEach((tile, colIndex) => {
-          const tileElement = document.createElement('div');
-          tileElement.className = `aspect-square flex items-center justify-center rounded-md tile-transition cursor-pointer ${
-            tile.selected ? 'ring-4 ring-accent scale-110' : ''
-          }`;
+          if (!tile) return;
           
-          // 设置颜色
-          switch (tile.type) {
-            case 'red': tileElement.classList.add('bg-red-500'); break;
-            case 'blue': tileElement.classList.add('bg-blue-500'); break;
-            case 'green': tileElement.classList.add('bg-green-500'); break;
-            case 'yellow': tileElement.classList.add('bg-yellow-500'); break;
-            case 'purple': tileElement.classList.add('bg-purple-500'); break;
-            case 'orange': tileElement.classList.add('bg-orange-500'); break;
-          }
+          const tileEl = document.createElement('div');
+          const tileSize = `${100 / gameState.boardSize.cols}%`;
           
-          // 添加障碍物
-          if (tile.obstacle === 'ice') {
-            tileElement.innerHTML += '<div class="absolute w-full h-full bg-blue-200/50 flex items-center justify-center"><i class="fa fa-snowflake-o text-blue-800"></i></div>';
-          } else if (tile.obstacle === 'box') {
-            tileElement.innerHTML += '<div class="absolute w-3/4 h-3/4 bg-gray-700 rounded-sm flex items-center justify-center"><i class="fa fa-cube text-gray-400"></i></div>';
-          } else if (tile.obstacle === 'chain') {
-            tileElement.innerHTML += '<div class="absolute w-full h-full flex items-center justify-center"><i class="fa fa-link text-gray-800 text-xl"></i></div>';
-          }
-          
-          // 添加点击事件
-          tileElement.addEventListener('click', () => handleTileClick(rowIndex, colIndex));
-          
-          // 添加悬停效果
-          tileElement.addEventListener('mouseenter', () => {
-            if (!tile.selected) tileElement.classList.add('tile-hover');
-          });
-          tileElement.addEventListener('mouseleave', () => {
-            if (!tile.selected) tileElement.classList.remove('tile-hover');
-          });
-          
-          gameBoardElement.appendChild(tileElement);
-        });
-      });
-      
-      // 更新分数和步数显示
-      document.getElementById('game-score').textContent = gameState.score;
-      document.getElementById('target-score').textContent = gameState.targetScore;
-      document.getElementById('remaining-moves').textContent = gameState.movesAllowed - gameState.moves;
-    }
-    
-    // 处理方块点击
-    function handleTileClick(row, col) {
-      const selectedTile = gameState.gameBoard[row][col];
-      
-      // 检查是否有已选中的方块
-      const alreadySelected = gameState.gameBoard.find(row => 
-        row.find(tile => tile.selected)
-      );
-      
-      if (alreadySelected) {
-        // 找到已选中的方块
-        const [selectedRow, selectedCol] = findSelectedTile();
-        
-        // 检查是否相邻
-        if (isAdjacent(selectedRow, selectedCol, row, col)) {
-          // 交换方块
-          swapTiles(selectedRow, selectedCol, row, col);
-          
-          // 检查是否有匹配
-          const matches = findMatches();
-          
-          if (matches.length > 0) {
-            // 有匹配，处理匹配
-            processMatches(matches);
-            gameState.moves++;
-          } else {
-            // 无匹配，交换回来
-            setTimeout(() => {
-              swapTiles(row, col, selectedRow, selectedCol);
-              renderGameBoard();
-            }, 300);
-          }
-          
-          // 取消选择
-          deselectAllTiles();
-        } else {
-          // 不相邻，取消之前的选择，选择新的
-          deselectAllTiles();
-          selectedTile.selected = true;
-          renderGameBoard();
-        }
-      } else {
-        // 没有已选中的，选中当前方块
-        selectedTile.selected = true;
-        renderGameBoard();
-      }
-    }
-    
-    // 查找已选中的方块
-    function findSelectedTile() {
-      for (let i = 0; i < gameState.gameBoard.length; i++) {
-        for (let j = 0; j < gameState.gameBoard[i].length; j++) {
-          if (gameState.gameBoard[i][j].selected) {
-            return [i, j];
-          }
-        }
-      }
-      return [-1, -1];
-    }
-    
-    // 检查是否相邻
-    function isAdjacent(row1, col1, row2, col2) {
-      return (
-        (Math.abs(row1 - row2) === 1 && col1 === col2) ||
-        (Math.abs(col1 - col2) === 1 && row1 === row2)
-      );
-    }
-    
-    // 交换方块
-    function swapTiles(row1, col1, row2, col2) {
-      const temp = gameState.gameBoard[row1][col1];
-      gameState.gameBoard[row1][col1] = gameState.gameBoard[row2][col2];
-      gameState.gameBoard[row2][col2] = temp;
-      
-      // 更新位置信息
-      gameState.gameBoard[row1][col1].x = col1;
-      gameState.gameBoard[row1][col1].y = row1;
-      gameState.gameBoard[row2][col2].x = col2;
-      gameState.gameBoard[row2][col2].y = row2;
-      
-      renderGameBoard();
-    }
-    
-    // 取消所有选择
-    function deselectAllTiles() {
-      gameState.gameBoard.forEach(row => {
-        row.forEach(tile => {
-          tile.selected = false;
-        });
-      });
-    }
-    
-    // 查找匹配
-    function findMatches() {
-      const matches = [];
-      
-      // 检查水平匹配
-      for (let i = 0; i < gameState.gameBoard.length; i++) {
-        let j = 0;
-        while (j < gameState.gameBoard[i].length - 2) {
-          const current = gameState.gameBoard[i][j];
-          const next1 = gameState.gameBoard[i][j+1];
-          const next2 = gameState.gameBoard[i][j+2];
-          
-          if (current.type === next1.type && current.type === next2.type) {
-            const matchLength = findMatchLength(i, j, 0, 1);
-            const match = [];
-            
-            for (let k = 0; k < matchLength; k++) {
-              match.push({ row: i, col: j + k });
-            }
-            
-            matches.push(match);
-            j += matchLength;
-          } else {
-            j++;
-          }
-        }
-      }
-      
-      // 检查垂直匹配
-      for (let j = 0; j < gameState.gameBoard[0].length; j++) {
-        let i = 0;
-        while (i < gameState.gameBoard.length - 2) {
-          const current = gameState.gameBoard[i][j];
-          const next1 = gameState.gameBoard[i+1][j];
-          const next2 = gameState.gameBoard[i+2][j];
-          
-          if (current.type === next1.type && current.type === next2.type) {
-            const matchLength = findMatchLength(i, j, 1, 0);
-            const match = [];
-            
-            for (let k = 0; k < matchLength; k++) {
-              match.push({ row: i + k, col: j });
-            }
-            
-            matches.push(match);
-            i += matchLength;
-          } else {
-            i++;
-          }
-        }
-      }
-      
-      return matches;
-    }
-    
-    // 查找匹配长度
-    function findMatchLength(startRow, startCol, rowDir, colDir) {
-      const type = gameState.gameBoard[startRow][startCol].type;
-      let length = 1;
-      
-      let currentRow = startRow + rowDir;
-      let currentCol = startCol + colDir;
-      
-      while (
-        currentRow < gameState.gameBoard.length &&
-        currentCol < gameState.gameBoard[0].length &&
-        gameState.gameBoard[currentRow][currentCol].type === type
-      ) {
-        length++;
-        currentRow += rowDir;
-        currentCol += colDir;
-      }
-      
-      return length;
-    }
-    
-    // 处理匹配
-    function processMatches(matches) {
-      if (matches.length === 0) {
-        // 检查游戏是否结束
-        checkGameEnd();
-        return;
-      }
-      
-      // 标记匹配的方块
-      matches.forEach(match => {
-        match.forEach(position => {
-          const tile = gameState.gameBoard[position.row][position.col];
-          tile.matched = true;
-          
-          // 根据匹配长度和障碍物类型计算分数
-          let points = 10;
-          if (match.length >= 4) points = 20;
-          if (match.length >= 5) points = 50;
-          
-          if (tile.obstacle === 'ice') points += 5;
-          if (tile.obstacle === 'box') points += 15;
-          if (tile.obstacle === 'chain') points += 10;
-          
-          gameState.score += points;
-        });
-      });
-      
-      // 重新渲染以显示匹配的方块
-      renderGameBoard();
-      
-      // 移除匹配的方块并填充新方块
-      setTimeout(() => {
-        removeMatchedTiles();
-        fillEmptySpaces();
-        
-        // 检查是否有新的匹配
-        setTimeout(() => {
-          const newMatches = findMatches();
-          processMatches(newMatches);
-        }, 500);
-      }, 500);
-    }
-    
-    // 移除匹配的方块
-    function removeMatchedTiles() {
-      for (let i = 0; i < gameState.gameBoard.length; i++) {
-        for (let j = 0; j < gameState.gameBoard[i].length; j++) {
-          if (gameState.gameBoard[i][j].matched) {
-            // 处理障碍物
-            if (gameState.gameBoard[i][j].obstacle === 'ice') {
-              // 冰障碍物只需要一次匹配即可消除
-              gameState.gameBoard[i][j] = createNewTile(j, i);
-              gameState.gameBoard[i][j].obstacle = null;
-            } else if (gameState.gameBoard[i][j].obstacle === 'box') {
-              // 箱子障碍物需要两次匹配
-              gameState.gameBoard[i][j] = createNewTile(j, i);
-              gameState.gameBoard[i][j].obstacle = 'box_damaged';
-            } else if (gameState.gameBoard[i][j].obstacle === 'box_damaged') {
-              // 受损箱子一次匹配即可消除
-              gameState.gameBoard[i][j] = createNewTile(j, i);
-              gameState.gameBoard[i][j].obstacle = null;
-            } else if (gameState.gameBoard[i][j].obstacle === 'chain') {
-              // 链条障碍物需要一次匹配即可消除
-              gameState.gameBoard[i][j] = createNewTile(j, i);
-              gameState.gameBoard[i][j].obstacle = null;
-            } else {
-              // 普通方块直接替换
-              gameState.gameBoard[i][j] = null;
-            }
-          }
-        }
-      }
-    }
-    
-    // 创建新方块
-    function createNewTile(x, y) {
-      const tileTypes = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
-      const type = tileTypes[Math.floor(Math.random() * tileTypes.length)];
-      
-      return {
-        type,
-        obstacle: null,
-        x,
-        y,
-        matched: false,
-        selected: false
-      };
-    }
-    
-    // 填充空白位置
-    function fillEmptySpaces() {
-      // 处理每一列
-      for (let j = 0; j < gameState.gameBoard[0].length; j++) {
-        // 下落现有方块
-        for (let i = gameState.gameBoard.length - 1; i >= 0; i--) {
-          if (gameState.gameBoard[i][j] === null) {
-            // 查找上方最近的非空方块
-            for (let k = i - 1; k >= 0; k--) {
-              if (gameState.gameBoard[k][j] !== null) {
-                // 下落方块
-                gameState.gameBoard[i][j] = gameState.gameBoard[k][j];
-                gameState.gameBoard[k][j] = null;
-                gameState.gameBoard[i][j].y = i; // 更新位置
-                break;
-              }
-            }
-          }
-        }
-        
-        // 顶部填充新方块
-        for (let i = 0; i < gameState.gameBoard.length; i++) {
-          if (gameState.gameBoard[i][j] === null) {
-            gameState.gameBoard[i][j] = createNewTile(j, i);
-          }
-        }
-      }
-      
-      renderGameBoard();
-    }
-    
-    // 检查游戏是否结束
-    function checkGameEnd() {
-      if (gameState.moves >= gameState.movesAllowed) {
-        // 步数用完，游戏结束
-        gameState.isPlaying = false;
-        
-        if (gameState.score >= gameState.targetScore) {
-          // 通关成功
-          showLevelComplete();
-        } else {
-          // 未通关
-          showLevelFailed();
-        }
-      }
-    }
-    
-    // 显示关卡完成
-    async function showLevelComplete() {
-      document.getElementById('level-complete-modal').classList.remove('hidden');
-      document.getElementById('level-complete-score').textContent = gameState.score;
-      
-      // 计算奖励
-      const baseReward = gameState.levelData.reward;
-      const bonusPercentage = Math.min(100, Math.floor((gameState.score - gameState.targetScore) / gameState.targetScore * 100));
-      const bonus = Math.floor(baseReward * (bonusPercentage / 100));
-      const totalReward = baseReward + bonus;
-      
-      document.getElementById('level-reward').textContent = totalReward;
-      
-      // 提交关卡完成
-      try {
-        await apiRequest('complete-level', 'POST', {
-          telegram_id: gameState.user.telegram_id,
-          levelNumber: gameState.currentLevel,
-          score: gameState.score
-        });
-        
-        // 更新用户数据
-        await initUser();
-      } catch (error) {
-        console.error('提交关卡完成失败:', error);
-      }
-    }
-    
-    // 显示关卡失败
-    function showLevelFailed() {
-      document.getElementById('level-failed-modal').classList.remove('hidden');
-      document.getElementById('failed-score').textContent = gameState.score;
-      document.getElementById('failed-target').textContent = gameState.targetScore;
-    }
-    
-    // 开始游戏
-    async function startGame(levelNumber) {
-      try {
-        // 检查是否可以玩游戏
-        const canPlay = await checkCanPlayGame();
-        if (!canPlay) {
-          showToast('没有剩余游戏次数，请观看广告或分享获取更多次数', 'error');
-          navigateTo('home-page');
-          return;
-        }
-        
-        // 记录游戏次数
-        await recordGamePlay('free');
-        
-        // 加载关卡数据
-        const levelData = await loadLevelData(levelNumber);
-        if (!levelData) return;
-        
-        // 初始化游戏状态
-        gameState.isPlaying = true;
-        gameState.score = 0;
-        gameState.moves = 0;
-        gameState.targetScore = levelData.target_score;
-        gameState.movesAllowed = levelData.moves_allowed;
-        gameState.gameBoard = initializeGameBoard(8, 8, levelData.obstacles);
-        
-        // 渲染游戏
-        renderGameBoard();
-        
-        // 显示当前关卡
-        document.getElementById('current-game-level').textContent = levelNumber;
-      } catch (error) {
-        console.error('开始游戏失败:', error);
-        showToast('无法开始游戏，请重试', 'error');
-        navigateTo('home-page');
-      }
-    }
-    
-    // 加载排行榜
-    async function loadLeaderboard() {
-      try {
-        const leaderboard = await apiRequest('leaderboard');
-        gameState.leaderboard = leaderboard;
-        
-        const leaderboardElement = document.getElementById('leaderboard-list');
-        leaderboardElement.innerHTML = '';
-        
-        leaderboard.forEach((entry, index) => {
-          const entryElement = document.createElement('div');
-          entryElement.className = `flex items-center justify-between p-3 mb-2 rounded-lg ${
-            index === 0 ? 'bg-yellow-100 border-2 border-yellow-400' :
-            index === 1 ? 'bg-gray-100 border-2 border-gray-400' :
-            index === 2 ? 'bg-orange-100 border-2 border-orange-400' :
-            'bg-white'
-          }`;
-          
-          entryElement.innerHTML = `
-            <div class="flex items-center">
-              <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center mr-3 font-bold">
-                ${entry.rank}
-              </div>
-              <div>
-                <div class="font-bold">${entry.username}</div>
-                <div class="text-sm text-gray-500">总分: ${entry.score}</div>
-              </div>
-            </div>
-            ${index === 0 ? '<i class="fa fa-trophy text-yellow-500 text-2xl"></i>' : 
-              index === 1 ? '<i class="fa fa-trophy text-gray-400 text-2xl"></i>' :
-              index === 2 ? '<i class="fa fa-trophy text-orange-600 text-2xl"></i>' : ''}
-          `;
-          
-          leaderboardElement.appendChild(entryElement);
-        });
-        
-        // 显示奖励说明
-        document.getElementById('leaderboard-rewards').innerHTML = `
-          <div class="p-4 bg-gray-50 rounded-lg mt-4">
-            <h3 class="font-bold text-lg mb-2">月度奖励</h3>
-            <div class="flex justify-between items-center mb-1">
-              <span>第1名: <i class="fa fa-trophy text-yellow-500"></i></span>
-              <span class="font-bold">¥100</span>
-            </div>
-            <div class="flex justify-between items-center mb-1">
-              <span>第2名: <i class="fa fa-trophy text-gray-400"></i></span>
-              <span class="font-bold">¥50</span>
-            </div>
-            <div class="flex justify-between items-center mb-1">
-              <span>第3名: <i class="fa fa-trophy text-orange-600"></i></span>
-              <span class="font-bold">¥30</span>
-            </div>
-            <div class="flex justify-between items-center mb-1">
-              <span>第4名:</span>
-              <span class="font-bold">¥20</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span>第5名:</span>
-              <span class="font-bold">¥10</span>
-            </div>
-            <div class="text-sm text-gray-500 mt-2">
-              奖励将在每月最后一天以现金形式发放
-            </div>
-          </div>
-        `;
-      } catch (error) {
-        console.error('加载排行榜失败:', error);
-        showToast('无法加载排行榜，请重试', 'error');
-      }
-    }
-    
-    // 提交提现请求
-    async function submitWithdrawal() {
-      const amount = parseInt(document.getElementById('withdrawal-amount').value);
-      const alipayAccount = document.getElementById('alipay-account').value;
-      const alipayName = document.getElementById('alipay-name').value;
-      
-      if (!amount || !alipayAccount || !alipayName) {
-        showToast('请填写完整信息', 'error');
-        return;
-      }
-      
-      if (amount % 1000 !== 0) {
-        showToast('提现金额必须是1000的倍数', 'error');
-        return;
-      }
-      
-      if (amount < 1000) {
-        showToast('最低提现金额为1000万花币', 'error');
-        return;
-      }
-      
-      if (amount > gameState.balance) {
-        showToast('余额不足', 'error');
-        return;
-      }
-      
-      try {
-        const result = await apiRequest('withdrawal', 'POST', {
-          telegram_id: gameState.user.telegram_id,
-          amount,
-          alipayAccount,
-          alipayName
-        });
-        
-        if (result.success) {
-          showToast('提现请求已提交，等待处理', 'success');
-          // 重置表单
-          document.getElementById('withdrawal-form').reset();
-          // 刷新余额
-          await initUser();
-          // 返回首页
-          navigateTo('home-page');
-        } else {
-          showToast(result.message, 'error');
-        }
-      } catch (error) {
-        console.error('提交提现请求失败:', error);
-        showToast('提现请求失败，请重试', 'error');
-      }
-    }
-    
-    // 加载提现历史
-    async function loadWithdrawalHistory() {
-      try {
-        const history = await apiRequest(`withdrawal-history?telegram_id=${gameState.user.telegram_id}`);
-        
-        const historyElement = document.getElementById('withdrawal-history');
-        historyElement.innerHTML = '';
-        
-        if (history.length === 0) {
-          historyElement.innerHTML = '<div class="text-center py-8 text-gray-500">暂无提现记录</div>';
-          return;
-        }
-        
-        history.forEach(request => {
-          const statusClass = 
-            request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-            request.status === 'approved' ? 'bg-green-100 text-green-800' :
-            'bg-red-100 text-red-800';
-          
-          const statusText = 
-            request.status === 'pending' ? '处理中' :
-            request.status === 'approved' ? '已批准' :
-            '已拒绝';
-          
-          const date = new Date(request.created_at).toLocaleString();
-          
-          const requestElement = document.createElement('div');
-          requestElement.className = 'p-3 mb-2 rounded-lg border';
-          requestElement.innerHTML = `
-            <div class="flex justify-between items-center mb-1">
-              <span class="font-bold">${request.amount} 万花币</span>
-              <span class="px-2 py-1 rounded text-xs ${statusClass}">${statusText}</span>
-            </div>
-            <div class="text-sm text-gray-600 mb-1">支付宝: ${request.alipay_account}</div>
-            <div class="text-sm text-gray-600 mb-1">姓名: ${request.alipay_name}</div>
-            <div class="text-xs text-gray-500">申请时间: ${date}</div>
-          `;
-          
-          historyElement.appendChild(requestElement);
-        });
-      } catch (error) {
-        console.error('加载提现历史失败:', error);
-        showToast('无法加载提现历史，请重试', 'error');
-      }
-    }
-    
-    // 页面加载完成后初始化
-    window.addEventListener('DOMContentLoaded', () => {
-      // 绑定导航事件
-      document.getElementById('home-btn').addEventListener('click', () => navigateTo('home-page'));
-      document.getElementById('play-btn').addEventListener('click', () => navigateTo('game-page'));
-      document.getElementById('leaderboard-nav-btn').addEventListener('click', () => navigateTo('leaderboard-page'));
-      document.getElementById('withdrawal-nav-btn').addEventListener('click', () => {
-        navigateTo('withdrawal-page');
-        loadWithdrawalHistory();
-      });
-      
-      // 绑定签到按钮
-      document.getElementById('checkin-btn').addEventListener('click', handleCheckin);
-      
-      // 绑定广告和分享按钮
-      document.getElementById('watch-ad-btn').addEventListener('click', () => addGamePlays('ad'));
-      document.getElementById('share-btn').addEventListener('click', () => addGamePlays('share'));
-      
-      // 绑定提现按钮
-      document.getElementById('submit-withdrawal-btn').addEventListener('click', submitWithdrawal);
-      
-      // 绑定游戏模态框按钮
-      document.getElementById('next-level-btn').addEventListener('click', () => {
-        document.getElementById('level-complete-modal').classList.add('hidden');
-        startGame(gameState.currentLevel);
-      });
-      
-      document.getElementById('retry-level-btn').addEventListener('click', () => {
-        document.getElementById('level-failed-modal').classList.add('hidden');
-        startGame(gameState.currentLevel);
-      });
-      
-      document.getElementById('exit-level-btn').addEventListener('click', () => {
-        document.getElementById('level-complete-modal').classList.add('hidden');
-        document.getElementById('level-failed-modal').classList.add('hidden');
-        navigateTo('home-page');
-      });
-      
-      // 初始化用户
-      initUser();
-    });
-  </script>
-  
-  <!-- 登录页面 -->
-  <div id="login-page" class="page flex flex-col items-center justify-center min-h-screen p-4">
-    <div class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-primary mb-2">万花币消消乐</h1>
-      <p class="text-gray-600">通过Telegram账号登录</p>
-    </div>
-    <button id="telegram-login-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full flex items-center">
-      <i class="fa fa-telegram mr-2 text-xl"></i> 用Telegram登录
-    </button>
-  </div>
-  
-  <!-- 首页 -->
-  <div id="home-page" class="page hidden p-4">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-primary">万花币消消乐</h1>
-      <div class="bg-primary/10 text-primary px-3 py-1 rounded-full flex items-center">
-        <i class="fa fa-diamond mr-1"></i>
-        <span class="balance-display">0</span> 万花币
-      </div>
-    </div>
-    
-    <div class="bg-white rounded-xl p-5 game-shadow mb-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold">当前进度</h2>
-        <button id="checkin-btn" class="bg-accent hover:bg-accent/80 text-dark font-bold py-1 px-4 rounded-full text-sm">
-          每日签到
-        </button>
-      </div>
-      
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="bg-light p-4 rounded-lg border">
-          <div class="text-gray-500 text-sm mb-1">当前关卡</div>
-          <div class="text-2xl font-bold" id="current-level-display">1</div>
-        </div>
-        <div class="bg-light p-4 rounded-lg border">
-          <div class="text-gray-500 text-sm mb-1">总得分</div>
-          <div class="text-2xl font-bold" id="total-score-display">0</div>
-        </div>
-        <div class="bg-light p-4 rounded-lg border">
-          <div class="text-gray-500 text-sm mb-1">今日剩余次数</div>
-          <div class="text-2xl font-bold" id="remaining-plays">6</div>
-        </div>
-        <div class="bg-light p-4 rounded-lg border">
-          <div class="text-gray-500 text-sm mb-1">兑换比例</div>
-          <div class="text-2xl font-bold">1000:10元</div>
-        </div>
-      </div>
-      
-      <button id="play-btn" class="w-full bg-primary hover:bg-primary/80 text-white font-bold py-3 rounded-lg text-lg pulse-animation">
-        开始游戏
-      </button>
-    </div>
-    
-    <div class="grid grid-cols-2 gap-4 mb-6">
-      <button id="watch-ad-btn" class="bg-white p-4 rounded-xl game-shadow flex flex-col items-center justify-center">
-        <i class="fa fa-play-circle text-xl text-blue-500 mb-2"></i>
-        <span>观看广告</span>
-        <span class="text-sm text-gray-500">+2次游戏机会</span>
-      </button>
-      <button id="share-btn" class="bg-white p-4 rounded-xl game-shadow flex flex-col items-center justify-center">
-        <i class="fa fa-share-alt text-xl text-green-500 mb-2"></i>
-        <span>分享游戏</span>
-        <span class="text-sm text-gray-500">+2次游戏机会</span>
-      </button>
-    </div>
-    
-    <div class="bg-white rounded-xl p-4 game-shadow">
-      <div class="grid grid-cols-2 gap-4">
-        <button id="leaderboard-nav-btn" class="p-4 border rounded-lg flex flex-col items-center justify-center">
-          <i class="fa fa-trophy text-2xl text-yellow-500 mb-2"></i>
-          <span class="font-bold">排行榜</span>
-          <span class="text-sm text-gray-500">月度奖励</span>
-        </button>
-        <button id="withdrawal-nav-btn" class="p-4 border rounded-lg flex flex-col items-center justify-center">
-          <i class="fa fa-money text-2xl text-green-600 mb-2"></i>
-          <span class="font-bold">提现</span>
-          <span class="text-sm text-gray-500">兑换现金</span>
-        </button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- 游戏页面 -->
-  <div id="game-page" class="page hidden p-2">
-    <div class="flex justify-between items-center mb-2">
-      <button id="home-btn" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full">
-        <i class="fa fa-home"></i>
-      </button>
-      <div class="text-center">
-        <h2 class="font-bold">关卡 <span id="current-game-level">1</span></h2>
-      </div>
-      <div class="bg-primary/10 text-primary px-2 py-1 rounded-full text-sm flex items-center">
-        <i class="fa fa-diamond mr-1"></i>
-        <span class="balance-display">0</span>
-      </div>
-    </div>
-    
-    <div class="bg-white rounded-lg p-3 mb-3 game-shadow">
-      <div class="grid grid-cols-2 gap-2 text-center">
-        <div class="bg-light p-2 rounded">
-          <div class="text-sm text-gray-500">当前得分</div>
-          <div class="font-bold text-lg" id="game-score">0</div>
-        </div>
-        <div class="bg-light p-2 rounded">
-          <div class="text-sm text-gray-500">目标得分</div>
-          <div class="font-bold text-lg" id="target-score">0</div>
-        </div>
-        <div class="bg-light p-2 rounded col-span-2">
-          <div class="text-sm text-gray-500">剩余步数</div>
-          <div class="font-bold text-lg" id="remaining-moves">0</div>
-        </div>
-      </div>
-    </div>
-    
-    <div id="game-board" class="w-full aspect-square bg-light rounded-lg game-shadow grid gap-1 p-1 mb-3 overflow-hidden"></div>
-    
-    <div class="flex justify-between">
-      <button id="game-exit-btn" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg" onclick="navigateTo('home-page')">
-        退出
-      </button>
-      <button id="game-restart-btn" class="bg-accent hover:bg-accent/80 px-4 py-2 rounded-lg" onclick="startGame(gameState.currentLevel)">
-        重新开始
-      </button>
-    </div>
-  </div>
-  
-  <!-- 关卡完成模态框 -->
-  <div id="level-complete-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden p-4">
-    <div class="bg-white rounded-xl p-6 max-w-md w-full text-center">
-      <div class="text-green-500 text-5xl mb-4">
-        <i class="fa fa-check-circle"></i>
-      </div>
-      <h2 class="text-2xl font-bold mb-2">关卡完成！</h2>
-      <p class="mb-4">恭喜你通过了关卡 <span id="completed-level">1</span></p>
-      <div class="bg-light p-4 rounded-lg mb-4">
-        <div class="mb-2">你的得分: <span id="level-complete-score" class="font-bold">0</span></div>
-        <div class="text-green-600 font-bold">获得奖励: <span id="level-reward">0</span> 万花币</div>
-      </div>
-      <div class="flex gap-2">
-        <button id="exit-level-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded-lg">
-          返回首页
-        </button>
-        <button id="next-level-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white py-2 rounded-lg">
-          下一关
-        </button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- 关卡失败模态框 -->
-  <div id="level-failed-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden p-4">
-    <div class="bg-white rounded-xl p-6 max-w-md w-full text-center">
-      <div class="text-red-500 text-5xl mb-4">
-        <i class="fa fa-times-circle"></i>
-      </div>
-      <h2 class="text-2xl font-bold mb-2">挑战失败</h2>
-      <p class="mb-4">再接再厉，争取通过关卡！</p>
-      <div class="bg-light p-4 rounded-lg mb-4">
-        <div class="mb-2">你的得分: <span id="failed-score" class="font-bold">0</span></div>
-        <div class="text-red-600">目标得分: <span id="failed-target" class="font-bold">0</span></div>
-      </div>
-      <div class="flex gap-2">
-        <button id="exit-level-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded-lg">
-          返回首页
-        </button>
-        <button id="retry-level-btn" class="flex-1 bg-primary hover:bg-primary/80 text-white py-2 rounded-lg">
-          再试一次
-        </button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- 排行榜页面 -->
-  <div id="leaderboard-page" class="page hidden p-4">
-    <div class="flex justify-between items-center mb-6">
-      <button id="home-btn-2" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full" onclick="navigateTo('home-page')">
-        <i class="fa fa-arrow-left"></i>
-      </button>
-      <h1 class="text-2xl font-bold text-primary">全服排行榜</h1>
-      <div class="w-8"></div> <!-- 占位 -->
-    </div>
-    
-    <div class="bg-white rounded-xl p-5 game-shadow mb-6">
-      <h2 class="text-xl font-bold mb-4 text-center">本月排名</h2>
-      <div id="leaderboard-list" class="space-y-2"></div>
-      <div id="leaderboard-rewards"></div>
-    </div>
-  </div>
-  
-  <!-- 提现页面 -->
-  <div id="withdrawal-page" class="page hidden p-4">
-    <div class="flex justify-between items-center mb-6">
-      <button id="home-btn-3" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full" onclick="navigateTo('home-page')">
-        <i class="fa fa-arrow-left"></i>
-      </button>
-      <h1 class="text-2xl font-bold text-primary">提现中心</h1>
-      <div class="bg-primary/10 text-primary px-3 py-1 rounded-full flex items-center">
-        <i class="fa fa-diamond mr-1"></i>
-        <span class="balance-display">0</span> 万花币
-      </div>
-    </div>
-    
-    <div class="bg-white rounded-xl p-5 game-shadow mb-6">
-      <h2 class="text-xl font-bold mb-4">申请提现</h2>
-      <form id="withdrawal-form" class="space-y-4">
-        <div>
-          <label class="block text-gray-700 mb-1">提现金额 (万花币)</label>
-          <input 
-            type="number" 
-            id="withdrawal-amount" 
-            class="w-full p-2 border rounded-lg" 
-            placeholder="1000" 
-            step="1000" 
-            min="1000"
-          >
-          <p class="text-sm text-gray-500 mt-1">最低1000万花币，必须是1000的倍数</p>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 mb-1">支付宝账号</label>
-          <input 
-            type="text" 
-            id="alipay-account" 
-            class="w-full p-2 border rounded-lg" 
-            placeholder="请输入支付宝账号"
-          >
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 mb-1">支付宝姓名</label>
-          <input 
-            type="text" 
-            id="alipay-name" 
-            class="w-full p-2 border rounded-lg" 
-            placeholder="请输入真实姓名"
-          >
-        </div>
-        
-        <button 
-          type="button" 
-          id="submit-withdrawal-btn" 
-          class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg"
-        >
-          提交提现申请
-        </button>
-      </form>
-    </div>
-    
-    <div class="bg-white rounded-xl p-5 game-shadow">
-      <h2 class="text-xl font-bold mb-4">提现历史</h2>
-      <div id="withdrawal-history"></div>
-    </div>
-  </div>
-</body>
-</html>
+          // 基础样式
+          tileEl.className = `relative flex items-center justify-center rounded-lg shadow-sm transition
