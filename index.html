@@ -2,2700 +2,2931 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>万花楼消消乐</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>万花消消乐</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #FF6B6B;
+            --secondary-color: #4ECDC4;
+            --accent-color: #FFD166;
+            --dark-color: #2D3436;
+            --light-color: #F8F9FA;
+            --success-color: #06D6A0;
+            --warning-color: #FFD166;
+            --danger-color: #EF476F;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
-        
+
         body {
-            background-color: #f8f9fa;
-            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--dark-color);
             overflow-x: hidden;
         }
-        
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 10px;
-        }
-        
-        /* 入口页面样式 */
-        .entry-screen {
+
+        .app-container {
+            width: 100%;
+            max-width: 414px;
+            height: 100vh;
+            max-height: 896px;
+            background-color: var(--light-color);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
         }
-        
-        .entry-logo {
-            width: 120px;
-            height: 120px;
-            background-color: #ff6b6b;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .entry-logo i {
-            font-size: 60px;
-            color: white;
-        }
-        
-        .entry-title {
-            font-size: 32px;
-            font-weight: bold;
-            color: #ff6b6b;
-            margin-bottom: 20px;
-        }
-        
-        .entry-message {
-            font-size: 18px;
-            color: #666;
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-        
-        .entry-button {
-            background-color: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .entry-button:hover {
-            background-color: #ff5252;
-            transform: scale(1.05);
-        }
-        
-        .entry-button i {
-            margin-right: 10px;
-        }
-        
-        .entry-qr {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .entry-qr img {
-            width: 150px;
-            height: 150px;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .entry-qr-text {
-            font-size: 14px;
-            color: #666;
-        }
-        
-        /* 主界面样式 */
-        .main-screen {
-            display: none;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        
-        .header {
-            background-color: #ff6b6b;
+
+        .app-header {
+            background-color: var(--primary-color);
             color: white;
             padding: 15px;
-            border-radius: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
+
+        .app-title {
+            font-size: 20px;
+            font-weight: bold;
         }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-right: 10px;
-        }
-        
-        .coins {
+
+        .coins-display {
             display: flex;
             align-items: center;
             background-color: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 20px;
         }
-        
-        .coins i {
+
+        .coins-icon {
             margin-right: 5px;
+            color: var(--accent-color);
         }
-        
-        .level-map {
-            background-color: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            flex-grow: 1;
-        }
-        
-        .level-map h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #ff6b6b;
-        }
-        
-        .levels {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-        }
-        
-        .level {
-            aspect-ratio: 1;
-            background-color: #f0f0f0;
-            border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
+
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
             position: relative;
         }
-        
-        .level:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+        .page {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 15px;
         }
-        
-        .level.unlocked {
-            background-color: #4ecdc4;
-            color: white;
+
+        .page.active {
+            display: block;
         }
-        
-        .level.completed {
-            background-color: #ff6b6b;
-            color: white;
+
+        /* 登录页面 */
+        .login-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
         }
-        
-        .level-stars {
-            position: absolute;
-            bottom: 5px;
-            left: 0;
-            right: 0;
+
+        .login-page.active {
+            display: flex;
+        }
+
+        .game-logo {
+            width: 150px;
+            height: 150px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
             display: flex;
             justify-content: center;
-            font-size: 10px;
+            align-items: center;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-        
-        .bottom-nav {
+
+        .game-logo i {
+            font-size: 80px;
+            color: white;
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .login-subtitle {
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: #666;
+        }
+
+        .login-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .login-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 主菜单页面 */
+        .main-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .user-info {
+            width: 100%;
             background-color: white;
             border-radius: 15px;
             padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             display: flex;
-            justify-content: space-around;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            align-items: center;
         }
-        
-        .nav-item {
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-avatar i {
+            font-size: 30px;
+            color: white;
+        }
+
+        .user-details h3 {
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+
+        .user-coins {
+            display: flex;
+            align-items: center;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .menu-buttons {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .menu-button {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-        
-        .nav-item:hover {
-            transform: translateY(-3px);
+
+        .menu-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
-        
-        .nav-item i {
-            font-size: 24px;
+
+        .menu-button i {
+            font-size: 30px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .menu-button span {
+            font-weight: bold;
+        }
+
+        .daily-checkin {
+            width: 100%;
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .checkin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .checkin-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .checkin-button {
+            background-color: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .checkin-button:hover {
+            background-color: var(--light-color);
+        }
+
+        .checkin-button:disabled {
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+        }
+
+        .checkin-progress {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .checkin-day {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40px;
+        }
+
+        .checkin-day-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             margin-bottom: 5px;
-            color: #ff6b6b;
-        }
-        
-        .nav-item span {
             font-size: 12px;
         }
-        
-        /* 游戏界面样式 */
-        .game-screen {
-            display: none;
-            flex-direction: column;
-            min-height: 100vh;
+
+        .checkin-day-circle.checked {
+            background-color: white;
+            color: var(--primary-color);
         }
-        
-        .game-header {
-            background-color: #ff6b6b;
-            color: white;
+
+        .checkin-day-label {
+            font-size: 10px;
+        }
+
+        .daily-tasks {
+            width: 100%;
+            background-color: white;
+            border-radius: 15px;
             padding: 15px;
-            border-radius: 10px 10px 0 0;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tasks-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 15px;
         }
-        
-        .game-info {
+
+        .tasks-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        .task-item {
             display: flex;
-            flex-direction: column;
-        }
-        
-        .game-info h3 {
-            margin-bottom: 5px;
-        }
-        
-        .game-stats {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .game-board {
-            background-color: white;
-            padding: 10px;
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            gap: 5px;
-            aspect-ratio: 1;
-            flex-grow: 1;
-        }
-        
-        .tile {
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .tile.selected {
-            transform: scale(1.1);
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
-        }
-        
-        .tile.red { background-color: #ff6b6b; }
-        .tile.blue { background-color: #4dabf7; }
-        .tile.green { background-color: #51cf66; }
-        .tile.yellow { background-color: #ffd43b; }
-        .tile.purple { background-color: #9775fa; }
-        
-        .game-footer {
-            background-color: white;
-            border-radius: 0 0 10px 10px;
-            padding: 15px;
-            display: flex;
-            justify-content: space-around;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .game-item {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .game-item:hover {
-            transform: scale(1.1);
-        }
-        
-        .game-item i {
-            font-size: 24px;
-            color: #ff6b6b;
-        }
-        
-        /* 任务界面样式 */
-        .tasks-screen {
-            display: none;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        
-        .tasks-header {
-            background-color: #ff6b6b;
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            text-align: center;
-        }
-        
-        .tasks-content {
-            background-color: white;
-            border-radius: 0 0 10px 10px;
-            padding: 20px;
-            flex-grow: 1;
-        }
-        
-        .task-tabs {
-            display: flex;
-            margin-bottom: 20px;
+            padding: 10px 0;
             border-bottom: 1px solid #eee;
         }
-        
-        .task-tab {
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-info {
             flex: 1;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
         }
-        
-        .task-tab.active {
-            color: #ff6b6b;
-            border-bottom-color: #ff6b6b;
-        }
-        
-        .task-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .task-item {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .task-info h4 {
+
+        .task-name {
+            font-weight: bold;
             margin-bottom: 5px;
         }
-        
-        .task-info p {
+
+        .task-progress {
             font-size: 14px;
             color: #666;
         }
-        
-        .task-progress {
-            width: 100%;
-            height: 8px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-        
-        .task-progress-bar {
-            height: 100%;
-            background-color: #4ecdc4;
-            border-radius: 4px;
-        }
-        
+
         .task-reward {
             display: flex;
-            flex-direction: column;
             align-items: center;
-        }
-        
-        .task-reward-amount {
-            background-color: #ffd43b;
-            color: #333;
-            padding: 5px 10px;
-            border-radius: 15px;
+            color: var(--primary-color);
             font-weight: bold;
-            margin-bottom: 5px;
         }
-        
-        .task-claim-btn {
-            background-color: #4ecdc4;
+
+        .task-claim-button {
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 20px;
-            padding: 5px 15px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            margin-left: 10px;
         }
-        
-        .task-claim-btn:hover {
-            background-color: #3dbcb3;
-        }
-        
-        .task-claim-btn:disabled {
-            background-color: #adb5bd;
+
+        .task-claim-button:disabled {
+            background-color: #ccc;
             cursor: not-allowed;
         }
-        
-        /* 签到界面样式 */
-        .checkin-screen {
-            display: none;
-            flex-direction: column;
-            min-height: 100vh;
+
+        /* 关卡选择页面 */
+        .level-select {
+            padding-bottom: 60px;
         }
-        
-        .checkin-header {
-            background-color: #ff6b6b;
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            text-align: center;
+
+        .level-map {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background-color: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
         }
-        
-        .checkin-content {
+
+        .level-path {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background-color: #ddd;
+            transform: translateY(-50%);
+        }
+
+        .level-node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             background-color: white;
-            border-radius: 0 0 10px 10px;
-            padding: 20px;
-            flex-grow: 1;
+            border: 3px solid var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .level-node:hover {
+            transform: scale(1.1);
+        }
+
+        .level-node.locked {
+            background-color: #ccc;
+            border-color: #999;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .level-node.completed {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .level-stars {
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+        }
+
+        .level-star {
+            color: var(--warning-color);
+            font-size: 12px;
+            margin: 0 1px;
+        }
+
+        .game-plays {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .plays-count {
+            display: flex;
+            align-items: center;
+        }
+
+        .plays-icon {
+            margin-right: 5px;
+            color: var(--primary-color);
+        }
+
+        .plays-actions {
+            display: flex;
+        }
+
+        .play-action-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin-left: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .play-action-button i {
+            margin-right: 5px;
+        }
+
+        /* 游戏页面 */
+        .game-board-container {
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 100%;
         }
-        
-        .checkin-calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-            margin: 20px 0;
+
+        .game-info {
             width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
         }
-        
-        .checkin-day {
+
+        .game-level {
+            font-weight: bold;
+        }
+
+        .game-score {
+            display: flex;
+            align-items: center;
+        }
+
+        .game-score i {
+            margin-right: 5px;
+            color: var(--primary-color);
+        }
+
+        .game-moves {
+            display: flex;
+            align-items: center;
+        }
+
+        .game-moves i {
+            margin-right: 5px;
+            color: var(--secondary-color);
+        }
+
+        .game-board {
+            background-color: #f0f0f0;
+            border-radius: 15px;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-gap: 5px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-cell {
             aspect-ratio: 1;
             border-radius: 10px;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #f8f9fa;
+            cursor: pointer;
+            transition: transform 0.2s;
             position: relative;
+            overflow: hidden;
         }
-        
-        .checkin-day.checked {
-            background-color: #4ecdc4;
+
+        .game-cell:hover {
+            transform: scale(1.05);
+        }
+
+        .game-cell.selected {
+            box-shadow: 0 0 0 3px var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .game-cell.matched {
+            animation: matchedAnimation 0.5s;
+        }
+
+        @keyframes matchedAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .game-element {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
             color: white;
         }
-        
-        .checkin-day.today {
-            border: 2px solid #ff6b6b;
+
+        .element-red {
+            background-color: #FF6B6B;
         }
-        
-        .checkin-day-number {
+
+        .element-blue {
+            background-color: #4D96FF;
+        }
+
+        .element-green {
+            background-color: #6BCB77;
+        }
+
+        .element-yellow {
+            background-color: #FFD93D;
+        }
+
+        .element-purple {
+            background-color: #9C51E0;
+        }
+
+        .element-orange {
+            background-color: #FF9A3D;
+        }
+
+        .element-rocket-h {
+            background-color: #FF6B6B;
+            width: 100%;
+            height: 40%;
+            border-radius: 10px;
+        }
+
+        .element-rocket-v {
+            background-color: #FF6B6B;
+            width: 40%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .element-bomb {
+            background-color: #FF6B6B;
+            width: 80%;
+            height: 80%;
+            border-radius: 10px;
+        }
+
+        .element-rainbow {
+            background: linear-gradient(45deg, #FF6B6B, #4D96FF, #6BCB77, #FFD93D, #9C51E0);
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+        }
+
+        .game-obstacle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+
+        .obstacle-ice {
+            background-color: rgba(173, 216, 230, 0.7);
+        }
+
+        .obstacle-ice::after {
+            content: "❄️";
+            font-size: 20px;
+        }
+
+        .obstacle-cage {
+            background-color: rgba(169, 169, 169, 0.7);
+        }
+
+        .obstacle-cage::after {
+            content: "🔒";
+            font-size: 20px;
+        }
+
+        .game-powerups {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+
+        .powerup-button {
+            background-color: white;
+            border-radius: 15px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .powerup-button:hover {
+            transform: translateY(-5px);
+        }
+
+        .powerup-button.active {
+            box-shadow: 0 0 0 3px var(--primary-color);
+        }
+
+        .powerup-count {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* 成就页面 */
+        .achievements-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .achievement-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .achievement-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 24px;
+        }
+
+        .achievement-icon.completed {
+            background-color: var(--success-color);
+        }
+
+        .achievement-details {
+            flex: 1;
+        }
+
+        .achievement-name {
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
-        .checkin-day-reward {
-            font-size: 12px;
+
+        .achievement-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
         }
-        
-        .checkin-btn {
-            background-color: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 15px 40px;
-            font-size: 18px;
+
+        .achievement-progress {
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .achievement-progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+        }
+
+        .achievement-reward {
+            display: flex;
+            align-items: center;
+            color: var(--primary-color);
             font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s ease;
+            margin-left: 10px;
         }
-        
-        .checkin-btn:hover {
-            background-color: #ff5252;
-            transform: scale(1.05);
-        }
-        
-        .checkin-btn:disabled {
-            background-color: #adb5bd;
-            cursor: not-allowed;
-        }
-        
-        /* 排行榜界面样式 */
-        .leaderboard-screen {
-            display: none;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        
-        .leaderboard-header {
-            background-color: #ff6b6b;
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            text-align: center;
-        }
-        
-        .leaderboard-content {
-            background-color: white;
-            border-radius: 0 0 10px 10px;
-            padding: 20px;
-            flex-grow: 1;
-        }
-        
+
+        /* 排行榜页面 */
         .leaderboard-tabs {
             display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         .leaderboard-tab {
             flex: 1;
             padding: 10px;
             text-align: center;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
+            font-weight: bold;
+            transition: background-color 0.3s;
         }
-        
+
         .leaderboard-tab.active {
-            color: #ff6b6b;
-            border-bottom-color: #ff6b6b;
+            background-color: var(--primary-color);
+            color: white;
         }
-        
+
         .leaderboard-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         .leaderboard-item {
             display: flex;
             align-items: center;
-            padding: 10px;
-            border-radius: 10px;
-            background-color: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
         }
-        
+
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
         .leaderboard-rank {
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background-color: #e9ecef;
+            background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: bold;
-            margin-right: 10px;
+            margin-right: 15px;
         }
-        
+
         .leaderboard-rank.top1 {
-            background-color: #ffd43b;
-            color: #333;
+            background-color: gold;
+            color: white;
         }
-        
+
         .leaderboard-rank.top2 {
-            background-color: #adb5bd;
+            background-color: silver;
             color: white;
         }
-        
+
         .leaderboard-rank.top3 {
-            background-color: #cd7f32;
+            background-color: #CD7F32;
             color: white;
         }
-        
+
         .leaderboard-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background-color: #dee2e6;
+            background-color: var(--secondary-color);
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-right: 10px;
+            margin-right: 15px;
+            overflow: hidden;
         }
-        
+
+        .leaderboard-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .leaderboard-avatar i {
+            font-size: 20px;
+            color: white;
+        }
+
         .leaderboard-info {
-            flex-grow: 1;
+            flex: 1;
         }
-        
+
         .leaderboard-name {
             font-weight: bold;
             margin-bottom: 3px;
         }
-        
+
         .leaderboard-coins {
-            font-size: 14px;
-            color: #666;
             display: flex;
             align-items: center;
+            color: var(--primary-color);
+            font-size: 14px;
         }
-        
-        .leaderboard-coins i {
-            margin-right: 5px;
-            color: #ffd43b;
-        }
-        
-        /* 提现界面样式 */
-        .withdraw-screen {
-            display: none;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        
-        .withdraw-header {
-            background-color: #ff6b6b;
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            text-align: center;
-        }
-        
-        .withdraw-content {
-            background-color: white;
-            border-radius: 0 0 10px 10px;
-            padding: 20px;
-            flex-grow: 1;
-        }
-        
-        .withdraw-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .form-group label {
-            margin-bottom: 8px;
+
+        .leaderboard-reward {
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
             font-weight: bold;
         }
-        
-        .form-group input {
-            padding: 12px;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        
-        .withdraw-amount {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
+
+        /* 提现页面 */
+        .withdrawal-form {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
-        
-        .withdraw-amount-label {
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
             font-weight: bold;
         }
-        
-        .withdraw-amount-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ff6b6b;
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
         }
-        
-        .withdraw-submit {
-            background-color: #ff6b6b;
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .withdrawal-info {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .withdrawal-rate {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .withdrawal-amount {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .withdrawal-button {
+            width: 100%;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 30px;
             padding: 15px;
+            border-radius: 10px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s;
         }
-        
-        .withdraw-submit:hover {
-            background-color: #ff5252;
+
+        .withdrawal-button:hover {
+            background-color: #e55555;
         }
-        
-        .withdraw-history {
-            margin-top: 30px;
+
+        .withdrawal-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
-        
-        .withdraw-history h3 {
-            margin-bottom: 15px;
+
+        .withdrawal-history {
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        .withdraw-history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .withdraw-history-item {
-            background-color: #f8f9fa;
-            border-radius: 10px;
+
+        .withdrawal-history-header {
+            background-color: var(--primary-color);
+            color: white;
             padding: 15px;
+            font-weight: bold;
+        }
+
+        .withdrawal-history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .withdrawal-history-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
         }
-        
-        .withdraw-history-info {
-            display: flex;
-            flex-direction: column;
+
+        .withdrawal-history-item:last-child {
+            border-bottom: none;
         }
-        
-        .withdraw-history-amount {
+
+        .withdrawal-history-details {
+            flex: 1;
+        }
+
+        .withdrawal-history-amount {
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
-        
-        .withdraw-history-date {
+
+        .withdrawal-history-date {
             font-size: 14px;
             color: #666;
         }
-        
-        .withdraw-history-status {
+
+        .withdrawal-history-status {
             padding: 5px 10px;
             border-radius: 15px;
             font-size: 14px;
+            font-weight: bold;
         }
-        
-        .withdraw-history-status.pending {
+
+        .status-pending {
             background-color: #fff3cd;
             color: #856404;
         }
-        
-        .withdraw-history-status.approved {
+
+        .status-approved {
             background-color: #d4edda;
             color: #155724;
         }
-        
-        .withdraw-history-status.rejected {
+
+        .status-rejected {
             background-color: #f8d7da;
             color: #721c24;
         }
-        
-        /* 页脚样式 */
-        .footer {
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .nav-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+        }
+
+        /* 页脚 */
+        .app-footer {
             text-align: center;
             padding: 10px;
             font-size: 12px;
             color: #666;
-            background-color: #f8f9fa;
-            border-top: 1px solid #eee;
+            background-color: rgba(255, 255, 255, 0.7);
         }
-        
-        .footer a {
-            color: #ff6b6b;
+
+        .footer-link {
+            color: var(--primary-color);
             text-decoration: none;
         }
-        
-        /* 模态框样式 */
+
+        /* 加载动画 */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 提示框 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* 模态框 */
         .modal {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
         }
-        
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .modal-content {
             background-color: white;
             border-radius: 15px;
             padding: 20px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s;
         }
-        
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
-        
+
         .modal-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            color: #333;
         }
-        
+
         .modal-close {
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: 24px;
             cursor: pointer;
             color: #666;
         }
-        
+
         .modal-body {
             margin-bottom: 20px;
         }
-        
+
         .modal-footer {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
         }
-        
-        .modal-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        
-        .modal-btn-primary {
-            background-color: #ff6b6b;
-            color: white;
-        }
-        
-        .modal-btn-primary:hover {
-            background-color: #ff5252;
-        }
-        
-        .modal-btn-secondary {
-            background-color: #e9ecef;
-            color: #333;
-        }
-        
-        .modal-btn-secondary:hover {
-            background-color: #dee2e6;
-        }
-        
-        /* 游戏结束界面 */
-        .game-over {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .game-over-content {
-            background-color: white;
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            max-width: 350px;
-            width: 90%;
-        }
-        
-        .game-over-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #ff6b6b;
-        }
-        
-        .game-over-score {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        
-        .game-over-stars {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .game-over-star {
-            font-size: 30px;
-            color: #e9ecef;
-            margin: 0 5px;
-        }
-        
-        .game-over-star.filled {
-            color: #ffd43b;
-        }
-        
-        .game-over-reward {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .game-over-reward-label {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .game-over-reward-amount {
-            font-size: 20px;
-            font-weight: bold;
-            color: #ff6b6b;
-        }
-        
-        .game-over-buttons {
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .game-over-btn {
+
+        .modal-button {
             padding: 10px 20px;
-            border-radius: 25px;
-            border: none;
+            border-radius: 10px;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            margin-left: 10px;
         }
-        
-        .game-over-btn-primary {
-            background-color: #ff6b6b;
+
+        .modal-button-primary {
+            background-color: var(--primary-color);
             color: white;
-        }
-        
-        .game-over-btn-primary:hover {
-            background-color: #ff5252;
-        }
-        
-        .game-over-btn-secondary {
-            background-color: #e9ecef;
-            color: #333;
-        }
-        
-        .game-over-btn-secondary:hover {
-            background-color: #dee2e6;
-        }
-        
-        /* 游戏次数提示 */
-        .play-limit {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .play-limit-content {
-            background-color: white;
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            max-width: 350px;
-            width: 90%;
-        }
-        
-        .play-limit-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #ff6b6b;
-        }
-        
-        .play-limit-message {
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        
-        .play-limit-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .play-limit-btn {
-            padding: 12px;
-            border-radius: 25px;
             border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
         }
-        
-        .play-limit-btn-primary {
-            background-color: #ff6b6b;
-            color: white;
-        }
-        
-        .play-limit-btn-primary:hover {
-            background-color: #ff5252;
-        }
-        
-        .play-limit-btn-secondary {
-            background-color: #e9ecef;
-            color: #333;
-        }
-        
-        .play-limit-btn-secondary:hover {
-            background-color: #dee2e6;
-        }
-        
-        /* 加载动画 */
-        .loader {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-        
-        .loader-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #ff6b6b;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 480px) {
-            .container {
-                padding: 5px;
-            }
-            
-            .header {
-                padding: 10px;
-            }
-            
-            .level-map {
-                padding: 15px;
-            }
-            
-            .levels {
-                grid-template-columns: repeat(4, 1fr);
-            }
+
+        .modal-button-secondary {
+            background-color: #f0f0f0;
+            color: var(--dark-color);
+            border: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 入口页面 -->
-        <div class="entry-screen" id="entryScreen">
-            <div class="entry-logo">
-                <i class="fas fa-gamepad"></i>
-            </div>
-            <h1 class="entry-title">万花楼消消乐</h1>
-            <p class="entry-message">请通过Telegram机器人进入游戏</p>
-            <button class="entry-button" onclick="openTelegramBot()">
-                <i class="fab fa-telegram"></i> 打开Telegram机器人
-            </button>
-            <div class="entry-qr">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://t.me/bjxcwhljiluBot" alt="Telegram机器人二维码">
-                <p class="entry-qr-text">扫描二维码或搜索 @bjxcwhljiluBot</p>
+    <div class="app-container">
+        <div class="app-header">
+            <div class="app-title">万花消消乐</div>
+            <div class="coins-display">
+                <i class="fas fa-coins coins-icon"></i>
+                <span id="header-coins">0</span>
             </div>
         </div>
-        
-        <!-- 主界面 -->
-        <div class="main-screen" id="mainScreen">
-            <div class="header">
+
+        <div class="app-content">
+            <!-- 登录页面 -->
+            <div class="page login-page active" id="login-page">
+                <div class="game-logo">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <h1 class="login-title">万花消消乐</h1>
+                <p class="login-subtitle">消除宝石，赢取万花币</p>
+                <button class="login-button" id="login-button">
+                    <i class="fab fa-telegram-plane"></i> 使用Telegram登录
+                </button>
+            </div>
+
+            <!-- 主菜单页面 -->
+            <div class="page main-menu" id="main-menu-page">
                 <div class="user-info">
-                    <div class="user-avatar">
+                    <div class="user-avatar" id="user-avatar">
                         <i class="fas fa-user"></i>
                     </div>
-                    <span id="username">玩家</span>
+                    <div class="user-details">
+                        <h3 id="user-name">玩家</h3>
+                        <div class="user-coins">
+                            <i class="fas fa-coins"></i>
+                            <span id="user-coins">0</span> 万花币
+                        </div>
+                    </div>
                 </div>
-                <div class="coins">
-                    <i class="fas fa-coins"></i>
-                    <span id="userCoins">0</span>
+
+                <div class="menu-buttons">
+                    <div class="menu-button" id="play-button">
+                        <i class="fas fa-play"></i>
+                        <span>开始游戏</span>
+                    </div>
+                    <div class="menu-button" id="achievements-button">
+                        <i class="fas fa-trophy"></i>
+                        <span>成就</span>
+                    </div>
+                    <div class="menu-button" id="leaderboard-button">
+                        <i class="fas fa-crown"></i>
+                        <span>排行榜</span>
+                    </div>
+                    <div class="menu-button" id="withdrawal-button">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>提现</span>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="level-map">
-                <h2>关卡地图</h2>
-                <div class="levels" id="levelsList">
-                    <!-- 关卡将通过JavaScript动态生成 -->
+
+                <div class="daily-checkin">
+                    <div class="checkin-header">
+                        <div class="checkin-title">每日签到</div>
+                        <button class="checkin-button" id="checkin-button">签到</button>
+                    </div>
+                    <div class="checkin-progress" id="checkin-progress">
+                        <!-- 签到进度将通过JS动态生成 -->
+                    </div>
                 </div>
-            </div>
-            
-            <div class="bottom-nav">
-                <div class="nav-item" onclick="showScreen('tasksScreen')">
-                    <i class="fas fa-tasks"></i>
-                    <span>任务</span>
-                </div>
-                <div class="nav-item" onclick="showScreen('checkinScreen')">
-                    <i class="fas fa-calendar-check"></i>
-                    <span>签到</span>
-                </div>
-                <div class="nav-item" onclick="showScreen('leaderboardScreen')">
-                    <i class="fas fa-trophy"></i>
-                    <span>排行榜</span>
-                </div>
-                <div class="nav-item" onclick="showScreen('withdrawScreen')">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <span>提现</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 游戏界面 -->
-        <div class="game-screen" id="gameScreen">
-            <div class="game-header">
-                <div class="game-info">
-                    <h3 id="levelName">第1关</h3>
-                    <div>目标: <span id="levelTarget">1000</span>分</div>
-                </div>
-                <div class="game-stats">
-                    <div>步数: <span id="movesLeft">20</span></div>
-                    <div>分数: <span id="currentScore">0</span></div>
-                </div>
-            </div>
-            
-            <div class="game-board" id="gameBoard">
-                <!-- 游戏棋盘将通过JavaScript动态生成 -->
-            </div>
-            
-            <div class="game-footer">
-                <div class="game-item" onclick="useItem('refresh')">
-                    <i class="fas fa-sync-alt"></i>
-                </div>
-                <div class="game-item" onclick="useItem('bomb')">
-                    <i class="fas fa-bomb"></i>
-                </div>
-                <div class="game-item" onclick="useItem('rocket')">
-                    <i class="fas fa-rocket"></i>
-                </div>
-                <div class="game-item" onclick="useItem('rainbow')">
-                    <i class="fas fa-rainbow"></i>
+
+                <div class="daily-tasks">
+                    <div class="tasks-header">
+                        <div class="tasks-title">每日任务</div>
+                    </div>
+                    <div id="daily-tasks-list">
+                        <!-- 每日任务将通过JS动态生成 -->
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- 任务界面 -->
-        <div class="tasks-screen" id="tasksScreen">
-            <div class="tasks-header">
-                <h2>任务中心</h2>
-            </div>
-            
-            <div class="tasks-content">
-                <div class="task-tabs">
-                    <div class="task-tab active" onclick="switchTaskTab('daily')">每日任务</div>
-                    <div class="task-tab" onclick="switchTaskTab('achievement')">成就</div>
+
+            <!-- 关卡选择页面 -->
+            <div class="page level-select" id="level-select-page">
+                <div class="level-map" id="level-map">
+                    <div class="level-path"></div>
+                    <!-- 关卡节点将通过JS动态生成 -->
                 </div>
-                
-                <div class="task-list" id="dailyTasksList">
-                    <!-- 每日任务将通过JavaScript动态生成 -->
+                <div class="game-plays">
+                    <div class="plays-count">
+                        <i class="fas fa-gamepad plays-icon"></i>
+                        <span>剩余次数: <span id="remaining-plays">0</span></span>
+                    </div>
+                    <div class="plays-actions">
+                        <button class="play-action-button" id="watch-ad-button">
+                            <i class="fas fa-ad"></i> 看广告
+                        </button>
+                        <button class="play-action-button" id="share-button">
+                            <i class="fas fa-share-alt"></i> 分享
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="task-list" id="achievementsList" style="display: none;">
-                    <!-- 成就将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- 游戏页面 -->
+            <div class="page game-page" id="game-page">
+                <div class="game-board-container">
+                    <div class="game-info">
+                        <div class="game-level">关卡 <span id="current-level">1</span></div>
+                        <div class="game-score">
+                            <i class="fas fa-star"></i>
+                            <span id="game-score">0</span>
+                        </div>
+                        <div class="game-moves">
+                            <i class="fas fa-hand-pointer"></i>
+                            <span id="game-moves">0</span>
+                        </div>
+                    </div>
+                    <div class="game-board" id="game-board">
+                        <!-- 游戏棋盘将通过JS动态生成 -->
+                    </div>
+                    <div class="game-powerups">
+                        <div class="powerup-button" id="powerup-refresh">
+                            <i class="fas fa-sync-alt"></i>
+                            <div class="powerup-count">3</div>
+                        </div>
+                        <div class="powerup-button" id="powerup-bomb">
+                            <i class="fas fa-bomb"></i>
+                            <div class="powerup-count">3</div>
+                        </div>
+                        <div class="powerup-button" id="powerup-hammer">
+                            <i class="fas fa-hammer"></i>
+                            <div class="powerup-count">3</div>
+                        </div>
+                        <div class="powerup-button" id="powerup-color">
+                            <i class="fas fa-palette"></i>
+                            <div class="powerup-count">3</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- 签到界面 -->
-        <div class="checkin-screen" id="checkinScreen">
-            <div class="checkin-header">
-                <h2>每日签到</h2>
-            </div>
-            
-            <div class="checkin-content">
-                <div class="checkin-calendar" id="checkinCalendar">
-                    <!-- 签到日历将通过JavaScript动态生成 -->
+
+            <!-- 成就页面 -->
+            <div class="page achievements-page" id="achievements-page">
+                <div class="achievements-list" id="achievements-list">
+                    <!-- 成就列表将通过JS动态生成 -->
                 </div>
-                
-                <button class="checkin-btn" id="checkinBtn" onclick="checkin()">签到</button>
             </div>
-        </div>
-        
-        <!-- 排行榜界面 -->
-        <div class="leaderboard-screen" id="leaderboardScreen">
-            <div class="leaderboard-header">
-                <h2>排行榜</h2>
-            </div>
-            
-            <div class="leaderboard-content">
+
+            <!-- 排行榜页面 -->
+            <div class="page leaderboard-page" id="leaderboard-page">
                 <div class="leaderboard-tabs">
-                    <div class="leaderboard-tab active" onclick="switchLeaderboardTab('monthly')">月榜</div>
-                    <div class="leaderboard-tab" onclick="switchLeaderboardTab('total')">总榜</div>
+                    <div class="leaderboard-tab active" data-period="daily">日榜</div>
+                    <div class="leaderboard-tab" data-period="weekly">周榜</div>
+                    <div class="leaderboard-tab" data-period="monthly">月榜</div>
                 </div>
-                
-                <div class="leaderboard-list" id="leaderboardList">
-                    <!-- 排行榜将通过JavaScript动态生成 -->
+                <div class="leaderboard-list" id="leaderboard-list">
+                    <!-- 排行榜列表将通过JS动态生成 -->
                 </div>
             </div>
-        </div>
-        
-        <!-- 提现界面 -->
-        <div class="withdraw-screen" id="withdrawScreen">
-            <div class="withdraw-header">
-                <h2>提现</h2>
-            </div>
-            
-            <div class="withdraw-content">
-                <div class="withdraw-amount">
-                    <span class="withdraw-amount-label">可提现金额</span>
-                    <span class="withdraw-amount-value" id="withdrawAmount">0</span>
-                </div>
-                
-                <form class="withdraw-form" id="withdrawForm" onsubmit="submitWithdraw(event)">
+
+            <!-- 提现页面 -->
+            <div class="page withdrawal-page" id="withdrawal-page">
+                <div class="withdrawal-form">
                     <div class="form-group">
-                        <label for="alipayAccount">支付宝账号</label>
-                        <input type="text" id="alipayAccount" required placeholder="请输入支付宝账号">
+                        <label class="form-label">提现金额 (万花币)</label>
+                        <input type="number" class="form-input" id="withdrawal-amount" placeholder="最少1000万花币" min="1000">
                     </div>
-                    
                     <div class="form-group">
-                        <label for="realName">真实姓名</label>
-                        <input type="text" id="realName" required placeholder="请输入真实姓名">
+                        <label class="form-label">支付宝账号</label>
+                        <input type="text" class="form-input" id="alipay-account" placeholder="请输入支付宝账号">
                     </div>
-                    
-                    <button type="submit" class="withdraw-submit">提现</button>
-                </form>
-                
-                <div class="withdraw-history">
-                    <h3>提现记录</h3>
-                    <div class="withdraw-history-list" id="withdrawHistoryList">
-                        <!-- 提现记录将通过JavaScript动态生成 -->
+                    <div class="form-group">
+                        <label class="form-label">真实姓名</label>
+                        <input type="text" class="form-input" id="real-name" placeholder="请输入真实姓名">
+                    </div>
+                    <div class="withdrawal-info">
+                        <div class="withdrawal-rate">
+                            <span>汇率</span>
+                            <span>1000万花币 = 10元</span>
+                        </div>
+                        <div class="withdrawal-amount">
+                            <span>预计到账</span>
+                            <span id="withdrawal-rmb">0元</span>
+                        </div>
+                    </div>
+                    <button class="withdrawal-button" id="submit-withdrawal">提交提现申请</button>
+                </div>
+                <div class="withdrawal-history">
+                    <div class="withdrawal-history-header">提现记录</div>
+                    <div class="withdrawal-history-list" id="withdrawal-history-list">
+                        <!-- 提现记录将通过JS动态生成 -->
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- 页脚 -->
-        <div class="footer">
-            本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发
-        </div>
-    </div>
-    
-    <!-- 游戏结束界面 -->
-    <div class="game-over" id="gameOver">
-        <div class="game-over-content">
-            <div class="game-over-title" id="gameOverTitle">关卡完成</div>
-            <div class="game-over-score">得分: <span id="gameOverScore">0</span></div>
-            <div class="game-over-stars" id="gameOverStars">
-                <div class="game-over-star"><i class="fas fa-star"></i></div>
-                <div class="game-over-star"><i class="fas fa-star"></i></div>
-                <div class="game-over-star"><i class="fas fa-star"></i></div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-page="main-menu-page">
+                <i class="fas fa-home nav-icon"></i>
+                <div class="nav-label">首页</div>
             </div>
-            <div class="game-over-reward">
-                <div class="game-over-reward-label">获得奖励</div>
-                <div class="game-over-reward-amount"><i class="fas fa-coins"></i> <span id="gameOverReward">0</span></div>
+            <div class="nav-item" data-page="level-select-page">
+                <i class="fas fa-gamepad nav-icon"></i>
+                <div class="nav-label">游戏</div>
             </div>
-            <div class="game-over-buttons">
-                <button class="game-over-btn-secondary" onclick="backToMain()">返回地图</button>
-                <button class="game-over-btn-primary" onclick="nextLevel()">下一关</button>
+            <div class="nav-item" data-page="achievements-page">
+                <i class="fas fa-trophy nav-icon"></i>
+                <div class="nav-label">成就</div>
+            </div>
+            <div class="nav-item" data-page="leaderboard-page">
+                <i class="fas fa-crown nav-icon"></i>
+                <div class="nav-label">排行</div>
+            </div>
+            <div class="nav-item" data-page="withdrawal-page">
+                <i class="fas fa-money-bill-wave nav-icon"></i>
+                <div class="nav-label">提现</div>
             </div>
         </div>
+
+        <div class="app-footer">
+            本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank" class="footer-link">@bjxc010</a> 开发
+        </div>
     </div>
-    
-    <!-- 游戏次数提示 -->
-    <div class="play-limit" id="playLimit">
-        <div class="play-limit-content">
-            <div class="play-limit-title">游戏次数已用完</div>
-            <div class="play-limit-message">
-                今日免费游戏次数已用完，可以通过以下方式获取额外游戏次数：
+
+    <!-- 提示框 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 模态框 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">提示</div>
+                <button class="modal-close" id="modal-close">&times;</button>
             </div>
-            <div class="play-limit-options">
-                <button class="play-limit-btn-primary" onclick="shareToTelegram()">分享到Telegram群组 (+2次)</button>
-                <button class="play-limit-btn-secondary" onclick="watchAd()">观看广告 (+1次)</button>
+            <div class="modal-body" id="modal-body">
+                <!-- 模态框内容 -->
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <!-- 模态框按钮 -->
             </div>
         </div>
     </div>
-    
-    <!-- 加载动画 -->
-    <div class="loader" id="loader">
-        <div class="loader-spinner"></div>
-    </div>
-    
+
     <script>
-        // 全局变量
-        const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev';
-        const BOT_USERNAME = 'bjxcwhljiluBot';
-        let currentUser = null;
-        let currentLevel = null;
-        let gameBoard = [];
-        let selectedTile = null;
-        let movesLeft = 0;
-        let currentScore = 0;
-        let gameActive = false;
-        let playCount = 0;
-        const MAX_PLAYS_PER_DAY = 7;
-        
-        // 统一错误处理函数
-        function handleError(error, message = '操作失败，请稍后重试') {
-            console.error(error);
-            alert(message);
-        }
-        
-        // 数据验证函数
-        function validateFormData(data) {
-            const errors = [];
-            
-            // 验证支付宝账号
-            if (data.alipayAccount) {
-                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                const phoneRegex = /^1[3-9]\d{9}$/;
-                
-                if (!emailRegex.test(data.alipayAccount) && !phoneRegex.test(data.alipayAccount)) {
-                    errors.push('支付宝账号格式不正确，请输入邮箱或手机号码');
-                }
+        // API地址
+        const API_URL = 'https://wanhua-game.bingkuijing.workers.dev/api';
+
+        // 游戏状态
+        const gameState = {
+            user: null,
+            currentLevel: 1,
+            gameBoard: [],
+            selectedCell: null,
+            score: 0,
+            moves: 0,
+            maxMoves: 20,
+            gameActive: false,
+            powerups: {
+                refresh: 3,
+                bomb: 3,
+                hammer: 3,
+                color: 3
             }
-            
-            // 验证真实姓名
-            if (data.realName && !/^[\u4e00-\u9fa5a-zA-Z]{2,20}$/.test(data.realName)) {
-                errors.push('真实姓名只能包含中文或英文，长度2-20个字符');
-            }
-            
-            return {
-                isValid: errors.length === 0,
-                errors: errors
-            };
-        }
-        
-        // 游戏元素类型
-        const TILE_TYPES = [
-            { type: 'red', icon: '🍎' },
-            { type: 'blue', icon: '🍇' },
-            { type: 'green', icon: '🍊' },
-            { type: 'yellow', icon: '🍋' },
-            { type: 'purple', icon: '🍒' }
-        ];
-        
+        };
+
+        // DOM元素
+        const elements = {
+            // 页面
+            pages: {
+                login: document.getElementById('login-page'),
+                mainMenu: document.getElementById('main-menu-page'),
+                levelSelect: document.getElementById('level-select-page'),
+                game: document.getElementById('game-page'),
+                achievements: document.getElementById('achievements-page'),
+                leaderboard: document.getElementById('leaderboard-page'),
+                withdrawal: document.getElementById('withdrawal-page')
+            },
+            // 用户信息
+            userAvatar: document.getElementById('user-avatar'),
+            userName: document.getElementById('user-name'),
+            userCoins: document.getElementById('user-coins'),
+            headerCoins: document.getElementById('header-coins'),
+            // 游戏元素
+            gameBoard: document.getElementById('game-board'),
+            currentLevel: document.getElementById('current-level'),
+            gameScore: document.getElementById('game-score'),
+            gameMoves: document.getElementById('game-moves'),
+            // 关卡选择
+            levelMap: document.getElementById('level-map'),
+            remainingPlays: document.getElementById('remaining-plays'),
+            // 签到
+            checkinButton: document.getElementById('checkin-button'),
+            checkinProgress: document.getElementById('checkin-progress'),
+            // 每日任务
+            dailyTasksList: document.getElementById('daily-tasks-list'),
+            // 成就
+            achievementsList: document.getElementById('achievements-list'),
+            // 排行榜
+            leaderboardTabs: document.querySelectorAll('.leaderboard-tab'),
+            leaderboardList: document.getElementById('leaderboard-list'),
+            // 提现
+            withdrawalAmount: document.getElementById('withdrawal-amount'),
+            alipayAccount: document.getElementById('alipay-account'),
+            realName: document.getElementById('real-name'),
+            withdrawalRmb: document.getElementById('withdrawal-rmb'),
+            withdrawalHistoryList: document.getElementById('withdrawal-history-list'),
+            // 其他
+            toast: document.getElementById('toast'),
+            modal: document.getElementById('modal'),
+            modalTitle: document.getElementById('modal-title'),
+            modalBody: document.getElementById('modal-body'),
+            modalFooter: document.getElementById('modal-footer'),
+            modalClose: document.getElementById('modal-close')
+        };
+
         // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 检查是否通过Telegram进入
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查URL参数中是否有user_id
             const urlParams = new URLSearchParams(window.location.search);
             const userId = urlParams.get('user_id');
             
-            if (!userId) {
-                // 显示入口页面
-                document.getElementById('entryScreen').style.display = 'flex';
+            if (userId) {
+                // 如果有user_id，直接获取用户信息
+                fetchUser(userId);
             } else {
-                // 直接进入游戏
-                initGame(userId);
+                // 否则显示登录页面
+                showPage('login');
             }
+            
+            // 绑定事件
+            bindEvents();
         });
-        
-        // 打开Telegram机器人
-        function openTelegramBot() {
-            // 检查是否在Telegram应用内
-            if (window.Telegram && window.Telegram.WebApp) {
-                // 在Telegram应用内，可以直接打开机器人
-                window.open(`https://t.me/${BOT_USERNAME}`, '_blank');
-            } else {
-                // 不在Telegram应用内，尝试打开Telegram应用
-                const telegramUrl = `tg://resolve?domain=${BOT_USERNAME}`;
+
+        // 绑定事件
+        function bindEvents() {
+            // 登录按钮
+            document.getElementById('login-button').addEventListener('click', () => {
+                // 在实际应用中，这里应该调用Telegram登录API
+                // 这里简化处理，直接模拟登录
+                const mockUser = {
+                    id: 123456789,
+                    first_name: '测试',
+                    last_name: '用户',
+                    username: 'testuser',
+                    photo_url: null
+                };
                 
-                // 尝试打开Telegram应用
-                window.open(telegramUrl, '_blank');
-                
-                // 如果无法打开，则打开网页版
-                setTimeout(() => {
-                    window.open(`https://t.me/${BOT_USERNAME}`, '_blank');
-                }, 500);
+                login(mockUser);
+            });
+            
+            // 底部导航
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const pageId = item.getAttribute('data-page');
+                    showPage(pageId);
+                    
+                    // 更新导航栏激活状态
+                    document.querySelectorAll('.nav-item').forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    item.classList.add('active');
+                });
+            });
+            
+            // 主菜单按钮
+            document.getElementById('play-button').addEventListener('click', () => {
+                showPage('levelSelect');
+                loadLevelMap();
+                loadGamePlays();
+            });
+            
+            document.getElementById('achievements-button').addEventListener('click', () => {
+                showPage('achievements');
+                loadAchievements();
+            });
+            
+            document.getElementById('leaderboard-button').addEventListener('click', () => {
+                showPage('leaderboard');
+                loadLeaderboard('monthly');
+            });
+            
+            document.getElementById('withdrawal-button').addEventListener('click', () => {
+                showPage('withdrawal');
+                loadWithdrawalHistory();
+            });
+            
+            // 签到按钮
+            elements.checkinButton.addEventListener('click', () => {
+                dailyCheckin();
+            });
+            
+            // 游戏次数按钮
+            document.getElementById('watch-ad-button').addEventListener('click', () => {
+                // 模拟看广告
+                addGamePlay('ad');
+            });
+            
+            document.getElementById('share-button').addEventListener('click', () => {
+                // 模拟分享
+                shareGame();
+            });
+            
+            // 提现表单
+            elements.withdrawalAmount.addEventListener('input', updateWithdrawalRmb);
+            document.getElementById('submit-withdrawal').addEventListener('click', submitWithdrawal);
+            
+            // 排行榜标签
+            elements.leaderboardTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const period = tab.getAttribute('data-period');
+                    
+                    // 更新标签激活状态
+                    elements.leaderboardTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // 加载对应排行榜
+                    loadLeaderboard(period);
+                });
+            });
+            
+            // 模态框关闭按钮
+            elements.modalClose.addEventListener('click', closeModal);
+            
+            // 点击模态框外部关闭
+            elements.modal.addEventListener('click', (e) => {
+                if (e.target === elements.modal) {
+                    closeModal();
+                }
+            });
+        }
+
+        // 显示页面
+        function showPage(pageId) {
+            // 隐藏所有页面
+            Object.values(elements.pages).forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // 显示指定页面
+            if (elements.pages[pageId]) {
+                elements.pages[pageId].classList.add('active');
             }
         }
-        
-        // 初始化游戏
-        async function initGame(userId) {
+
+        // 显示提示
+        function showToast(message, duration = 3000) {
+            elements.toast.textContent = message;
+            elements.toast.classList.add('show');
+            
+            setTimeout(() => {
+                elements.toast.classList.remove('show');
+            }, duration);
+        }
+
+        // 显示模态框
+        function showModal(title, content, buttons = []) {
+            elements.modalTitle.textContent = title;
+            elements.modalBody.innerHTML = content;
+            
+            // 清空按钮容器
+            elements.modalFooter.innerHTML = '';
+            
+            // 添加按钮
+            buttons.forEach(button => {
+                const btn = document.createElement('button');
+                btn.textContent = button.text;
+                btn.className = `modal-button ${button.primary ? 'modal-button-primary' : 'modal-button-secondary'}`;
+                
+                btn.addEventListener('click', () => {
+                    if (button.onClick) {
+                        button.onClick();
+                    }
+                    closeModal();
+                });
+                
+                elements.modalFooter.appendChild(btn);
+            });
+            
+            // 显示模态框
+            elements.modal.classList.add('active');
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            elements.modal.classList.remove('active');
+        }
+
+        // 登录
+        async function login(telegramData) {
             try {
-                showLoader();
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ telegramData })
+                });
                 
-                // 隐藏入口页面
-                document.getElementById('entryScreen').style.display = 'none';
+                const data = await response.json();
                 
-                // 获取用户信息
-                await loadUserInfo(userId);
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
                 
-                // 加载关卡
-                await loadLevels();
+                // 保存用户信息
+                gameState.user = data.user;
+                
+                // 更新UI
+                updateUserUI();
+                
+                // 显示主菜单
+                showPage('mainMenu');
+                
+                // 更新导航栏激活状态
+                document.querySelectorAll('.nav-item').forEach(navItem => {
+                    navItem.classList.remove('active');
+                });
+                document.querySelector('.nav-item[data-page="main-menu-page"]').classList.add('active');
+                
+                // 加载签到状态
+                loadCheckinStatus();
                 
                 // 加载每日任务
-                await loadDailyTasks();
+                loadDailyTasks();
                 
-                // 加载成就
-                await loadAchievements();
-                
-                // 初始化签到日历
-                initCheckinCalendar();
-                
-                // 显示主界面
-                showScreen('mainScreen');
+                // 如果是新用户，显示欢迎消息
+                if (data.isNewUser) {
+                    showToast('欢迎来到万花消消乐！您已获得50万花币作为注册奖励。');
+                }
             } catch (error) {
-                console.error('Error initializing game:', error);
-                alert('初始化游戏失败，请重试');
-            } finally {
-                hideLoader();
+                console.error('Login error:', error);
+                showToast('登录失败，请重试');
             }
         }
-        
-        // 显示加载动画
-        function showLoader() {
-            document.getElementById('loader').style.display = 'flex';
-        }
-        
-        // 隐藏加载动画
-        function hideLoader() {
-            document.getElementById('loader').style.display = 'none';
-        }
-        
-        // 显示界面
-        function showScreen(screenId) {
-            // 隐藏所有界面
-            document.getElementById('mainScreen').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'none';
-            document.getElementById('tasksScreen').style.display = 'none';
-            document.getElementById('checkinScreen').style.display = 'none';
-            document.getElementById('leaderboardScreen').style.display = 'none';
-            document.getElementById('withdrawScreen').style.display = 'none';
-            
-            // 显示指定界面
-            document.getElementById(screenId).style.display = 'flex';
-            
-            // 如果是排行榜界面，加载数据
-            if (screenId === 'leaderboardScreen') {
-                loadLeaderboard();
-            }
-            
-            // 如果是提现界面，更新可提现金额
-            if (screenId === 'withdrawScreen') {
-                updateWithdrawAmount();
-                loadWithdrawHistory();
-            }
-        }
-        
-        // 加载用户信息
-        async function loadUserInfo(userId) {
+
+        // 获取用户信息
+        async function fetchUser(userId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/user/info?user_id=${userId}`);
+                const response = await fetch(`${API_URL}/user?user_id=${userId}`);
                 const data = await response.json();
                 
-                if (data.success) {
-                    currentUser = data;
-                    const usernameEl = document.getElementById('username');
-                    const userCoinsEl = document.getElementById('userCoins');
-                    
-                    if (usernameEl) usernameEl.textContent = currentUser.first_name || '玩家';
-                    if (userCoinsEl) userCoinsEl.textContent = currentUser.flower_coins;
-                    
-                    // 检查今日游戏次数
-                    const today = new Date().toDateString();
-                    const lastPlayDate = new Date(currentUser.last_play_date).toDateString();
-                    
-                    if (today === lastPlayDate) {
-                        playCount = currentUser.play_count;
-                    } else {
-                        playCount = 0;
-                    }
-                } else {
-                    handleError(data.error || '获取用户信息失败', '加载用户信息失败');
-                    throw new Error(data.error || '获取用户信息失败');
-                }
-            } catch (error) {
-                handleError(error, '加载用户信息失败');
-                throw error;
-            }
-        }
-        
-        // 加载关卡
-        async function loadLevels() {
-            try {
-                if (!currentUser || !currentUser.telegram_id) {
-                    handleError('用户信息不完整', '加载关卡失败');
-                    throw new Error('用户信息不完整');
+                if (data.error) {
+                    showToast(data.error);
+                    showPage('login');
+                    return;
                 }
                 
-                const response = await fetch(`${API_BASE_URL}/api/user/levels?user_id=${currentUser.telegram_id}`);
-                const data = await response.json();
+                // 保存用户信息
+                gameState.user = data.user;
                 
-                if (data && Array.isArray(data)) {
-                    const levelsList = document.getElementById('levelsList');
-                    if (!levelsList) return;
-                    
-                    levelsList.innerHTML = '';
-                    
-                    // 生成10个关卡
-                    for (let i = 1; i <= 10; i++) {
-                        const userLevel = data.find(ul => ul.level_id === i);
-                        const level = document.createElement('div');
-                        level.className = 'level';
-                        level.textContent = i;
-                        
-                        if (userLevel) {
-                            if (userLevel.completed) {
-                                level.classList.add('completed');
-                                
-                                // 添加星星
-                                const stars = document.createElement('div');
-                                stars.className = 'level-stars';
-                                for (let j = 0; j < userLevel.stars; j++) {
-                                    stars.innerHTML += '<i class="fas fa-star"></i>';
-                                }
-                                level.appendChild(stars);
-                            } else {
-                                level.classList.add('unlocked');
-                            }
-                        } else if (i === 1 || (data[i-2] && data[i-2].completed)) {
-                            level.classList.add('unlocked');
-                        }
-                        
-                        level.onclick = () => startLevel(i);
-                        levelsList.appendChild(level);
-                    }
-                } else {
-                    handleError('加载关卡失败', '加载关卡失败');
-                    throw new Error('加载关卡失败');
-                }
+                // 更新UI
+                updateUserUI();
+                
+                // 显示主菜单
+                showPage('mainMenu');
+                
+                // 更新导航栏激活状态
+                document.querySelectorAll('.nav-item').forEach(navItem => {
+                    navItem.classList.remove('active');
+                });
+                document.querySelector('.nav-item[data-page="main-menu-page"]').classList.add('active');
+                
+                // 加载签到状态
+                loadCheckinStatus();
+                
+                // 加载每日任务
+                loadDailyTasks();
             } catch (error) {
-                handleError(error, '加载关卡失败');
-                throw error;
+                console.error('Fetch user error:', error);
+                showToast('获取用户信息失败');
+                showPage('login');
             }
         }
-        
-        // 开始关卡
-        async function startLevel(levelId) {
-            // 检查游戏次数
-            if (playCount >= MAX_PLAYS_PER_DAY) {
-                document.getElementById('playLimit').style.display = 'flex';
-                return;
-            }
+
+        // 更新用户UI
+        function updateUserUI() {
+            if (!gameState.user) return;
             
-            // 获取关卡信息
-            let level;
-            if (levelId <= 5) {
-                level = {
-                    id: levelId,
-                    name: `第${levelId}关`,
-                    difficulty: 1,
-                    target_score: 1000 * levelId,
-                    target_moves: 20 + (levelId - 1) * 5
-                };
+            // 更新用户头像
+            if (gameState.user.photo_url) {
+                elements.userAvatar.innerHTML = `<img src="${gameState.user.photo_url}" alt="Avatar">`;
             } else {
-                level = {
-                    id: levelId,
-                    name: `第${levelId}关`,
-                    difficulty: 2,
-                    target_score: 4000 + (levelId - 6) * 1000,
-                    target_moves: 30 + (levelId - 6) * 5
-                };
+                elements.userAvatar.innerHTML = '<i class="fas fa-user"></i>';
             }
             
-            currentLevel = level;
-            movesLeft = level.target_moves;
-            currentScore = 0;
+            // 更新用户名
+            elements.userName.textContent = gameState.user.first_name || '玩家';
             
-            // 更新游戏界面
-            document.getElementById('levelName').textContent = level.name;
-            document.getElementById('levelTarget').textContent = level.target_score;
-            document.getElementById('movesLeft').textContent = movesLeft;
-            document.getElementById('currentScore').textContent = currentScore;
-            
-            // 初始化游戏棋盘
-            initGameBoard();
-            
-            // 显示游戏界面
-            showScreen('gameScreen');
-            
-            // 激活游戏
-            gameActive = true;
+            // 更新万花币
+            elements.userCoins.textContent = gameState.user.flower_coins || 0;
+            elements.headerCoins.textContent = gameState.user.flower_coins || 0;
         }
-        
-        // 初始化游戏棋盘
-        function initGameBoard() {
-            const boardElement = document.getElementById('gameBoard');
-            boardElement.innerHTML = '';
-            gameBoard = [];
+
+        // 加载签到状态
+        async function loadCheckinStatus() {
+            try {
+                // 这里应该调用API获取签到状态
+                // 简化处理，直接模拟
+                const checkinData = {
+                    consecutive_days: 3,
+                    can_checkin: true
+                };
+                
+                // 更新签到进度UI
+                updateCheckinProgress(checkinData.consecutive_days);
+                
+                // 更新签到按钮
+                elements.checkinButton.disabled = !checkinData.can_checkin;
+                elements.checkinButton.textContent = checkinData.can_checkin ? '签到' : '已签到';
+            } catch (error) {
+                console.error('Load checkin status error:', error);
+            }
+        }
+
+        // 更新签到进度UI
+        function updateCheckinProgress(consecutiveDays) {
+            elements.checkinProgress.innerHTML = '';
             
-            // 创建8x8的棋盘
-            for (let row = 0; row < 8; row++) {
-                gameBoard[row] = [];
-                for (let col = 0; col < 8; col++) {
-                    // 随机选择一个元素类型
-                    const tileType = TILE_TYPES[Math.floor(Math.random() * TILE_TYPES.length)];
+            for (let i = 1; i <= 7; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'checkin-day';
+                
+                const circleElement = document.createElement('div');
+                circleElement.className = 'checkin-day-circle';
+                
+                if (i <= consecutiveDays) {
+                    circleElement.classList.add('checked');
+                }
+                
+                circleElement.textContent = i;
+                
+                const labelElement = document.createElement('div');
+                labelElement.className = 'checkin-day-label';
+                labelElement.textContent = `第${i}天`;
+                
+                dayElement.appendChild(circleElement);
+                dayElement.appendChild(labelElement);
+                
+                elements.checkinProgress.appendChild(dayElement);
+            }
+        }
+
+        // 每日签到
+        async function dailyCheckin() {
+            if (!gameState.user) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/daily_checkin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ user_id: gameState.user.id })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // 更新用户万花币
+                gameState.user.flower_coins += data.flower_coins_earned;
+                updateUserUI();
+                
+                // 更新签到进度
+                updateCheckinProgress(data.consecutive_days);
+                
+                // 禁用签到按钮
+                elements.checkinButton.disabled = true;
+                elements.checkinButton.textContent = '已签到';
+                
+                // 显示成功消息
+                showToast(`签到成功！获得${data.flower_coins_earned}万花币`);
+            } catch (error) {
+                console.error('Daily checkin error:', error);
+                showToast('签到失败，请重试');
+            }
+        }
+
+        // 加载每日任务
+        async function loadDailyTasks() {
+            if (!gameState.user) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/daily_tasks?user_id=${gameState.user.id}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // 更新每日任务UI
+                updateDailyTasksUI(data.daily_tasks);
+            } catch (error) {
+                console.error('Load daily tasks error:', error);
+                showToast('加载每日任务失败');
+            }
+        }
+
+        // 更新每日任务UI
+        function updateDailyTasksUI(tasks) {
+            elements.dailyTasksList.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = 'task-item';
+                
+                const taskInfo = document.createElement('div');
+                taskInfo.className = 'task-info';
+                
+                const taskName = document.createElement('div');
+                taskName.className = 'task-name';
+                taskName.textContent = task.description;
+                
+                const taskProgress = document.createElement('div');
+                taskProgress.className = 'task-progress';
+                taskProgress.textContent = `${task.progress_value}/${task.target_value}`;
+                
+                taskInfo.appendChild(taskName);
+                taskInfo.appendChild(taskProgress);
+                
+                const taskReward = document.createElement('div');
+                taskReward.className = 'task-reward';
+                taskReward.innerHTML = `<i class="fas fa-coins"></i> ${task.flower_coins_reward}`;
+                
+                if (task.completed && !task.flower_coins_claimed) {
+                    const claimButton = document.createElement('button');
+                    claimButton.className = 'task-claim-button';
+                    claimButton.textContent = '领取';
                     
-                    // 创建棋盘元素
-                    const tile = document.createElement('div');
-                    tile.className = `tile ${tileType.type}`;
-                    tile.textContent = tileType.icon;
-                    tile.dataset.row = row;
-                    tile.dataset.col = col;
-                    tile.dataset.type = tileType.type;
-                    
-                    // 添加点击事件
-                    tile.addEventListener('click', () => {
-                        if (gameActive && typeof selectTile === 'function' && row !== undefined && col !== undefined) {
-                            selectTile(row, col);
-                        }
+                    claimButton.addEventListener('click', () => {
+                        claimTaskReward(task.id);
                     });
                     
-                    boardElement.appendChild(tile);
-                    gameBoard[row][col] = {
-                        type: tileType.type,
-                        element: tile
+                    taskReward.appendChild(claimButton);
+                }
+                
+                taskElement.appendChild(taskInfo);
+                taskElement.appendChild(taskReward);
+                
+                elements.dailyTasksList.appendChild(taskElement);
+            });
+        }
+
+        // 领取任务奖励
+        async function claimTaskReward(taskId) {
+            if (!gameState.user) return;
+            
+            try {
+                // 这里应该调用API领取任务奖励
+                // 简化处理，直接模拟
+                const reward = 50;
+                
+                // 更新用户万花币
+                gameState.user.flower_coins += reward;
+                updateUserUI();
+                
+                // 重新加载每日任务
+                loadDailyTasks();
+                
+                // 显示成功消息
+                showToast(`任务奖励领取成功！获得${reward}万花币`);
+            } catch (error) {
+                console.error('Claim task reward error:', error);
+                showToast('领取任务奖励失败');
+            }
+        }
+
+        // 加载关卡地图
+        async function loadLevelMap() {
+            try {
+                const response = await fetch(`${API_URL}/levels`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // 更新关卡地图UI
+                updateLevelMapUI(data.levels);
+            } catch (error) {
+                console.error('Load levels error:', error);
+                showToast('加载关卡失败');
+            }
+        }
+
+        // 更新关卡地图UI
+        function updateLevelMapUI(levels) {
+            // 清除现有关卡节点
+            const existingNodes = elements.levelMap.querySelectorAll('.level-node');
+            existingNodes.forEach(node => node.remove());
+            
+            // 创建新关卡节点
+            levels.forEach((level, index) => {
+                const node = document.createElement('div');
+                node.className = 'level-node';
+                node.textContent = level.level_number;
+                
+                // 设置位置
+                const position = calculateNodePosition(index, levels.length);
+                node.style.left = `${position.x}%`;
+                node.style.top = `${position.y}%`;
+                
+                // 添加点击事件
+                node.addEventListener('click', () => {
+                    startLevel(level.id);
+                });
+                
+                elements.levelMap.appendChild(node);
+                
+                // 如果关卡已完成，添加星星
+                if (index < 3) { // 模拟前3个关卡已完成
+                    node.classList.add('completed');
+                    
+                    const stars = document.createElement('div');
+                    stars.className = 'level-stars';
+                    
+                    for (let i = 0; i < 3; i++) {
+                        const star = document.createElement('i');
+                        star.className = 'fas fa-star level-star';
+                        stars.appendChild(star);
+                    }
+                    
+                    node.appendChild(stars);
+                }
+            });
+        }
+
+        // 计算关卡节点位置
+        function calculateNodePosition(index, total) {
+            // 简化处理，将节点排列在一条曲线上
+            const x = (index / (total - 1)) * 80 + 10; // 10% - 90%
+            const y = 50 + Math.sin((index / (total - 1)) * Math.PI) * 20; // 波浪形
+            
+            return { x, y };
+        }
+
+        // 加载游戏次数
+        async function loadGamePlays() {
+            if (!gameState.user) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/game_plays?user_id=${gameState.user.id}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // 计算剩余游戏次数
+                const gamePlay = data.game_play;
+                const remainingPlays = 7 - gamePlay.free_plays_used + 
+                                     (5 - gamePlay.ad_plays_used) + 
+                                     (3 - gamePlay.share_plays_used) + 
+                                     gamePlay.gift_plays_used;
+                
+                // 更新UI
+                elements.remainingPlays.textContent = remainingPlays;
+            } catch (error) {
+                console.error('Load game plays error:', error);
+                showToast('加载游戏次数失败');
+            }
+        }
+
+        // 添加游戏次数
+        async function addGamePlay(type) {
+            if (!gameState.user) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/use_game_play`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        user_id: gameState.user.id,
+                        play_type: type
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // 重新加载游戏次数
+                loadGamePlays();
+                
+                // 显示成功消息
+                if (type === 'ad') {
+                    showToast('观看广告成功！获得1次游戏机会');
+                }
+            } catch (error) {
+                console.error('Add game play error:', error);
+                showToast('添加游戏次数失败');
+            }
+        }
+
+        // 分享游戏
+        async function shareGame() {
+            if (!gameState.user) return;
+            
+            try {
+                // 模拟分享到Telegram
+                const shareUrl = `https://t.me/share/url?url=https://beijingshunyi.github.io/game-web/?user_id=${gameState.user.id}&text=来玩万花消消乐，消除宝石赢取万花币！`;
+                window.open(shareUrl, '_blank');
+                
+                // 记录分享
+                const response = await fetch(`${API_URL}/record_share`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        user_id: gameState.user.id,
+                        share_type: 'telegram_group'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // 重新加载游戏次数
+                loadGamePlays();
+                
+                // 显示成功消息
+                showToast('分享成功！获得2次游戏机会');
+            } catch (error) {
+                console.error('Share game error:', error);
+                showToast('分享失败');
+            }
+        }
+
+        // 开始关卡
+        async function startLevel(levelId) {
+            if (!gameState.user) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/level?level_id=${levelId}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // 保存关卡信息
+                gameState.currentLevel = data.level;
+                
+                // 初始化游戏
+                initGame();
+                
+                // 显示游戏页面
+                showPage('game');
+            } catch (error) {
+                console.error('Start level error:', error);
+                showToast('开始关卡失败');
+            }
+        }
+
+        // 初始化游戏
+        function initGame() {
+            // 重置游戏状态
+            gameState.score = 0;
+            gameState.moves = 0;
+            gameState.gameActive = true;
+            gameState.selectedCell = null;
+            
+            // 更新UI
+            elements.currentLevel.textContent = gameState.currentLevel.level_number;
+            elements.gameScore.textContent = gameState.score;
+            elements.gameMoves.textContent = gameState.moves;
+            
+            // 生成游戏棋盘
+            generateGameBoard();
+        }
+
+        // 生成游戏棋盘
+        function generateGameBoard() {
+            // 清空棋盘
+            elements.gameBoard.innerHTML = '';
+            
+            // 获取棋盘尺寸
+            const boardSize = gameState.currentLevel.board_config.size;
+            const rows = boardSize[1];
+            const cols = boardSize[0];
+            
+            // 设置棋盘网格
+            elements.gameBoard.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            elements.gameBoard.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            
+            // 生成游戏元素
+            gameState.gameBoard = [];
+            
+            for (let row = 0; row < rows; row++) {
+                gameState.gameBoard[row] = [];
+                
+                for (let col = 0; col < cols; col++) {
+                    // 创建单元格
+                    const cell = document.createElement('div');
+                    cell.className = 'game-cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    // 随机生成元素类型
+                    const elementTypes = gameState.currentLevel.board_config.elements;
+                    const elementType = elementTypes[Math.floor(Math.random() * elementTypes.length)];
+                    
+                    // 创建游戏元素
+                    const element = document.createElement('div');
+                    element.className = `game-element element-${elementType}`;
+                    
+                    // 添加点击事件
+                    cell.addEventListener('click', () => {
+                        handleCellClick(row, col);
+                    });
+                    
+                    cell.appendChild(element);
+                    elements.gameBoard.appendChild(cell);
+                    
+                    // 保存到游戏状态
+                    gameState.gameBoard[row][col] = {
+                        type: elementType,
+                        element: element,
+                        cell: cell
                     };
                 }
             }
-            
-            // 确保初始棋盘没有匹配
-            while (hasMatches()) {
-                shuffleBoard();
-            }
         }
-        
-        // 选择棋盘元素
-        function selectTile(row, col) {
-            if (!gameActive) return;
+
+        // 处理单元格点击
+        function handleCellClick(row, col) {
+            if (!gameState.gameActive) return;
             
-            const tile = gameBoard[row][col].element;
+            const clickedCell = gameState.gameBoard[row][col];
             
-            if (selectedTile === null) {
-                // 选择第一个元素
-                selectedTile = { row, col };
-                tile.classList.add('selected');
+            if (!gameState.selectedCell) {
+                // 选择第一个单元格
+                gameState.selectedCell = { row, col };
+                clickedCell.cell.classList.add('selected');
             } else {
-                // 选择第二个元素
-                const prevTile = gameBoard[selectedTile.row][selectedTile.col].element;
-                prevTile.classList.remove('selected');
+                // 尝试匹配
+                const selectedRow = gameState.selectedCell.row;
+                const selectedCol = gameState.selectedCell.col;
                 
                 // 检查是否相邻
-                if (isAdjacent(selectedTile.row, selectedTile.col, row, col)) {
+                const isAdjacent = 
+                    (Math.abs(selectedRow - row) === 1 && selectedCol === col) ||
+                    (Math.abs(selectedCol - col) === 1 && selectedRow === row);
+                
+                if (isAdjacent) {
                     // 交换元素
-                    swapTiles(selectedTile.row, selectedTile.col, row, col);
+                    swapElements(selectedRow, selectedCol, row, col);
+                } else {
+                    // 选择新的单元格
+                    gameState.gameBoard[selectedRow][selectedCol].cell.classList.remove('selected');
+                    gameState.selectedCell = { row, col };
+                    clickedCell.cell.classList.add('selected');
+                }
+            }
+        }
+
+        // 交换元素
+        function swapElements(row1, col1, row2, col2) {
+            // 交换游戏状态中的元素
+            const temp = gameState.gameBoard[row1][col1];
+            gameState.gameBoard[row1][col1] = gameState.gameBoard[row2][col2];
+            gameState.gameBoard[row2][col2] = temp;
+            
+            // 更新UI
+            updateGameBoard();
+            
+            // 检查匹配
+            setTimeout(() => {
+                const matches = findMatches();
+                
+                if (matches.length > 0) {
+                    // 有匹配，处理消除
+                    processMatches(matches);
                     
-                    // 检查匹配
-                    setTimeout(() => {
-                        if (!checkMatches()) {
-                            // 如果没有匹配，交换回来
-                            swapTiles(selectedTile.row, selectedTile.col, row, col);
-                        }
-                    }, 300);
+                    // 增加移动次数
+                    gameState.moves++;
+                    elements.gameMoves.textContent = gameState.moves;
+                    
+                    // 检查游戏是否结束
+                    checkGameEnd();
+                } else {
+                    // 没有匹配，交换回来
+                    const temp = gameState.gameBoard[row1][col1];
+                    gameState.gameBoard[row1][col1] = gameState.gameBoard[row2][col2];
+                    gameState.gameBoard[row2][col2] = temp;
+                    
+                    // 更新UI
+                    updateGameBoard();
                 }
                 
-                selectedTile = null;
-            }
+                // 清除选择
+                if (gameState.selectedCell) {
+                    gameState.gameBoard[gameState.selectedCell.row][gameState.selectedCell.col].cell.classList.remove('selected');
+                    gameState.selectedCell = null;
+                }
+            }, 300);
         }
-        
-        // 检查两个元素是否相邻
-        function isAdjacent(row1, col1, row2, col2) {
-            const rowDiff = Math.abs(row1 - row2);
-            const colDiff = Math.abs(col1 - col2);
+
+        // 更新游戏棋盘UI
+        function updateGameBoard() {
+            const rows = gameState.gameBoard.length;
+            const cols = gameState.gameBoard[0].length;
             
-            return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
-        }
-        
-        // 交换两个元素
-        function swapTiles(row1, col1, row2, col2) {
-            // 交换数据
-            const temp = gameBoard[row1][col1];
-            gameBoard[row1][col1] = gameBoard[row2][col2];
-            gameBoard[row2][col2] = temp;
-            
-            // 更新DOM
-            const tile1 = gameBoard[row1][col1].element;
-            const tile2 = gameBoard[row2][col2].element;
-            
-            tile1.dataset.row = row1;
-            tile1.dataset.col = col1;
-            
-            tile2.dataset.row = row2;
-            tile2.dataset.col = col2;
-            
-            // 更新样式
-            updateTileDisplay(row1, col1);
-            updateTileDisplay(row2, col2);
-        }
-        
-        // 更新元素显示
-        function updateTileDisplay(row, col) {
-            const tile = gameBoard[row][col];
-            const tileType = TILE_TYPES.find(t => t.type === tile.type);
-            
-            tile.element.className = `tile ${tile.type}`;
-            tile.element.textContent = tileType.icon;
-            tile.element.dataset.type = tile.type;
-        }
-        
-        // 检查是否有匹配
-        function hasMatches() {
-            // 检查水平匹配
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 6; col++) {
-                    if (gameBoard[row][col].type === gameBoard[row][col + 1].type &&
-                        gameBoard[row][col].type === gameBoard[row][col + 2].type) {
-                        return true;
-                    }
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const cellData = gameState.gameBoard[row][col];
+                    cellData.element.className = `game-element element-${cellData.type}`;
                 }
             }
-            
-            // 检查垂直匹配
-            for (let row = 0; row < 6; row++) {
-                for (let col = 0; col < 8; col++) {
-                    if (gameBoard[row][col].type === gameBoard[row + 1][col].type &&
-                        gameBoard[row][col].type === gameBoard[row + 2][col].type) {
-                        return true;
-                    }
-                }
-            }
-            
-            return false;
         }
-        
-        // 检查并处理匹配
-        function checkMatches() {
+
+        // 查找匹配
+        function findMatches() {
+            const rows = gameState.gameBoard.length;
+            const cols = gameState.gameBoard[0].length;
             const matches = [];
             
             // 检查水平匹配
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 6; col++) {
-                    if (gameBoard[row][col].type === gameBoard[row][col + 1].type &&
-                        gameBoard[row][col].type === gameBoard[row][col + 2].type) {
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols - 2; col++) {
+                    const type = gameState.gameBoard[row][col].type;
+                    
+                    if (type && 
+                        gameState.gameBoard[row][col + 1].type === type && 
+                        gameState.gameBoard[row][col + 2].type === type) {
                         
-                        // 检查是否有4个或更多匹配
+                        // 找到匹配，继续检查是否有更多
                         let matchLength = 3;
-                        while (col + matchLength < 8 && gameBoard[row][col].type === gameBoard[row][col + matchLength].type) {
+                        while (col + matchLength < cols && gameState.gameBoard[row][col + matchLength].type === type) {
                             matchLength++;
                         }
                         
-                        // 添加匹配
+                        // 添加到匹配列表
+                        const match = [];
                         for (let i = 0; i < matchLength; i++) {
-                            matches.push({ row, col: col + i });
+                            match.push({ row, col: col + i });
                         }
                         
+                        matches.push(match);
+                        
+                        // 跳过已匹配的元素
                         col += matchLength - 1;
                     }
                 }
             }
             
             // 检查垂直匹配
-            for (let row = 0; row < 6; row++) {
-                for (let col = 0; col < 8; col++) {
-                    if (gameBoard[row][col].type === gameBoard[row + 1][col].type &&
-                        gameBoard[row][col].type === gameBoard[row + 2][col].type) {
+            for (let col = 0; col < cols; col++) {
+                for (let row = 0; row < rows - 2; row++) {
+                    const type = gameState.gameBoard[row][col].type;
+                    
+                    if (type && 
+                        gameState.gameBoard[row + 1][col].type === type && 
+                        gameState.gameBoard[row + 2][col].type === type) {
                         
-                        // 检查是否有4个或更多匹配
+                        // 找到匹配，继续检查是否有更多
                         let matchLength = 3;
-                        while (row + matchLength < 8 && gameBoard[row][col].type === gameBoard[row + matchLength][col].type) {
+                        while (row + matchLength < rows && gameState.gameBoard[row + matchLength][col].type === type) {
                             matchLength++;
                         }
                         
-                        // 添加匹配
+                        // 添加到匹配列表
+                        const match = [];
                         for (let i = 0; i < matchLength; i++) {
-                            matches.push({ row: row + i, col });
+                            match.push({ row: row + i, col });
                         }
                         
+                        matches.push(match);
+                        
+                        // 跳过已匹配的元素
                         row += matchLength - 1;
                     }
                 }
             }
             
-            // 如果有匹配，处理它们
-            if (matches.length > 0) {
-                processMatches(matches);
-                return true;
-            }
-            
-            return false;
+            return matches;
         }
-        
+
         // 处理匹配
         function processMatches(matches) {
             // 标记匹配的元素
-            const matchedTiles = new Set();
+            const matchedCells = new Set();
+            
             matches.forEach(match => {
-                const key = `${match.row},${match.col}`;
-                matchedTiles.add(key);
+                match.forEach(cell => {
+                    const key = `${cell.row},${cell.col}`;
+                    if (!matchedCells.has(key)) {
+                        matchedCells.add(key);
+                        gameState.gameBoard[cell.row][cell.col].cell.classList.add('matched');
+                    }
+                });
             });
             
-            // 计算分数
-            const scoreGain = matches.length * 10;
-            currentScore += scoreGain;
-            const currentScoreEl = document.getElementById('currentScore');
-            if (currentScoreEl) currentScoreEl.textContent = currentScore;
+            // 计算得分
+            const score = matchedCells.size * 10;
+            gameState.score += score;
+            elements.gameScore.textContent = gameState.score;
             
-            // 移除匹配的元素
-            matchedTiles.forEach(key => {
-                const [row, col] = key.split(',').map(Number);
-                gameBoard[row][col].element.style.opacity = '0.5';
-            });
+            // 处理消除和下落
+            setTimeout(() => {
+                // 移除匹配的元素
+                matchedCells.forEach(key => {
+                    const [row, col] = key.split(',').map(Number);
+                    gameState.gameBoard[row][col].type = null;
+                });
+                
+                // 元素下落
+                dropElements();
+                
+                // 填充新元素
+                fillBoard();
+                
+                // 更新UI
+                updateGameBoard();
+                
+                // 检查新的匹配
+                setTimeout(() => {
+                    const newMatches = findMatches();
+                    
+                    if (newMatches.length > 0) {
+                        // 有新的匹配，继续处理
+                        processMatches(newMatches);
+                    }
+                }, 300);
+            }, 500);
+        }
+
+        // 元素下落
+        function dropElements() {
+            const rows = gameState.gameBoard.length;
+            const cols = gameState.gameBoard[0].length;
             
-            // 使用setTimeout链替代嵌套setTimeout，提高性能
-            setTimeout(processMatchesStep1, 300);
-        }
-        
-        function processMatchesStep1() {
-            dropTiles();
-            setTimeout(processMatchesStep2, 300);
-        }
-        
-        function processMatchesStep2() {
-            fillBoard();
-            setTimeout(processMatchesStep3, 300);
-        }
-        
-        function processMatchesStep3() {
-            if (!checkMatches()) {
-                // 没有更多匹配，减少步数
-                movesLeft--;
-                const movesLeftEl = document.getElementById('movesLeft');
-                if (movesLeftEl) movesLeftEl.textContent = movesLeft;
+            // 从下往上处理每一列
+            for (let col = 0; col < cols; col++) {
+                let emptyRow = rows - 1;
                 
-                // 检查游戏是否结束
-                if (movesLeft <= 0 || currentScore >= currentLevel.target_score) {
-                    endGame();
-                }
-            }
-        }
-        
-        // 下落元素
-        function dropTiles() {
-            for (let col = 0; col < 8; col++) {
-                let emptySpaces = 0;
-                
-                // 从底部向上扫描
-                for (let row = 7; row >= 0; row--) {
-                    if (gameBoard[row][col].element.style.opacity === '0.5') {
-                        // 标记为空
-                        emptySpaces++;
-                    } else if (emptySpaces > 0) {
-                        // 下落元素
-                        gameBoard[row + emptySpaces][col] = gameBoard[row][col];
-                        gameBoard[row][col] = { type: null, element: gameBoard[row][col].element };
-                        
-                        // 更新DOM
-                        gameBoard[row + emptySpaces][col].element.dataset.row = row + emptySpaces;
-                        updateTileDisplay(row + emptySpaces, col);
-                        
-                        // 重置原位置
-                        gameBoard[row][col].element.style.opacity = '1';
+                // 从底部向上查找空位
+                for (let row = rows - 1; row >= 0; row--) {
+                    if (gameState.gameBoard[row][col].type !== null) {
+                        // 如果当前行有元素，且下方有空位，则下落
+                        if (row < emptyRow) {
+                            gameState.gameBoard[emptyRow][col].type = gameState.gameBoard[row][col].type;
+                            gameState.gameBoard[row][col].type = null;
+                        }
+                        emptyRow--;
                     }
                 }
             }
         }
-        
+
         // 填充棋盘
         function fillBoard() {
-            for (let col = 0; col < 8; col++) {
-                for (let row = 0; row < 8; row++) {
-                    if (!gameBoard[row][col].type) {
-                        // 随机选择一个元素类型
-                        const tileType = TILE_TYPES[Math.floor(Math.random() * TILE_TYPES.length)];
-                        
-                        // 更新数据
-                        gameBoard[row][col].type = tileType.type;
-                        
-                        // 更新DOM
-                        updateTileDisplay(row, col);
+            const rows = gameState.gameBoard.length;
+            const cols = gameState.gameBoard[0].length;
+            const elementTypes = gameState.currentLevel.board_config.elements;
+            
+            // 填充空位
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if (gameState.gameBoard[row][col].type === null) {
+                        // 随机生成新元素
+                        const elementType = elementTypes[Math.floor(Math.random() * elementTypes.length)];
+                        gameState.gameBoard[row][col].type = elementType;
                     }
                 }
             }
         }
-        
-        // 洗牌
-        function shuffleBoard() {
-            // 收集所有元素类型
-            const types = [];
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    types.push(gameBoard[row][col].type);
+
+        // 检查游戏结束
+        function checkGameEnd() {
+            // 检查步数是否用完
+            if (gameState.moves >= gameState.currentLevel.max_moves) {
+                // 游戏结束
+                gameState.gameActive = false;
+                
+                // 计算星级
+                let stars = 0;
+                const scorePercentage = gameState.score / gameState.currentLevel.objectives.target;
+                
+                if (scorePercentage >= 1) stars = 3;
+                else if (scorePercentage >= 0.7) stars = 2;
+                else if (scorePercentage >= 0.4) stars = 1;
+                
+                // 显示结果
+                showGameResult(stars);
+            }
+        }
+
+        // 显示游戏结果
+        function showGameResult(stars) {
+            const completed = stars > 0;
+            
+            // 计算奖励万花币
+            let flowerCoins = 0;
+            if (completed) {
+                if (gameState.currentLevel.difficulty === 'normal') {
+                    flowerCoins = 10 + (stars - 1) * 5;  // 1星10，2星15，3星20
+                } else if (gameState.currentLevel.difficulty === 'hard') {
+                    flowerCoins = 25 + (stars - 1) * 5;  // 1星25，2星30，3星35
                 }
             }
             
-            // 随机排序
-            for (let i = types.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [types[i], types[j]] = [types[j], types[i]];
-            }
+            // 构建结果消息
+            let message = `<div style="text-align: center;">`;
+            message += `<h2>关卡 ${gameState.currentLevel.level_number} ${completed ? '完成' : '失败'}</h2>`;
+            message += `<div style="margin: 20px 0;">`;
             
-            // 重新分配类型
-            let index = 0;
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    gameBoard[row][col].type = types[index++];
-                    updateTileDisplay(row, col);
-                }
-            }
-        }
-        
-        // 使用道具
-        function useItem(itemType) {
-            if (!gameActive) return;
-            
-            switch (itemType) {
-                case 'refresh':
-                    shuffleBoard();
-                    break;
-                case 'bomb':
-                    // 随机消除3x3区域
-                    const centerRow = Math.floor(Math.random() * 6) + 1;
-                    const centerCol = Math.floor(Math.random() * 6) + 1;
-                    
-                    const matches = [];
-                    for (let row = centerRow - 1; row <= centerRow + 1; row++) {
-                        for (let col = centerCol - 1; col <= centerCol + 1; col++) {
-                            matches.push({ row, col });
-                        }
-                    }
-                    
-                    processMatches(matches);
-                    break;
-                case 'rocket':
-                    // 随机消除一行或一列
-                    const isRow = Math.random() > 0.5;
-                    const index = Math.floor(Math.random() * 8);
-                    
-                    const rocketMatches = [];
-                    if (isRow) {
-                        for (let col = 0; col < 8; col++) {
-                            rocketMatches.push({ row: index, col });
-                        }
-                    } else {
-                        for (let row = 0; row < 8; row++) {
-                            rocketMatches.push({ row, col: index });
-                        }
-                    }
-                    
-                    processMatches(rocketMatches);
-                    break;
-                case 'rainbow':
-                    // 随机选择一种类型并消除所有该类型的元素
-                    const targetType = TILE_TYPES[Math.floor(Math.random() * TILE_TYPES.length)].type;
-                    
-                    const rainbowMatches = [];
-                    for (let row = 0; row < 8; row++) {
-                        for (let col = 0; col < 8; col++) {
-                            if (gameBoard[row][col].type === targetType) {
-                                rainbowMatches.push({ row, col });
-                            }
-                        }
-                    }
-                    
-                    processMatches(rainbowMatches);
-                    break;
-            }
-        }
-        
-        // 结束游戏
-        async function endGame() {
-            gameActive = false;
-            
-            // 计算星星数量
-            let stars = 0;
-            const scorePercentage = currentScore / currentLevel.target_score;
-            
-            if (scorePercentage >= 1) {
-                stars = 3;
-            } else if (scorePercentage >= 0.7) {
-                stars = 2;
-            } else if (scorePercentage >= 0.4) {
-                stars = 1;
-            }
-            
-            // 计算奖励
-            const isCompleted = currentScore >= currentLevel.target_score;
-            let reward = 0;
-            
-            if (isCompleted) {
-                if (currentLevel.difficulty === 1) {
-                    reward = 10 + (stars - 1) * 5;
+            // 显示星级
+            for (let i = 0; i < 3; i++) {
+                if (i < stars) {
+                    message += `<i class="fas fa-star" style="color: gold; font-size: 30px; margin: 0 5px;"></i>`;
                 } else {
-                    reward = 25 + (stars - 1) * 5;
+                    message += `<i class="far fa-star" style="color: #ccc; font-size: 30px; margin: 0 5px;"></i>`;
                 }
             }
             
-            // 更新游戏结束界面
-            const gameOverTitleEl = document.getElementById('gameOverTitle');
-            const gameOverScoreEl = document.getElementById('gameOverScore');
-            const gameOverRewardEl = document.getElementById('gameOverReward');
-            const gameOverEl = document.getElementById('gameOver');
+            message += `</div>`;
+            message += `<p>得分: ${gameState.score}</p>`;
             
-            if (gameOverTitleEl) gameOverTitleEl.textContent = isCompleted ? '关卡完成' : '游戏结束';
-            if (gameOverScoreEl) gameOverScoreEl.textContent = currentScore;
-            
-            // 更新星星
-            const starElements = document.querySelectorAll('.game-over-star');
-            if (starElements.length > 0) {
-                starElements.forEach((star, index) => {
-                    if (index < stars) {
-                        star.classList.add('filled');
-                    } else {
-                        star.classList.remove('filled');
-                    }
-                });
+            if (completed) {
+                message += `<p>获得: ${flowerCoins} 万花币</p>`;
             }
             
-            if (gameOverRewardEl) gameOverRewardEl.textContent = reward;
-            if (gameOverEl) gameOverEl.style.display = 'flex';
+            message += `</div>`;
             
-            // 保存游戏结果
-            if (isCompleted) {
-                try {
-                    if (!currentUser || !currentUser.telegram_id) {
-                        throw new Error('用户信息不完整');
+            // 显示模态框
+            showModal('游戏结果', message, [
+                {
+                    text: '返回关卡选择',
+                    onClick: () => {
+                        showPage('levelSelect');
+                        loadGamePlays();
                     }
-                    
-                    const response = await fetch(`${API_BASE_URL}/api/game/session`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            userId: currentUser.telegram_id,
-                            levelId: currentLevel.id,
-                            score: currentScore,
-                            moves: currentLevel.target_moves - movesLeft,
-                            stars: stars,
-                            completed: true
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        // 更新用户万花币
-                        currentUser.flower_coins += data.reward;
-                        const userCoinsEl = document.getElementById('userCoins');
-                        if (userCoinsEl) userCoinsEl.textContent = currentUser.flower_coins;
-                        
-                        // 更新关卡任务进度
-                        if (typeof updateDailyTaskProgress === 'function') {
-                            updateDailyTaskProgress('level', 1);
-                            
-                            // 更新分数任务进度
-                            updateDailyTaskProgress('score', currentScore);
-                        }
-                        
-                        // 更新成就进度
-                        if (typeof updateAchievementProgress === 'function') {
-                            updateAchievementProgress('levels_completed', currentLevel.id);
-                            updateAchievementProgress('single_score', currentScore);
-                        }
-                    } else {
-                        handleError('Failed to save game session: ' + data.error, '保存游戏记录失败');
-                    }
-                } catch (error) {
-                    handleError(error, '保存游戏记录失败');
                 }
-            }
+            ]);
             
-            // 增加游戏次数并确保不会为负
-            playCount = Math.max(0, playCount + 1);
+            // 提交游戏结果
+            submitGameResult(stars, flowerCoins);
         }
-        
-        // 返回主界面
-        function backToMain() {
-            document.getElementById('gameOver').style.display = 'none';
-            showScreen('mainScreen');
-        }
-        
-        // 下一关
-        function nextLevel() {
-            document.getElementById('gameOver').style.display = 'none';
+
+        // 提交游戏结果
+        async function submitGameResult(stars, flowerCoins) {
+            if (!gameState.user) return;
             
-            if (currentLevel.id < 10) {
-                startLevel(currentLevel.id + 1);
-            } else {
-                showScreen('mainScreen');
-            }
-        }
-        
-        // 加载每日任务
-        async function loadDailyTasks() {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/daily/tasks?user_id=${currentUser.telegram_id}`);
-                const data = await response.json();
-                
-                if (data && Array.isArray(data)) {
-                    const tasksList = document.getElementById('dailyTasksList');
-                    if (!tasksList) return;
-                    
-                    tasksList.innerHTML = '';
-                    
-                    // 创建文档片段以减少DOM操作
-                    const fragment = document.createDocumentFragment();
-                    
-                    data.forEach(task => {
-                        const taskItem = document.createElement('div');
-                        taskItem.className = 'task-item';
-                        
-                        const progressPercentage = Math.min(100, (task.progress / task.target_value) * 100);
-                        
-                        taskItem.innerHTML = `
-                            <div class="task-info">
-                                <h4>${task.name}</h4>
-                                <p>${task.description}</p>
-                                <div class="task-progress">
-                                    <div class="task-progress-bar" style="width: ${progressPercentage}%"></div>
-                                </div>
-                            </div>
-                            <div class="task-reward">
-                                <div class="task-reward-amount"><i class="fas fa-coins"></i> ${task.reward}</div>
-                                <button class="task-claim-btn" onclick="claimDailyTaskReward(${task.id})" ${!task.completed || task.rewarded ? 'disabled' : ''}>
-                                    ${task.rewarded ? '已领取' : (task.completed ? '领取' : '未完成')}
-                                </button>
-                            </div>
-                        `;
-                        
-                        fragment.appendChild(taskItem);
-                    });
-                    
-                    // 一次性添加所有元素
-                    tasksList.appendChild(fragment);
-                }
-            } catch (error) {
-                handleError(error, '加载每日任务失败');
-            }
-        }
-        
-        // 领取每日任务奖励
-        async function claimDailyTaskReward(taskId) {
-            try {
-                showLoader();
-                const response = await fetch(`${API_BASE_URL}/api/daily/tasks`, {
+                const response = await fetch(`${API_URL}/game_result`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        userId: currentUser.telegram_id,
-                        taskId: taskId,
-                        action: 'claim'
+                        user_id: gameState.user.id,
+                        level_id: gameState.currentLevel.id,
+                        moves_used: gameState.moves,
+                        score: gameState.score,
+                        stars_earned: stars,
+                        completed: stars > 0
                     })
                 });
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    // 更新用户万花币
-                    currentUser.flower_coins += data.reward;
-                    const userCoinsEl = document.getElementById('userCoins');
-                    if (userCoinsEl) userCoinsEl.textContent = currentUser.flower_coins;
-                    
-                    // 重新加载任务
-                    await loadDailyTasks();
-                    
-                    // 显示成功消息
-                    alert(`成功领取 ${data.reward} 万花币！`);
-                } else {
-                    handleError(data.error || '领取奖励失败', '领取奖励失败');
-                }
-            } catch (error) {
-                handleError(error, '领取奖励失败');
-            } finally {
-                hideLoader();
-            }
-        }
-        
-        // 更新每日任务进度
-        async function updateDailyTaskProgress(taskType, progress) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/daily/tasks`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: currentUser.telegram_id,
-                        taskType: taskType,
-                        progress: progress
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success && data.taskCompleted) {
-                    // 任务完成，重新加载任务列表
-                    await loadDailyTasks();
-                }
-            } catch (error) {
-                console.error('Error updating daily task progress:', error);
-            }
-        }
-        
-        // 加载成就
-        async function loadAchievements() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/achievements?user_id=${currentUser.telegram_id}`);
-                const data = await response.json();
-                
-                if (data && Array.isArray(data)) {
-                    const achievementsList = document.getElementById('achievementsList');
-                    if (!achievementsList) return;
-                    
-                    achievementsList.innerHTML = '';
-                    
-                    // 创建文档片段以减少DOM操作
-                    const fragment = document.createDocumentFragment();
-                    
-                    data.forEach(achievement => {
-                        const achievementItem = document.createElement('div');
-                        achievementItem.className = 'task-item';
-                        
-                        const progressPercentage = Math.min(100, (achievement.progress / achievement.target_value) * 100);
-                        
-                        achievementItem.innerHTML = `
-                            <div class="task-info">
-                                <h4>${achievement.name}</h4>
-                                <p>${achievement.description}</p>
-                                <div class="task-progress">
-                                    <div class="task-progress-bar" style="width: ${progressPercentage}%"></div>
-                                </div>
-                            </div>
-                            <div class="task-reward">
-                                <div class="task-reward-amount"><i class="fas fa-coins"></i> ${achievement.reward}</div>
-                                <button class="task-claim-btn" onclick="claimAchievementReward(${achievement.id})" ${!achievement.completed || achievement.rewarded ? 'disabled' : ''}>
-                                    ${achievement.rewarded ? '已领取' : (achievement.completed ? '领取' : '未完成')}
-                                </button>
-                            </div>
-                        `;
-                        
-                        fragment.appendChild(achievementItem);
-                    });
-                    
-                    // 一次性添加所有元素
-                    achievementsList.appendChild(fragment);
-                }
-            } catch (error) {
-                handleError(error, '加载成就失败');
-            }
-        }
-        
-        // 领取成就奖励
-        async function claimAchievementReward(achievementId) {
-            try {
-                showLoader();
-                const response = await fetch(`${API_BASE_URL}/api/achievements`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: currentUser.telegram_id,
-                        achievementId: achievementId,
-                        action: 'claim'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 更新用户万花币
-                    currentUser.flower_coins += data.reward;
-                    const userCoinsEl = document.getElementById('userCoins');
-                    if (userCoinsEl) userCoinsEl.textContent = currentUser.flower_coins;
-                    
-                    // 重新加载成就
-                    await loadAchievements();
-                    
-                    // 显示成功消息
-                    alert(`成功领取成就奖励 ${data.reward} 万花币！`);
-                } else {
-                    handleError(data.error || '领取成就奖励失败', '领取成就奖励失败');
-                }
-            } catch (error) {
-                handleError(error, '领取成就奖励失败');
-            } finally {
-                hideLoader();
-            }
-        }
-        
-        // 更新成就进度
-        async function updateAchievementProgress(achievementType, progress) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/achievements`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: currentUser.telegram_id,
-                        achievementType: achievementType,
-                        progress: progress
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success && data.achievementCompleted) {
-                    // 成就完成，重新加载成就列表
-                    await loadAchievements();
-                }
-            } catch (error) {
-                console.error('Error updating achievement progress:', error);
-            }
-        }
-        
-        // 初始化签到日历
-        function initCheckinCalendar() {
-            const calendar = document.getElementById('checkinCalendar');
-            calendar.innerHTML = '';
-            
-            // 获取当前日期
-            const now = new Date();
-            const currentDay = now.getDate();
-            
-            // 生成7天的签到日历
-            for (let i = 1; i <= 7; i++) {
-                const day = document.createElement('div');
-                day.className = 'checkin-day';
-                
-                const dayNumber = document.createElement('div');
-                dayNumber.className = 'checkin-day-number';
-                dayNumber.textContent = i;
-                
-                const dayReward = document.createElement('div');
-                dayReward.className = 'checkin-day-reward';
-                dayReward.textContent = Math.min(10 + (i - 1) * 5, 70);
-                
-                day.appendChild(dayNumber);
-                day.appendChild(dayReward);
-                
-                if (i === currentDay) {
-                    day.classList.add('today');
-                }
-                
-                calendar.appendChild(day);
-            }
-        }
-        
-        // 签到
-        async function checkin() {
-            try {
-                showLoader();
-                const response = await fetch(`${API_BASE_URL}/api/checkin`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: currentUser.telegram_id
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 更新用户万花币
-                    currentUser.flower_coins += data.reward;
-                    document.getElementById('userCoins').textContent = currentUser.flower_coins;
-                    
-                    // 更新签到按钮
-                    const checkinBtn = document.getElementById('checkinBtn');
-                    checkinBtn.textContent = '已签到';
-                    checkinBtn.disabled = true;
-                    
-                    // 显示成功消息
-                    alert(`签到成功！获得 ${data.reward} 万花币，连续签到 ${data.consecutiveDays} 天`);
-                } else {
-                    alert('签到失败: ' + data.error);
-                }
-            } catch (error) {
-                console.error('Error checking in:', error);
-                alert('签到失败');
-            } finally {
-                hideLoader();
-            }
-        }
-        
-        // 加载排行榜
-        async function loadLeaderboard() {
-            try {
-                showLoader();
-                const response = await fetch(`${API_BASE_URL}/api/leaderboard?user_id=${currentUser.telegram_id}`);
-                const data = await response.json();
-                
-                if (data && Array.isArray(data)) {
-                    const leaderboardList = document.getElementById('leaderboardList');
-                    if (!leaderboardList) return;
-                    
-                    leaderboardList.innerHTML = '';
-                    
-                    // 创建文档片段以减少DOM操作
-                    const fragment = document.createDocumentFragment();
-                    
-                    data.forEach((player, index) => {
-                        const playerItem = document.createElement('div');
-                        playerItem.className = 'leaderboard-item';
-                        
-                        let rankClass = '';
-                        if (index === 0) rankClass = 'top1';
-                        else if (index === 1) rankClass = 'top2';
-                        else if (index === 2) rankClass = 'top3';
-                        
-                        playerItem.innerHTML = `
-                            <div class="leaderboard-rank ${rankClass}">${index + 1}</div>
-                            <div class="leaderboard-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="leaderboard-info">
-                                <div class="leaderboard-name">${player.users?.first_name || '玩家'}</div>
-                                <div class="leaderboard-coins">
-                                    <i class="fas fa-coins"></i> ${player.flower_coins}
-                                </div>
-                            </div>
-                        `;
-                        
-                        fragment.appendChild(playerItem);
-                    });
-                    
-                    // 一次性添加所有元素
-                    leaderboardList.appendChild(fragment);
-                }
-            } catch (error) {
-                handleError(error, '加载排行榜失败');
-            } finally {
-                hideLoader();
-            }
-        }
-        
-        // 更新提现金额
-        function updateWithdrawAmount() {
-            const withdrawAmount = Math.floor(currentUser.flower_coins / 1000) * 10;
-            document.getElementById('withdrawAmount').textContent = `${withdrawAmount}元`;
-        }
-        
-        // 提交提现
-        async function submitWithdraw(event) {
-            event.preventDefault();
-            
-            const alipayAccountInput = document.getElementById('alipayAccount');
-            const realNameInput = document.getElementById('realName');
-            const withdrawForm = document.getElementById('withdrawForm');
-            
-            if (!alipayAccountInput || !realNameInput) {
-                handleError('表单元素不存在', '提现有误');
-                return;
-            }
-            
-            const alipayAccount = alipayAccountInput.value.trim();
-            const realName = realNameInput.value.trim();
-            
-            // 计算提现金额（1000万花币 = 10元）
-            const amount = Math.floor(currentUser.flower_coins / 1000) * 1000;
-            
-            if (amount < 1000) {
-                handleError('提现金额不足，至少需要1000万花币', '提现金额不足');
-                return;
-            }
-            
-            // 验证表单数据
-            const validation = validateFormData({ alipayAccount, realName });
-            if (!validation.isValid) {
-                alert(validation.errors.join('\n'));
-                return;
-            }
-            
-            try {
-                showLoader();
-                
-                if (!currentUser || !currentUser.telegram_id) {
-                    throw new Error('用户信息不完整');
-                }
-                
-                const response = await fetch(`${API_BASE_URL}/api/withdraw`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: currentUser.telegram_id,
-                        amount: amount,
-                        alipayAccount: alipayAccount,
-                        realName: realName
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 更新用户万花币
-                    currentUser.flower_coins -= amount;
-                    const userCoinsEl = document.getElementById('userCoins');
-                    if (userCoinsEl) userCoinsEl.textContent = currentUser.flower_coins;
-                    
-                    // 更新提现金额
-                    if (typeof updateWithdrawAmount === 'function') {
-                        updateWithdrawAmount();
-                    }
-                    
-                    // 重新加载提现记录
-                    if (typeof loadWithdrawHistory === 'function') {
-                        await loadWithdrawHistory();
-                    }
-                    
-                    // 显示成功消息
-                    alert('提现申请已提交，请等待审核');
-                    
-                    // 重置表单
-                    if (withdrawForm) {
-                        withdrawForm.reset();
-                    }
-                } else {
-                    handleError(data.error || '提现失败', '提现有误');
-                }
-            } catch (error) {
-                handleError(error, '提现有误');
-            } finally {
-                hideLoader();
-            }
-        }
-        
-        // 加载提现记录
-        async function loadWithdrawHistory() {
-            try {
-                const withdrawHistoryList = document.getElementById('withdrawHistoryList');
-                if (!withdrawHistoryList) return;
-                
-                // 这里应该有一个获取提现记录的API
-                // 由于没有实现，暂时显示模拟数据
-                
-                // 模拟数据
-                const mockWithdrawals = [
-                    { date: '2023-07-15', amount: 50, status: '已完成' },
-                    { date: '2023-07-01', amount: 30, status: '已完成' }
-                ];
-                
-                if (mockWithdrawals.length === 0) {
-                    withdrawHistoryList.innerHTML = '<div style="text-align: center; color: #666;">暂无提现记录</div>';
+                if (data.error) {
+                    console.error('Submit game result error:', data.error);
                     return;
                 }
                 
-                withdrawHistoryList.innerHTML = '';
-                
-                mockWithdrawals.forEach(withdrawal => {
-                    const item = document.createElement('div');
-                    item.className = 'withdraw-history-item';
-                    item.innerHTML = `
-                        <div class="withdraw-history-date">${withdrawal.date}</div>
-                        <div class="withdraw-history-amount">${withdrawal.amount}元</div>
-                        <div class="withdraw-history-status ${withdrawal.status === '已完成' ? 'completed' : 'pending'}">
-                            ${withdrawal.status}
-                        </div>
-                    `;
-                    withdrawHistoryList.appendChild(item);
-                });
+                // 更新用户万花币
+                if (flowerCoins > 0) {
+                    gameState.user.flower_coins += flowerCoins;
+                    updateUserUI();
+                }
             } catch (error) {
-                handleError(error, '加载提现记录失败');
+                console.error('Submit game result error:', error);
             }
         }
-        
-        // 分享到Telegram
-        function shareToTelegram() {
-            const text = `我在玩万花楼消消乐，快来一起玩吧！\nhttps://beijingshunyi.github.io/game-web/?user_id=${currentUser.telegram_id}`;
-            const url = `https://t.me/share/url?url=${encodeURIComponent(text)}`;
+
+        // 加载成就
+        async function loadAchievements() {
+            if (!gameState.user) return;
             
-            window.open(url, '_blank');
-            
-            // 假设分享成功，增加游戏次数
-            playCount = Math.max(0, playCount - 2);
-            document.getElementById('playLimit').style.display = 'none';
-            
-            alert('分享成功，获得2次游戏机会！');
-        }
-        
-        // 观看广告
-        function watchAd() {
-            // 这里应该有观看广告的逻辑
-            // 由于没有实现，模拟广告观看流程
             try {
-                const adContainer = document.createElement('div');
-                adContainer.className = 'ad-container';
-                adContainer.innerHTML = `
-                    <div class="ad-content">
-                        <div class="ad-title">广告观看</div>
-                        <div class="ad-message">正在播放广告...</div>
-                        <div class="ad-countdown">10秒后关闭</div>
-                        <button class="ad-close-btn" disabled>关闭</button>
-                    </div>
-                `;
+                const response = await fetch(`${API_URL}/achievements?user_id=${gameState.user.id}`);
+                const data = await response.json();
                 
-                document.body.appendChild(adContainer);
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
                 
-                // 模拟广告倒计时
-                let countdown = 10;
-                const countdownEl = adContainer.querySelector('.ad-countdown');
-                const closeBtn = adContainer.querySelector('.ad-close-btn');
-                
-                const timer = setInterval(() => {
-                    countdown--;
-                    countdownEl.textContent = `${countdown}秒后关闭`;
-                    
-                    if (countdown <= 0) {
-                        clearInterval(timer);
-                        closeBtn.disabled = false;
-                        closeBtn.textContent = '关闭';
-                    }
-                }, 1000);
-                
-                closeBtn.addEventListener('click', () => {
-                    clearInterval(timer);
-                    document.body.removeChild(adContainer);
-                    
-                    // 增加游戏次数
-                    playCount = Math.max(0, playCount - 1);
-                    const playLimitEl = document.getElementById('playLimit');
-                    if (playLimitEl) playLimitEl.style.display = 'none';
-                    
-                    alert('广告观看完成，获得1次游戏机会');
-                });
+                // 更新成就UI
+                updateAchievementsUI(data.achievements);
             } catch (error) {
-                handleError(error, '广告观看失败');
+                console.error('Load achievements error:', error);
+                showToast('加载成就失败');
             }
         }
-        
-        // 切换任务标签
-        function switchTaskTab(tab) {
-            const tabs = document.querySelectorAll('.task-tab');
-            tabs.forEach(t => t.classList.remove('active'));
+
+        // 更新成就UI
+        function updateAchievementsUI(achievements) {
+            elements.achievementsList.innerHTML = '';
             
-            event.target.classList.add('active');
-            
-            if (tab === 'daily') {
-                document.getElementById('dailyTasksList').style.display = 'flex';
-                document.getElementById('achievementsList').style.display = 'none';
-            } else {
-                document.getElementById('dailyTasksList').style.display = 'none';
-                document.getElementById('achievementsList').style.display = 'flex';
+            achievements.forEach(achievement => {
+                const achievementElement = document.createElement('div');
+                achievementElement.className = 'achievement-card';
+                
+                const iconElement = document.createElement('div');
+                iconElement.className = 'achievement-icon';
+                if (achievement.completed) {
+                    iconElement.classList.add('completed');
+                }
+                iconElement.innerHTML = '<i class="fas fa-trophy"></i>';
+                
+                const detailsElement = document.createElement('div');
+                detailsElement.className = 'achievement-details';
+                
+                const nameElement = document.createElement('div');
+                nameElement.className = 'achievement-name';
+                nameElement.textContent = achievement.name;
+                
+                const descriptionElement = document.createElement('div');
+                descriptionElement.className = 'achievement-description';
+                descriptionElement.textContent = achievement.description;
+                
+                const progressElement = document.createElement('div');
+                progressElement.className = 'achievement-progress';
+                
+                const progressBarElement = document.createElement('div');
+                progressBarElement.className = 'achievement-progress-bar';
+                
+                // 计算进度百分比
+                let progressPercentage = 0;
+                if (achievement.progress_value > 0) {
+                    // 这里需要根据不同类型的成就计算进度
+                    progressPercentage = Math.min(100, (achievement.progress_value / 10) * 100);
+                }
+                
+                progressBarElement.style.width = `${progressPercentage}%`;
+                
+                progressElement.appendChild(progressBarElement);
+                
+                detailsElement.appendChild(nameElement);
+                detailsElement.appendChild(descriptionElement);
+                detailsElement.appendChild(progressElement);
+                
+                const rewardElement = document.createElement('div');
+                rewardElement.className = 'achievement-reward';
+                rewardElement.innerHTML = `<i class="fas fa-coins"></i> ${achievement.flower_coins_reward}`;
+                
+                achievementElement.appendChild(iconElement);
+                achievementElement.appendChild(detailsElement);
+                achievementElement.appendChild(rewardElement);
+                
+                elements.achievementsList.appendChild(achievementElement);
+            });
+        }
+
+        // 加载排行榜
+        async function loadLeaderboard(period) {
+            try {
+                const response = await fetch(`${API_URL}/leaderboard?period=${period}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // 更新排行榜UI
+                updateLeaderboardUI(data.leaderboard);
+            } catch (error) {
+                console.error('Load leaderboard error:', error);
+                showToast('加载排行榜失败');
             }
         }
-        
-        // 切换排行榜标签
-        function switchLeaderboardTab(tab) {
-            const tabs = document.querySelectorAll('.leaderboard-tab');
-            tabs.forEach(t => t.classList.remove('active'));
+
+        // 更新排行榜UI
+        function updateLeaderboardUI(leaderboard) {
+            elements.leaderboardList.innerHTML = '';
             
-            event.target.classList.add('active');
+            if (leaderboard.length === 0) {
+                elements.leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px;">暂无排行榜数据</div>';
+                return;
+            }
             
-            // 重新加载排行榜
-            loadLeaderboard();
+            leaderboard.forEach((entry, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'leaderboard-item';
+                
+                const rankElement = document.createElement('div');
+                rankElement.className = 'leaderboard-rank';
+                if (index === 0) rankElement.classList.add('top1');
+                else if (index === 1) rankElement.classList.add('top2');
+                else if (index === 2) rankElement.classList.add('top3');
+                rankElement.textContent = index + 1;
+                
+                const avatarElement = document.createElement('div');
+                avatarElement.className = 'leaderboard-avatar';
+                
+                if (entry.users && entry.users.photo_url) {
+                    avatarElement.innerHTML = `<img src="${entry.users.photo_url}" alt="Avatar">`;
+                } else {
+                    avatarElement.innerHTML = '<i class="fas fa-user"></i>';
+                }
+                
+                const infoElement = document.createElement('div');
+                infoElement.className = 'leaderboard-info';
+                
+                const nameElement = document.createElement('div');
+                nameElement.className = 'leaderboard-name';
+                nameElement.textContent = entry.users ? (entry.users.first_name || '玩家') : '玩家';
+                
+                const coinsElement = document.createElement('div');
+                coinsElement.className = 'leaderboard-coins';
+                coinsElement.innerHTML = `<i class="fas fa-coins"></i> ${entry.flower_coins_earned}`;
+                
+                infoElement.appendChild(nameElement);
+                infoElement.appendChild(coinsElement);
+                
+                let rewardElement = null;
+                if (index < 5) {
+                    rewardElement = document.createElement('div');
+                    rewardElement.className = 'leaderboard-reward';
+                    
+                    if (index === 0) rewardElement.textContent = '50元';
+                    else if (index === 1) rewardElement.textContent = '30元';
+                    else if (index === 2) rewardElement.textContent = '20元';
+                    else rewardElement.textContent = '10元';
+                }
+                
+                itemElement.appendChild(rankElement);
+                itemElement.appendChild(avatarElement);
+                itemElement.appendChild(infoElement);
+                
+                if (rewardElement) {
+                    itemElement.appendChild(rewardElement);
+                }
+                
+                elements.leaderboardList.appendChild(itemElement);
+            });
+        }
+
+        // 更新提现人民币金额
+        function updateWithdrawalRmb() {
+            const amount = parseInt(elements.withdrawalAmount.value) || 0;
+            const rmb = (amount / 1000) * 10;
+            elements.withdrawalRmb.textContent = `${rmb.toFixed(2)}元`;
+        }
+
+        // 提交提现申请
+        async function submitWithdrawal() {
+            if (!gameState.user) return;
+            
+            const amount = parseInt(elements.withdrawalAmount.value);
+            const alipayAccount = elements.alipayAccount.value.trim();
+            const realName = elements.realName.value.trim();
+            
+            if (!amount || amount < 1000) {
+                showToast('提现金额最少为1000万花币');
+                return;
+            }
+            
+            if (!alipayAccount) {
+                showToast('请输入支付宝账号');
+                return;
+            }
+            
+            if (!realName) {
+                showToast('请输入真实姓名');
+                return;
+            }
+            
+            if (amount > gameState.user.flower_coins) {
+                showToast('万花币余额不足');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/withdrawal`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: gameState.user.id,
+                        amount,
+                        alipay_account: alipayAccount,
+                        real_name: realName
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // 更新用户万花币
+                gameState.user.flower_coins -= amount;
+                updateUserUI();
+                
+                // 清空表单
+                elements.withdrawalAmount.value = '';
+                elements.alipayAccount.value = '';
+                elements.realName.value = '';
+                elements.withdrawalRmb.textContent = '0元';
+                
+                // 显示成功消息
+                showToast('提现申请提交成功，请等待审核');
+                
+                // 重新加载提现记录
+                loadWithdrawalHistory();
+            } catch (error) {
+                console.error('Submit withdrawal error:', error);
+                showToast('提交提现申请失败');
+            }
+        }
+
+        // 加载提现记录
+        async function loadWithdrawalHistory() {
+            if (!gameState.user) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/withdrawal?user_id=${gameState.user.id}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // 更新提现记录UI
+                updateWithdrawalHistoryUI(data.withdrawals);
+            } catch (error) {
+                console.error('Load withdrawal history error:', error);
+                showToast('加载提现记录失败');
+            }
+        }
+
+        // 更新提现记录UI
+        function updateWithdrawalHistoryUI(withdrawals) {
+            elements.withdrawalHistoryList.innerHTML = '';
+            
+            if (withdrawals.length === 0) {
+                elements.withdrawalHistoryList.innerHTML = '<div style="text-align: center; padding: 20px;">暂无提现记录</div>';
+                return;
+            }
+            
+            withdrawals.forEach(withdrawal => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'withdrawal-history-item';
+                
+                const detailsElement = document.createElement('div');
+                detailsElement.className = 'withdrawal-history-details';
+                
+                const amountElement = document.createElement('div');
+                amountElement.className = 'withdrawal-history-amount';
+                amountElement.textContent = `${withdrawal.amount}万花币 (${withdrawal.rmb_amount}元)`;
+                
+                const dateElement = document.createElement('div');
+                dateElement.className = 'withdrawal-history-date';
+                dateElement.textContent = new Date(withdrawal.created_at).toLocaleString();
+                
+                detailsElement.appendChild(amountElement);
+                detailsElement.appendChild(dateElement);
+                
+                const statusElement = document.createElement('div');
+                statusElement.className = 'withdrawal-history-status';
+                
+                if (withdrawal.status === 'pending') {
+                    statusElement.classList.add('status-pending');
+                    statusElement.textContent = '待审核';
+                } else if (withdrawal.status === 'approved') {
+                    statusElement.classList.add('status-approved');
+                    statusElement.textContent = '已通过';
+                } else if (withdrawal.status === 'rejected') {
+                    statusElement.classList.add('status-rejected');
+                    statusElement.textContent = '已拒绝';
+                }
+                
+                itemElement.appendChild(detailsElement);
+                itemElement.appendChild(statusElement);
+                
+                elements.withdrawalHistoryList.appendChild(itemElement);
+            });
         }
     </script>
 </body>
