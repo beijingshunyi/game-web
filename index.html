@@ -1282,9 +1282,13 @@
         let gameScore = 0;
         let gameTarget = 0;
         let gameActive = false;
+        let isTelegramWebApp = false;
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否在Telegram WebApp环境中
+            checkTelegramWebApp();
+            
             // 检查是否已登录
             checkLoginStatus();
             
@@ -1292,11 +1296,93 @@
             bindEvents();
         });
         
+        // 检查是否在Telegram WebApp环境中
+        function checkTelegramWebApp() {
+            // 检查Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                isTelegramWebApp = true;
+                const webApp = window.Telegram.WebApp;
+                webApp.ready();
+                webApp.expand();
+                
+                // 设置主题颜色
+                webApp.setHeaderColor('#ff7e5f');
+                webApp.setBackgroundColor('#ffffff');
+                
+                // 设置主按钮
+                webApp.MainButton.setText('开始游戏').show().onClick(function() {
+                    if (!currentUser) {
+                        // 自动登录
+                        autoLogin();
+                    } else {
+                        // 已经登录，切换到主页面
+                        showMainPage();
+                    }
+                });
+                
+                // 隐藏登录按钮，显示主按钮
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainPage').style.display = 'block';
+                
+                // 尝试自动登录
+                autoLogin();
+            } else {
+                // 不在Telegram中，显示登录页面
+                isTelegramWebApp = false;
+                document.getElementById('loginPage').style.display = 'flex';
+                document.getElementById('mainPage').style.display = 'none';
+            }
+        }
+        
+        // 自动登录
+        function autoLogin() {
+            if (!isTelegramWebApp || !window.Telegram || !window.Telegram.WebApp) return;
+            
+            const webApp = window.Telegram.WebApp;
+            const initData = webApp.initData;
+            
+            if (!initData) {
+                showToast('无法获取登录信息，请重试');
+                return;
+            }
+            
+            // 发送用户数据到后端进行验证
+            fetch(`${API_BASE_URL}/auth`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(initData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentUser = data.user;
+                    sessionToken = data.session_token;
+                    localStorage.setItem('sessionToken', sessionToken);
+                    showMainPage();
+                    loadUserData();
+                    showToast('登录成功！');
+                    
+                    // 隐藏主按钮
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        window.Telegram.WebApp.MainButton.hide();
+                    }
+                } else {
+                    showToast('登录失败：' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error logging in:', error);
+                showToast('登录失败，请重试');
+            });
+        }
+        
         // 检查登录状态
         function checkLoginStatus() {
             const savedSessionToken = localStorage.getItem('sessionToken');
             
-            if (savedSessionToken) {
+            if (savedSessionToken && !isTelegramWebApp) {
                 // 验证会话
                 fetch(`${API_BASE_URL}/validate-session`, {
                     method: 'POST',
@@ -1313,20 +1399,28 @@
                         showMainPage();
                         loadUserData();
                     } else {
-                        showLoginPage();
+                        if (!isTelegramWebApp) {
+                            showLoginPage();
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error validating session:', error);
-                    showLoginPage();
+                    if (!isTelegramWebApp) {
+                        showLoginPage();
+                    }
                 });
-            } else {
-                showLoginPage();
             }
         }
         
         // 显示登录页面
         function showLoginPage() {
+            if (isTelegramWebApp) {
+                // 在Telegram中，不显示登录页面，尝试自动登录
+                autoLogin();
+                return;
+            }
+            
             document.getElementById('loginPage').style.display = 'flex';
             document.getElementById('mainPage').style.display = 'none';
         }
