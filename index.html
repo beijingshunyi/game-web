@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 添加内容安全策略 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://api.telegram.org; 
+             frame-src 'self' https://oauth.telegram.org; 
+             script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; 
+             style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; 
+             img-src 'self' data: https://picsum.photos; 
+             font-src 'self' https://cdnjs.cloudflare.com; 
+             connect-src 'self' https://wanhua-game.bingkuijing.workers.dev https://ylnfjlltesnlfanrxfoy.supabase.co;">
     <title>万花消消乐</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -997,7 +1005,7 @@
             <div class="login-description">
                 欢迎来到万花消消乐！通过消除元素获得万花币，累积到一定数量即可提现！
             </div>
-            <a href="https://t.me/bjxcwhljiluBot" class="telegram-login-button">
+            <a href="https://t.me/bjxcwhljiluBot" class="telegram-login-button" target="_blank">
                 <i class="fab fa-telegram-plane"></i> 使用Telegram登录
             </a>
         </div>
