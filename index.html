@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>万花消消乐</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>万象谜题 - 创意解谜游戏</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -14,570 +14,252 @@
         }
         
         body {
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
             color: #333;
-            overflow-x: hidden;
         }
         
         .container {
-            max-width: 500px;
+            max-width: 1200px;
             margin: 0 auto;
-            background-color: #fff;
-            min-height: 100vh;
-            position: relative;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 100%;
         }
         
-        /* 顶部导航栏 */
-        .header {
-            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+        header {
+            text-align: center;
+            padding: 20px 0;
             color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         
-        .coins {
-            display: flex;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 20px;
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
-        .coins i {
-            margin-right: 5px;
-            color: #ffd700;
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
         }
         
-        .menu-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        
-        /* 主页内容 */
         .main-content {
-            padding: 20px;
-        }
-        
-        .level-map {
-            background-color: #f9f9f9;
-            border-radius: 15px;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             margin-bottom: 20px;
-            min-height: 400px;
-            position: relative;
-            overflow: hidden;
+            flex-grow: 1;
         }
         
-        .level-path {
-            position: relative;
-            height: 100%;
+        .user-info {
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-        }
-        
-        .level-node {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: #ff7e5f;
-            color: white;
-            display: flex;
-            justify-content: center;
             align-items: center;
-            font-weight: bold;
-            position: absolute;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        
-        .level-node:hover {
-            transform: scale(1.1);
-        }
-        
-        .level-node.completed {
-            background-color: #4CAF50;
-        }
-        
-        .level-node.current {
-            background-color: #2196F3;
-            animation: pulse 2s infinite;
-        }
-        
-        .level-node.locked {
-            background-color: #9e9e9e;
-            cursor: not-allowed;
-        }
-        
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
-            }
-        }
-        
-        .level-stars {
-            position: absolute;
-            bottom: -15px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-        }
-        
-        .level-stars i {
-            color: #ffd700;
-            font-size: 12px;
-            margin: 0 1px;
-        }
-        
-        /* 底部导航 */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: white;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-        }
-        
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #757575;
-            text-decoration: none;
-            font-size: 12px;
-            transition: color 0.3s;
-        }
-        
-        .nav-item.active {
-            color: #ff7e5f;
-        }
-        
-        .nav-item i {
-            font-size: 20px;
-            margin-bottom: 5px;
-        }
-        
-        /* 登录页面 */
-        .login-page {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #ff7e5f, #feb47b);
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .login-page h1 {
-            font-size: 32px;
-            margin-bottom: 20px;
-        }
-        
-        .login-page p {
             margin-bottom: 30px;
-            font-size: 16px;
-            line-height: 1.5;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
         }
         
-        .login-btn {
-            background-color: white;
-            color: #ff7e5f;
-            border: none;
-            padding: 15px 30px;
+        .user-details {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .user-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .user-level {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .wanhua-coins {
+            display: flex;
+            align-items: center;
+            background: #ffd700;
+            padding: 10px 20px;
             border-radius: 30px;
-            font-size: 18px;
             font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        .wanhua-coins i {
+            margin-right: 8px;
+            font-size: 1.2rem;
         }
         
-        /* 游戏页面 */
-        .game-page {
-            display: none;
-            padding-bottom: 70px;
-        }
-        
-        .game-header {
-            background-color: #ff7e5f;
-            color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .game-info {
-            display: flex;
-            align-items: center;
-        }
-        
-        .game-info-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0 10px;
-        }
-        
-        .game-info-item span {
-            font-size: 12px;
-        }
-        
-        .game-info-item strong {
-            font-size: 18px;
-        }
-        
-        .game-board {
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        
-        .board {
+        .game-modes {
             display: grid;
-            grid-template-columns: repeat(8, 40px);
-            grid-template-rows: repeat(8, 40px);
-            gap: 2px;
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
-        .tile {
-            width: 40px;
-            height: 40px;
-            border-radius: 5px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .tile:hover {
-            transform: scale(1.05);
-        }
-        
-        .tile.selected {
-            box-shadow: 0 0 0 3px #ffeb3b;
-            transform: scale(1.1);
-        }
-        
-        .tile.type-1 { background-color: #f44336; }
-        .tile.type-2 { background-color: #e91e63; }
-        .tile.type-3 { background-color: #9c27b0; }
-        .tile.type-4 { background-color: #673ab7; }
-        .tile.type-5 { background-color: #3f51b5; }
-        .tile.type-6 { background-color: #2196f3; }
-        
-        .tile.rocket-h::before {
-            content: "→";
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .tile.rocket-v::before {
-            content: "↓";
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .tile.bomb::before {
-            content: "💣";
-            font-size: 24px;
-        }
-        
-        .tile.rainbow::before {
-            content: "🌈";
-            font-size: 24px;
-        }
-        
-        .tile.ice::after {
-            content: "❄️";
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 16px;
-        }
-        
-        .tile.rope::after {
-            content: "🔗";
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 16px;
-        }
-        
-        .tile.chocolate::after {
-            content: "🍫";
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 16px;
-        }
-        
-        .tile.cage::after {
-            content: "🔒";
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 16px;
-        }
-        
-        .tile.cloud::after {
-            content: "☁️";
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 16px;
-        }
-        
-        .game-items {
-            display: flex;
-            justify-content: space-around;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-top: 1px solid #eee;
-        }
-        
-        .game-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .game-item:hover {
-            transform: scale(1.1);
-        }
-        
-        .game-item i {
-            font-size: 24px;
-            margin-bottom: 5px;
-            color: #ff7e5f;
-        }
-        
-        .game-item span {
-            font-size: 12px;
-        }
-        
-        /* 任务页面 */
-        .tasks-page {
-            display: none;
+        .game-mode {
+            background: white;
+            border-radius: 15px;
             padding: 20px;
-            padding-bottom: 70px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
         }
         
-        .task-card {
-            background-color: white;
-            border-radius: 10px;
-            padding: 15px;
+        .game-mode:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .game-mode-icon {
+            font-size: 3rem;
             margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            color: #667eea;
         }
         
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .task-title {
+        .game-mode-title {
+            font-size: 1.3rem;
             font-weight: bold;
-            font-size: 16px;
-        }
-        
-        .task-reward {
-            display: flex;
-            align-items: center;
-            color: #ff7e5f;
-        }
-        
-        .task-reward i {
-            margin-right: 5px;
-            color: #ffd700;
-        }
-        
-        .task-description {
-            color: #757575;
-            font-size: 14px;
             margin-bottom: 10px;
         }
         
-        .task-progress {
-            height: 8px;
-            background-color: #f0f0f0;
-            border-radius: 4px;
+        .game-mode-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .daily-activities {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .activity-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
             overflow: hidden;
-            margin-bottom: 5px;
         }
         
-        .task-progress-bar {
+        .activity-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
             height: 100%;
-            background-color: #ff7e5f;
-            border-radius: 4px;
-            transition: width 0.3s ease;
+            background: #667eea;
         }
         
-        .task-progress-text {
-            font-size: 12px;
-            color: #757575;
-            text-align: right;
-        }
-        
-        .task-completed {
-            color: #4CAF50;
+        .activity-title {
+            font-size: 1.1rem;
             font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
         }
         
-        /* 签到页面 */
-        .check-in-page {
-            display: none;
-            padding: 20px;
-            padding-bottom: 70px;
-            text-align: center;
+        .activity-title i {
+            margin-right: 8px;
+            color: #667eea;
         }
         
-        .check-in-card {
-            background-color: white;
+        .activity-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .activity-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        
+        .activity-button:hover {
+            background: #5a67d8;
+        }
+        
+        .activity-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .leaderboard-section {
+            background: white;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
         
-        .check-in-title {
-            font-size: 20px;
+        .section-title {
+            font-size: 1.5rem;
             font-weight: bold;
-            margin-bottom: 15px;
-            color: #ff7e5f;
-        }
-        
-        .check-in-calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
         }
         
-        .check-in-day {
-            aspect-ratio: 1;
+        .section-title i {
+            margin-right: 10px;
+            color: #667eea;
+        }
+        
+        .leaderboard-tabs {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 10px;
-            background-color: #f9f9f9;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .leaderboard-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
             position: relative;
         }
         
-        .check-in-day.checked {
-            background-color: #ff7e5f;
-            color: white;
+        .leaderboard-tab.active {
+            color: #667eea;
         }
         
-        .check-in-day.today {
-            border: 2px solid #ff7e5f;
-        }
-        
-        .check-in-day-number {
-            font-weight: bold;
-            font-size: 14px;
-        }
-        
-        .check-in-day-reward {
-            font-size: 10px;
-            margin-top: 2px;
-        }
-        
-        .check-in-btn {
-            background-color: #ff7e5f;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .check-in-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        .check-in-btn:disabled {
-            background-color: #9e9e9e;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .consecutive-days {
-            margin-top: 15px;
-            color: #757575;
-            font-size: 14px;
-        }
-        
-        /* 排行榜页面 */
-        .leaderboard-page {
-            display: none;
-            padding: 20px;
-            padding-bottom: 70px;
-        }
-        
-        .leaderboard-card {
-            background-color: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        
-        .leaderboard-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #ff7e5f;
-            text-align: center;
+        .leaderboard-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #667eea;
         }
         
         .leaderboard-list {
@@ -587,38 +269,34 @@
         .leaderboard-item {
             display: flex;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .leaderboard-item:last-child {
-            border-bottom: none;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
         }
         
         .leaderboard-rank {
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background-color: #f0f0f0;
+            background: #f0f0f0;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             font-weight: bold;
             margin-right: 15px;
         }
         
-        .leaderboard-item:nth-child(1) .leaderboard-rank {
-            background-color: #ffd700;
+        .leaderboard-rank.top-1 {
+            background: #ffd700;
             color: white;
         }
         
-        .leaderboard-item:nth-child(2) .leaderboard-rank {
-            background-color: #c0c0c0;
+        .leaderboard-rank.top-2 {
+            background: #c0c0c0;
             color: white;
         }
         
-        .leaderboard-item:nth-child(3) .leaderboard-rank {
-            background-color: #cd7f32;
+        .leaderboard-rank.top-3 {
+            background: #cd7f32;
             color: white;
         }
         
@@ -627,289 +305,169 @@
             height: 40px;
             border-radius: 50%;
             margin-right: 15px;
-            object-fit: cover;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
         }
         
         .leaderboard-info {
-            flex: 1;
+            flex-grow: 1;
         }
         
         .leaderboard-name {
             font-weight: bold;
-            margin-bottom: 2px;
+            margin-bottom: 5px;
         }
         
-        .leaderboard-coins {
-            display: flex;
-            align-items: center;
-            color: #757575;
-            font-size: 14px;
+        .leaderboard-score {
+            color: #666;
+            font-size: 0.9rem;
         }
         
-        .leaderboard-coins i {
-            margin-right: 5px;
-            color: #ffd700;
-        }
-        
-        .user-rank {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .user-rank-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .user-rank-info {
-            font-size: 18px;
-            color: #ff7e5f;
-        }
-        
-        /* 提现页面 */
-        .withdraw-page {
-            display: none;
-            padding: 20px;
-            padding-bottom: 70px;
-        }
-        
-        .withdraw-card {
-            background-color: white;
+        .withdraw-section {
+            background: white;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
         
-        .withdraw-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #ff7e5f;
-            text-align: center;
-        }
-        
-        .withdraw-balance {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .withdraw-info {
+            background: #f8f9fa;
             padding: 15px;
-            background-color: #f9f9f9;
             border-radius: 10px;
             margin-bottom: 20px;
         }
         
-        .withdraw-balance-label {
-            color: #757575;
+        .withdraw-rates {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
         }
         
-        .withdraw-balance-value {
-            font-size: 18px;
+        .withdraw-rate {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .withdraw-amount {
+            font-size: 1.2rem;
             font-weight: bold;
-            color: #ff7e5f;
+            color: #667eea;
+        }
+        
+        .withdraw-coins {
+            color: #666;
+            font-size: 0.9rem;
         }
         
         .withdraw-form {
-            margin-bottom: 20px;
+            display: grid;
+            gap: 15px;
         }
         
         .form-group {
-            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
         }
         
         .form-label {
-            display: block;
-            margin-bottom: 5px;
             font-weight: bold;
-            color: #333;
+            margin-bottom: 5px;
         }
         
         .form-input {
-            width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 1rem;
         }
         
-        .form-input:focus {
-            outline: none;
-            border-color: #ff7e5f;
-        }
-        
-        .withdraw-btn {
-            width: 100%;
-            background-color: #ff7e5f;
+        .withdraw-button {
+            background: #667eea;
             color: white;
             border: none;
             padding: 12px;
             border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background 0.3s;
         }
         
-        .withdraw-btn:hover {
-            background-color: #e56a4f;
+        .withdraw-button:hover {
+            background: #5a67d8;
         }
         
-        .withdraw-btn:disabled {
-            background-color: #9e9e9e;
+        .withdraw-button:disabled {
+            background: #ccc;
             cursor: not-allowed;
         }
         
-        .withdraw-records {
+        .withdraw-history {
             margin-top: 20px;
         }
         
-        .withdraw-records-title {
-            font-size: 16px;
+        .withdraw-history-title {
             font-weight: bold;
             margin-bottom: 10px;
         }
         
-        .withdraw-record {
+        .withdraw-history-list {
+            list-style: none;
+        }
+        
+        .withdraw-history-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
         }
         
-        .withdraw-record:last-child {
-            border-bottom: none;
-        }
-        
-        .withdraw-record-info {
-            flex: 1;
-        }
-        
-        .withdraw-record-amount {
+        .withdraw-history-amount {
             font-weight: bold;
-            margin-bottom: 2px;
         }
         
-        .withdraw-record-date {
-            font-size: 12px;
-            color: #757575;
-        }
-        
-        .withdraw-record-status {
+        .withdraw-history-status {
             padding: 3px 8px;
             border-radius: 10px;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 0.8rem;
         }
         
         .status-pending {
-            background-color: #fff3cd;
+            background: #fff3cd;
             color: #856404;
         }
         
         .status-approved {
-            background-color: #d4edda;
+            background: #d4edda;
             color: #155724;
         }
         
-        .status-completed {
-            background-color: #d1ecf1;
-            color: #0c5460;
-        }
-        
         .status-rejected {
-            background-color: #f8d7da;
+            background: #f8d7da;
             color: #721c24;
         }
         
-        /* 成就页面 */
-        .achievements-page {
-            display: none;
+        footer {
+            text-align: center;
             padding: 20px;
-            padding-bottom: 70px;
-        }
-        
-        .achievement-card {
-            background-color: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-        }
-        
-        .achievement-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .achievement-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-right: 15px;
-            font-size: 24px;
-        }
-        
-        .achievement-icon.unlocked {
-            background-color: #ff7e5f;
             color: white;
+            font-size: 0.9rem;
         }
         
-        .achievement-info {
-            flex: 1;
-        }
-        
-        .achievement-title {
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-        
-        .achievement-description {
-            font-size: 14px;
-            color: #757575;
-        }
-        
-        .achievement-reward {
-            display: flex;
-            align-items: center;
-            color: #ff7e5f;
-            font-weight: bold;
-        }
-        
-        .achievement-reward i {
-            margin-right: 5px;
-            color: #ffd700;
-        }
-        
-        /* 弹出提示 */
-        .toast {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
+        .footer-link {
             color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            font-size: 16px;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            text-decoration: none;
+            margin: 0 10px;
         }
         
-        .toast.show {
-            opacity: 1;
+        .footer-link:hover {
+            text-decoration: underline;
         }
         
-        /* 游戏次数不足弹窗 */
         .modal {
             display: none;
             position: fixed;
@@ -917,2027 +475,1936 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 200;
-            justify-content: center;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
             align-items: center;
+            justify-content: center;
         }
         
         .modal-content {
-            background-color: white;
+            background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 30px;
+            max-width: 500px;
             width: 90%;
-            max-width: 400px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
         }
         
-        .modal-header {
-            font-size: 20px;
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
             font-weight: bold;
-            margin-bottom: 15px;
-            text-align: center;
-            color: #ff7e5f;
-        }
-        
-        .modal-body {
             margin-bottom: 20px;
             text-align: center;
         }
         
-        .modal-footer {
+        .level-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .level-type {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .type-puzzle {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .type-strategy {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .type-action {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .type-memory {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .level-difficulty {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .difficulty-star {
+            color: #ffd700;
+            font-size: 1.2rem;
+            margin-right: 2px;
+        }
+        
+        .game-area {
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .game-controls {
             display: flex;
             justify-content: space-between;
-        }
-        
-        .modal-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .modal-btn-cancel {
-            background-color: #f0f0f0;
-            color: #757575;
-            margin-right: 10px;
-        }
-        
-        .modal-btn-confirm {
-            background-color: #ff7e5f;
-            color: white;
-        }
-        
-        .modal-btn:hover {
-            opacity: 0.9;
-        }
-        
-        /* 页脚 */
-        .footer {
-            padding: 10px;
-            text-align: center;
-            font-size: 12px;
-            color: #757575;
-            background-color: #f9f9f9;
             margin-top: 20px;
         }
         
-        .footer a {
-            color: #ff7e5f;
-            text-decoration: none;
+        .game-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
         }
         
-        /* 加载动画 */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #ff7e5f;
+        .game-button:hover {
+            background: #5a67d8;
+        }
+        
+        .game-button.secondary {
+            background: #6c757d;
+        }
+        
+        .game-button.secondary:hover {
+            background: #5a6268;
+        }
+        
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0,0,0,0.1);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            border-top: 4px solid #667eea;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            margin-bottom: 10px;
         }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            max-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .notification-message {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .notification.success {
+            border-left: 4px solid #28a745;
+        }
+        
+        .notification.error {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .notification.info {
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .telegram-login {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .telegram-login-button {
+            background: #0088cc;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        
+        .telegram-login-button:hover {
+            background: #0077b3;
+        }
+        
+        .telegram-login-button i {
+            margin-right: 10px;
+        }
+        
+        .ad-banner {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .ad-label {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+        }
+        
+        .ad-content {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .ad-cta {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        
+        .ad-cta:hover {
+            background: #5a67d8;
+        }
+        
+        .achievement-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 3000;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            display: none;
+        }
+        
+        .achievement-popup.show {
+            display: block;
+            animation: popIn 0.5s;
+        }
+        
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        .achievement-icon {
+            font-size: 4rem;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+        
+        .achievement-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .achievement-description {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .achievement-reward {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .achievement-close {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .user-details {
+                margin-bottom: 15px;
+            }
+            
+            .game-modes {
+                grid-template-columns: 1fr;
+            }
+            
+            .daily-activities {
+                grid-template-columns: 1fr;
+            }
+            
+            .withdraw-rates {
+                flex-direction: column;
+            }
+            
+            .withdraw-rate {
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 登录页面 -->
-        <div class="login-page" id="loginPage">
-            <h1>万花消消乐</h1>
-            <p>完成关卡和任务可获得万花币，累积一定数量后可以提现！</p>
-            <button class="login-btn" id="loginBtn">使用Telegram登录</button>
-        </div>
+        <header>
+            <h1>万象谜题</h1>
+            <p class="subtitle">创意解谜游戏，挑战你的智力极限</p>
+        </header>
         
-        <!-- 主页面 -->
-        <div class="main-page" id="mainPage" style="display: none;">
-            <div class="header">
-                <div class="coins">
-                    <i class="fas fa-coins"></i>
-                    <span id="userCoins">0</span>
-                </div>
-                <h1>万花消消乐</h1>
-                <button class="menu-btn" id="menuBtn">
-                    <i class="fas fa-bars"></i>
+        <div class="main-content" id="mainContent">
+            <!-- 用户未登录时显示 -->
+            <div class="telegram-login" id="telegramLogin">
+                <h2>欢迎来到《万象谜题》</h2>
+                <p style="margin: 20px 0; color: #666;">请使用Telegram账号登录开始游戏</p>
+                <button class="telegram-login-button" id="telegramLoginButton">
+                    <i class="fab fa-telegram-plane"></i> 使用Telegram登录
                 </button>
             </div>
             
-            <div class="main-content">
-                <div class="level-map" id="levelMap">
-                    <div class="level-path" id="levelPath">
-                        <!-- 关卡节点将通过JS动态生成 -->
+            <!-- 用户登录后显示的内容 -->
+            <div id="gameContent" style="display: none;">
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <div>
+                            <div class="user-name" id="userName">用户名</div>
+                            <div class="user-level">当前关卡: <span id="userLevel">1</span></div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="bottom-nav">
-                <a href="#" class="nav-item active" data-page="main">
-                    <i class="fas fa-home"></i>
-                    <span>首页</span>
-                </a>
-                <a href="#" class="nav-item" data-page="tasks">
-                    <i class="fas fa-tasks"></i>
-                    <span>任务</span>
-                </a>
-                <a href="#" class="nav-item" data-page="checkin">
-                    <i class="fas fa-calendar-check"></i>
-                    <span>签到</span>
-                </a>
-                <a href="#" class="nav-item" data-page="leaderboard">
-                    <i class="fas fa-trophy"></i>
-                    <span>排行榜</span>
-                </a>
-                <a href="#" class="nav-item" data-page="withdraw">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <span>提现</span>
-                </a>
-            </div>
-        </div>
-        
-        <!-- 游戏页面 -->
-        <div class="game-page" id="gamePage">
-            <div class="game-header">
-                <div class="game-info">
-                    <div class="game-info-item">
-                        <span>目标</span>
-                        <strong id="gameTarget">0</strong>
+                    <div class="wanhua-coins">
+                        <i class="fas fa-coins"></i>
+                        <span id="wanhuaCoins">0</span> 万花币
                     </div>
-                    <div class="game-info-item">
-                        <span>步数</span>
-                        <strong id="gameMoves">0</strong>
-                    </div>
-                    <div class="game-info-item">
-                        <span>分数</span>
-                        <strong id="gameScore">0</strong>
-                    </div>
-                </div>
-                <button class="menu-btn" id="backBtn">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-            </div>
-            
-            <div class="game-board">
-                <div class="board" id="gameBoard">
-                    <!-- 游戏棋盘将通过JS动态生成 -->
-                </div>
-            </div>
-            
-            <div class="game-items">
-                <div class="game-item" data-item="refresh">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>刷新</span>
-                </div>
-                <div class="game-item" data-item="hammer">
-                    <i class="fas fa-hammer"></i>
-                    <span>锤子</span>
-                </div>
-                <div class="game-item" data-item="bomb">
-                    <i class="fas fa-bomb"></i>
-                    <span>炸弹</span>
-                </div>
-                <div class="game-item" data-item="color">
-                    <i class="fas fa-palette"></i>
-                    <span>变色</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 任务页面 -->
-        <div class="tasks-page" id="tasksPage">
-            <div class="header">
-                <div class="coins">
-                    <i class="fas fa-coins"></i>
-                    <span id="tasksUserCoins">0</span>
-                </div>
-                <h1>每日任务</h1>
-                <button class="menu-btn" id="tasksMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            
-            <div id="tasksList">
-                <!-- 任务列表将通过JS动态生成 -->
-            </div>
-        </div>
-        
-        <!-- 签到页面 -->
-        <div class="check-in-page" id="checkInPage">
-            <div class="header">
-                <div class="coins">
-                    <i class="fas fa-coins"></i>
-                    <span id="checkInUserCoins">0</span>
-                </div>
-                <h1>每日签到</h1>
-                <button class="menu-btn" id="checkInMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            
-            <div class="check-in-card">
-                <div class="check-in-title">连续签到赢好礼</div>
-                <div class="check-in-calendar" id="checkInCalendar">
-                    <!-- 签到日历将通过JS动态生成 -->
-                </div>
-                <button class="check-in-btn" id="checkInBtn">签到</button>
-                <div class="consecutive-days" id="consecutiveDays">已连续签到 0 天</div>
-            </div>
-        </div>
-        
-        <!-- 排行榜页面 -->
-        <div class="leaderboard-page" id="leaderboardPage">
-            <div class="header">
-                <div class="coins">
-                    <i class="fas fa-coins"></i>
-                    <span id="leaderboardUserCoins">0</span>
-                </div>
-                <h1>排行榜</h1>
-                <button class="menu-btn" id="leaderboardMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            
-            <div class="leaderboard-card">
-                <div class="leaderboard-title">本月万花币排行榜</div>
-                <ul class="leaderboard-list" id="leaderboardList">
-                    <!-- 排行榜列表将通过JS动态生成 -->
-                </ul>
-                <div class="user-rank" id="userRank">
-                    <div class="user-rank-title">您的排名</div>
-                    <div class="user-rank-info">未上榜</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 提现页面 -->
-        <div class="withdraw-page" id="withdrawPage">
-            <div class="header">
-                <div class="coins">
-                    <i class="fas fa-coins"></i>
-                    <span id="withdrawUserCoins">0</span>
-                </div>
-                <h1>提现</h1>
-                <button class="menu-btn" id="withdrawMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            
-            <div class="withdraw-card">
-                <div class="withdraw-title">万花币提现</div>
-                <div class="withdraw-balance">
-                    <div class="withdraw-balance-label">当前余额</div>
-                    <div class="withdraw-balance-value" id="currentBalance">0 万花币</div>
                 </div>
                 
-                <div class="withdraw-form">
-                    <div class="form-group">
-                        <label class="form-label" for="withdrawAmount">提现金额 (万花币)</label>
-                        <input type="number" class="form-input" id="withdrawAmount" placeholder="请输入提现金额，最少1000万" min="1000" step="100">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="alipayAccount">支付宝账号</label>
-                        <input type="text" class="form-input" id="alipayAccount" placeholder="请输入支付宝账号">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="realName">真实姓名</label>
-                        <input type="text" class="form-input" id="realName" placeholder="请输入真实姓名">
-                    </div>
-                    <button class="withdraw-btn" id="submitWithdrawBtn">提交提现申请</button>
+                <div class="ad-banner">
+                    <div class="ad-label">广告</div>
+                    <div class="ad-content">观看广告获得额外万花币奖励</div>
+                    <button class="ad-cta" id="watchAdButton">观看广告 (+5万花币)</button>
                 </div>
                 
-                <div class="withdraw-records">
-                    <div class="withdraw-records-title">提现记录</div>
-                    <div id="withdrawRecordsList">
-                        <!-- 提现记录将通过JS动态生成 -->
+                <h2 class="section-title">
+                    <i class="fas fa-gamepad"></i> 游戏模式
+                </h2>
+                <div class="game-modes">
+                    <div class="game-mode" data-mode="puzzle">
+                        <div class="game-mode-icon">
+                            <i class="fas fa-puzzle-piece"></i>
+                        </div>
+                        <div class="game-mode-title">解谜关卡</div>
+                        <div class="game-mode-description">挑战各种谜题，锻炼逻辑思维能力</div>
+                    </div>
+                    <div class="game-mode" data-mode="strategy">
+                        <div class="game-mode-icon">
+                            <i class="fas fa-chess"></i>
+                        </div>
+                        <div class="game-mode-title">策略关卡</div>
+                        <div class="game-mode-description">制定合理策略，优化资源分配</div>
+                    </div>
+                    <div class="game-mode" data-mode="action">
+                        <div class="game-mode-icon">
+                            <i class="fas fa-running"></i>
+                        </div>
+                        <div class="game-mode-title">动作关卡</div>
+                        <div class="game-mode-description">考验操作技巧，挑战反应速度</div>
+                    </div>
+                    <div class="game-mode" data-mode="memory">
+                        <div class="game-mode-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="game-mode-title">记忆关卡</div>
+                        <div class="game-mode-description">训练记忆力，提高信息处理能力</div>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- 成就页面 -->
-        <div class="achievements-page" id="achievementsPage">
-            <div class="header">
-                <div class="coins">
-                    <i class="fas fa-coins"></i>
-                    <span id="achievementsUserCoins">0</span>
+                
+                <h2 class="section-title">
+                    <i class="fas fa-calendar-day"></i> 每日活动
+                </h2>
+                <div class="daily-activities">
+                    <div class="activity-card">
+                        <div class="activity-title">
+                            <i class="fas fa-calendar-check"></i> 每日签到
+                        </div>
+                        <div class="activity-description">
+                            连续签到获得更多奖励，7天签到有额外惊喜
+                        </div>
+                        <button class="activity-button" id="checkInButton">签到</button>
+                    </div>
+                    <div class="activity-card">
+                        <div class="activity-title">
+                            <i class="fas fa-share-alt"></i> 分享游戏
+                        </div>
+                        <div class="activity-description">
+                            分享游戏到Telegram群组或频道，获得万花币奖励
+                        </div>
+                        <button class="activity-button" id="shareButton">分享游戏</button>
+                    </div>
+                    <div class="activity-card">
+                        <div class="activity-title">
+                            <i class="fas fa-gift"></i> 领取奖励
+                        </div>
+                        <div class="activity-description">
+                            查看并领取已完成的成就奖励
+                        </div>
+                        <button class="activity-button" id="claimRewardsButton">领取奖励</button>
+                    </div>
                 </div>
-                <h1>成就</h1>
-                <button class="menu-btn" id="achievementsMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            
-            <div id="achievementsList">
-                <!-- 成就列表将通过JS动态生成 -->
-            </div>
-        </div>
-        
-        <!-- 游戏次数不足弹窗 -->
-        <div class="modal" id="noPlaysModal">
-            <div class="modal-content">
-                <div class="modal-header">游戏次数不足</div>
-                <div class="modal-body">
-                    <p>今日免费游戏次数已用完，您可以通过以下方式获取额外游戏次数：</p>
-                    <ul style="text-align: left; margin: 15px 0;">
-                        <li>分享到Telegram群组或频道：+2次/日（最多3次）</li>
-                        <li>观看广告：+1次/每次（最多5次/日）</li>
-                        <li>好友赠送：可接收好友赠送的游戏次数</li>
+                
+                <div class="leaderboard-section">
+                    <div class="section-title">
+                        <i class="fas fa-trophy"></i> 排行榜
+                    </div>
+                    <div class="leaderboard-tabs">
+                        <div class="leaderboard-tab active" data-tab="monthly">月度排行</div>
+                        <div class="leaderboard-tab" data-tab="friends">好友排行</div>
+                    </div>
+                    <ul class="leaderboard-list" id="leaderboardList">
+                        <li class="leaderboard-item">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <div>加载中...</div>
+                            </div>
+                        </li>
                     </ul>
                 </div>
-                <div class="modal-footer">
-                    <button class="modal-btn modal-btn-cancel" id="cancelModalBtn">取消</button>
-                    <button class="modal-btn modal-btn-confirm" id="shareBtn">分享获取次数</button>
+                
+                <div class="withdraw-section">
+                    <div class="section-title">
+                        <i class="fas fa-money-bill-wave"></i> 提现
+                    </div>
+                    <div class="withdraw-info">
+                        <div class="withdraw-rates">
+                            <div class="withdraw-rate">
+                                <div class="withdraw-amount">10元</div>
+                                <div class="withdraw-coins">1000万花币</div>
+                            </div>
+                            <div class="withdraw-rate">
+                                <div class="withdraw-amount">20元</div>
+                                <div class="withdraw-coins">2000万花币</div>
+                            </div>
+                            <div class="withdraw-rate">
+                                <div class="withdraw-amount">50元</div>
+                                <div class="withdraw-coins">5000万花币</div>
+                            </div>
+                            <div class="withdraw-rate">
+                                <div class="withdraw-amount">100元</div>
+                                <div class="withdraw-coins">10000万花币</div>
+                            </div>
+                        </div>
+                        <p style="color: #666; font-size: 0.9rem;">提现申请提交后，需经过人工审核，审核通过后3-5个工作日内到账</p>
+                    </div>
+                    <div class="withdraw-form">
+                        <div class="form-group">
+                            <label class="form-label">提现金额</label>
+                            <select class="form-input" id="withdrawAmount">
+                                <option value="10">10元 (1000万花币)</option>
+                                <option value="20">20元 (2000万花币)</option>
+                                <option value="50">50元 (5000万花币)</option>
+                                <option value="100">100元 (10000万花币)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">支付宝账号</label>
+                            <input type="text" class="form-input" id="alipayAccount" placeholder="请输入支付宝账号">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">真实姓名</label>
+                            <input type="text" class="form-input" id="realName" placeholder="请输入真实姓名（与支付宝实名一致）">
+                        </div>
+                        <button class="withdraw-button" id="withdrawButton">申请提现</button>
+                    </div>
+                    <div class="withdraw-history">
+                        <div class="withdraw-history-title">提现记录</div>
+                        <ul class="withdraw-history-list" id="withdrawHistoryList">
+                            <li class="withdraw-history-item">
+                                <div>暂无提现记录</div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- 提示框 -->
-        <div class="toast" id="toast"></div>
-        
-        <!-- 页脚 -->
-        <div class="footer">
-            本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发
+        <footer>
+            <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" class="footer-link" target="_blank">@bjxc010</a> 开发</p>
+        </footer>
+    </div>
+    
+    <!-- 游戏关卡模态框 -->
+    <div class="modal" id="levelModal">
+        <div class="modal-content">
+            <span class="modal-close" id="levelModalClose">&times;</span>
+            <h2 class="modal-title" id="levelModalTitle">关卡 1</h2>
+            <div class="level-info">
+                <div id="levelTypeContainer"></div>
+                <div class="level-difficulty" id="levelDifficultyContainer"></div>
+                <div>奖励: <span id="levelReward">0</span> 万花币</div>
+                <div id="levelDescription"></div>
+            </div>
+            <div class="game-area" id="gameArea">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>加载中...</div>
+                </div>
+            </div>
+            <div class="game-controls">
+                <button class="game-button secondary" id="hintButton">获取提示 (3万花币)</button>
+                <button class="game-button" id="startLevelButton">开始挑战</button>
+            </div>
         </div>
     </div>
     
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- 通知组件 -->
+    <div class="notification" id="notification">
+        <div class="notification-title" id="notificationTitle"></div>
+        <div class="notification-message" id="notificationMessage"></div>
+    </div>
+    
+    <!-- 成就弹窗 -->
+    <div class="achievement-popup" id="achievementPopup">
+        <div class="achievement-icon">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <div class="achievement-title" id="achievementTitle">成就解锁</div>
+        <div class="achievement-description" id="achievementDescription">成就描述</div>
+        <div class="achievement-reward">
+            奖励: <span id="achievementReward">0</span> 万花币
+        </div>
+        <button class="achievement-close" id="achievementClose">确定</button>
+    </div>
+    
     <script>
-        // API基础URL
-        const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev/api';
+        // 游戏配置
+        const config = {
+            apiBaseUrl: 'https://wanhua-game.bingkuijing.workers.dev/api',
+            telegramBotUsername: 'bjxcyouxiBot',
+            levels: {
+                puzzle: {
+                    name: '解谜关卡',
+                    icon: 'fas fa-puzzle-piece'
+                },
+                strategy: {
+                    name: '策略关卡',
+                    icon: 'fas fa-chess'
+                },
+                action: {
+                    name: '动作关卡',
+                    icon: 'fas fa-running'
+                },
+                memory: {
+                    name: '记忆关卡',
+                    icon: 'fas fa-brain'
+                }
+            }
+        };
         
-        // 全局变量
-        let currentUser = null;
-        let sessionToken = null;
-        let levels = [];
-        let gameBoard = [];
-        let selectedTile = null;
-        let gameLevel = null;
-        let gameMoves = 0;
-        let gameScore = 0;
-        let gameTarget = 0;
-        let gameActive = false;
-        let isTelegramWebApp = false;
-        let webApp = null;
+        // 游戏状态
+        let gameState = {
+            user: null,
+            userData: null,
+            currentLevel: null,
+            gameTimer: null,
+            startTime: null,
+            hintsUsed: 0
+        };
+        
+        // DOM元素
+        const elements = {
+            telegramLogin: document.getElementById('telegramLogin'),
+            gameContent: document.getElementById('gameContent'),
+            telegramLoginButton: document.getElementById('telegramLoginButton'),
+            userAvatar: document.getElementById('userAvatar'),
+            userName: document.getElementById('userName'),
+            userLevel: document.getElementById('userLevel'),
+            wanhuaCoins: document.getElementById('wanhuaCoins'),
+            checkInButton: document.getElementById('checkInButton'),
+            shareButton: document.getElementById('shareButton'),
+            claimRewardsButton: document.getElementById('claimRewardsButton'),
+            watchAdButton: document.getElementById('watchAdButton'),
+            leaderboardList: document.getElementById('leaderboardList'),
+            withdrawButton: document.getElementById('withdrawButton'),
+            withdrawAmount: document.getElementById('withdrawAmount'),
+            alipayAccount: document.getElementById('alipayAccount'),
+            realName: document.getElementById('realName'),
+            withdrawHistoryList: document.getElementById('withdrawHistoryList'),
+            levelModal: document.getElementById('levelModal'),
+            levelModalClose: document.getElementById('levelModalClose'),
+            levelModalTitle: document.getElementById('levelModalTitle'),
+            levelTypeContainer: document.getElementById('levelTypeContainer'),
+            levelDifficultyContainer: document.getElementById('levelDifficultyContainer'),
+            levelReward: document.getElementById('levelReward'),
+            levelDescription: document.getElementById('levelDescription'),
+            gameArea: document.getElementById('gameArea'),
+            hintButton: document.getElementById('hintButton'),
+            startLevelButton: document.getElementById('startLevelButton'),
+            notification: document.getElementById('notification'),
+            notificationTitle: document.getElementById('notificationTitle'),
+            notificationMessage: document.getElementById('notificationMessage'),
+            achievementPopup: document.getElementById('achievementPopup'),
+            achievementTitle: document.getElementById('achievementTitle'),
+            achievementDescription: document.getElementById('achievementDescription'),
+            achievementReward: document.getElementById('achievementReward'),
+            achievementClose: document.getElementById('achievementClose')
+        };
         
         // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 检查是否在Telegram WebApp环境中
-            checkTelegramWebApp();
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 检查是否已登录
+            const savedUser = localStorage.getItem('wanhua_user');
+            if (savedUser) {
+                try {
+                    gameState.user = JSON.parse(savedUser);
+                    await loadUserData();
+                    showGameContent();
+                } catch (error) {
+                    console.error('Failed to parse saved user:', error);
+                    localStorage.removeItem('wanhua_user');
+                }
+            }
             
             // 绑定事件
             bindEvents();
+            
+            // 设置Telegram登录
+            setupTelegramLogin();
         });
-        
-        // 检查是否在Telegram WebApp环境中
-        function checkTelegramWebApp() {
-            // 检查Telegram WebApp
-            try {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    isTelegramWebApp = true;
-                    webApp = window.Telegram.WebApp;
-                    webApp.ready();
-                    webApp.expand();
-                    
-                    // 设置主题颜色
-                    webApp.setHeaderColor('#ff7e5f');
-                    webApp.setBackgroundColor('#ffffff');
-                    
-                    // 设置主按钮
-                    webApp.MainButton.setText('开始游戏').show().onClick(function() {
-                        if (!currentUser) {
-                            // 自动登录
-                            autoLogin();
-                        } else {
-                            // 已经登录，切换到主页面
-                            showMainPage();
-                        }
-                    });
-                    
-                    // 隐藏登录按钮，显示主页面
-                    document.getElementById('loginPage').style.display = 'none';
-                    document.getElementById('mainPage').style.display = 'block';
-                    
-                    // 尝试自动登录
-                    autoLogin();
-                } else {
-                    // 不在Telegram中，显示登录页面
-                    isTelegramWebApp = false;
-                    document.getElementById('loginPage').style.display = 'flex';
-                    document.getElementById('mainPage').style.display = 'none';
-                }
-            } catch (e) {
-                console.error('Error checking Telegram WebApp:', e);
-                // 不在Telegram中，显示登录页面
-                isTelegramWebApp = false;
-                document.getElementById('loginPage').style.display = 'flex';
-                document.getElementById('mainPage').style.display = 'none';
-            }
-        }
-        
-        // 自动登录
-        function autoLogin() {
-            if (!isTelegramWebApp || !webApp) {
-                console.log('Not in Telegram WebApp environment');
-                return;
-            }
-            
-            const initData = webApp.initData;
-            
-            if (!initData) {
-                console.log('No init data available');
-                showToast('无法获取登录信息，请重试');
-                return;
-            }
-            
-            console.log('Attempting auto login with init data');
-            
-            // 发送用户数据到后端进行验证
-            fetch(`${API_BASE_URL}/auth`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(initData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Login response:', data);
-                if (data.success) {
-                    currentUser = data.user;
-                    sessionToken = data.session_token;
-                    localStorage.setItem('sessionToken', sessionToken);
-                    showMainPage();
-                    loadUserData();
-                    showToast('登录成功！');
-                    
-                    // 隐藏主按钮
-                    if (webApp) {
-                        webApp.MainButton.hide();
-                    }
-                } else {
-                    console.error('Login failed:', data.message);
-                    showToast('登录失败：' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error logging in:', error);
-                showToast('登录失败，请重试');
-            });
-        }
-        
-        // 检查登录状态
-        function checkLoginStatus() {
-            const savedSessionToken = localStorage.getItem('sessionToken');
-            
-            if (savedSessionToken && !isTelegramWebApp) {
-                // 验证会话
-                fetch(`${API_BASE_URL}/validate-session`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ session_token: savedSessionToken })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        currentUser = data.user;
-                        sessionToken = savedSessionToken;
-                        showMainPage();
-                        loadUserData();
-                    } else {
-                        if (!isTelegramWebApp) {
-                            showLoginPage();
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error validating session:', error);
-                    if (!isTelegramWebApp) {
-                        showLoginPage();
-                    }
-                });
-            }
-        }
-        
-        // 显示登录页面
-        function showLoginPage() {
-            if (isTelegramWebApp) {
-                // 在Telegram中，不显示登录页面，尝试自动登录
-                autoLogin();
-                return;
-            }
-            
-            document.getElementById('loginPage').style.display = 'flex';
-            document.getElementById('mainPage').style.display = 'none';
-        }
-        
-        // 显示主页面
-        function showMainPage() {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('mainPage').style.display = 'block';
-            
-            // 加载关卡
-            loadLevels();
-        }
         
         // 绑定事件
         function bindEvents() {
-            // 登录按钮
-            document.getElementById('loginBtn').addEventListener('click', function() {
-                // 使用Telegram登录
-                if (isTelegramWebApp && webApp) {
-                    const initData = webApp.initData;
-                    
-                    if (initData) {
-                        // 发送用户数据到后端进行验证
-                        fetch(`${API_BASE_URL}/auth`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(initData)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                currentUser = data.user;
-                                sessionToken = data.session_token;
-                                localStorage.setItem('sessionToken', sessionToken);
-                                showMainPage();
-                                loadUserData();
-                                showToast('登录成功！');
-                            } else {
-                                showToast('登录失败：' + data.message);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error logging in:', error);
-                            showToast('登录失败，请重试');
-                        });
-                    } else {
-                        showToast('无法获取用户信息，请重试');
-                    }
-                } else {
-                    showToast('请在Telegram内打开游戏');
-                }
+            // Telegram登录按钮
+            elements.telegramLoginButton.addEventListener('click', () => {
+                window.location.href = `https://t.me/${config.telegramBotUsername}`;
             });
             
-            // 底部导航
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    const page = this.getAttribute('data-page');
-                    switchPage(page);
+            // 游戏模式选择
+            document.querySelectorAll('.game-mode').forEach(mode => {
+                mode.addEventListener('click', () => {
+                    const modeType = mode.dataset.mode;
+                    startGameMode(modeType);
                 });
             });
             
-            // 返回按钮
-            document.getElementById('backBtn').addEventListener('click', function() {
-                document.getElementById('gamePage').style.display = 'none';
-                document.getElementById('mainPage').style.display = 'block';
-            });
-            
-            // 菜单按钮
-            document.getElementById('menuBtn').addEventListener('click', function() {
-                // 显示菜单
-                showMenu();
-            });
-            
-            document.getElementById('tasksMenuBtn').addEventListener('click', function() {
-                showMenu();
-            });
-            
-            document.getElementById('checkInMenuBtn').addEventListener('click', function() {
-                showMenu();
-            });
-            
-            document.getElementById('leaderboardMenuBtn').addEventListener('click', function() {
-                showMenu();
-            });
-            
-            document.getElementById('withdrawMenuBtn').addEventListener('click', function() {
-                showMenu();
-            });
-            
-            document.getElementById('achievementsMenuBtn').addEventListener('click', function() {
-                showMenu();
-            });
-            
             // 签到按钮
-            document.getElementById('checkInBtn').addEventListener('click', function() {
-                if (!currentUser) return;
+            elements.checkInButton.addEventListener('click', async () => {
+                if (!gameState.user) return;
                 
-                fetch(`${API_BASE_URL}/check-in`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionToken}`
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast(`签到成功！获得${data.coin_reward}万花币`);
-                        document.getElementById('checkInBtn').disabled = true;
-                        document.getElementById('checkInBtn').textContent = '已签到';
-                        document.getElementById('consecutiveDays').textContent = `已连续签到 ${data.consecutive_days} 天`;
-                        updateCoins(data.coin_reward);
-                        loadCheckInCalendar();
+                try {
+                    elements.checkInButton.disabled = true;
+                    elements.checkInButton.textContent = '签到中...';
+                    
+                    const response = await fetch(config.apiBaseUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'checkIn',
+                            userId: gameState.user.id
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('success', '签到成功', `获得 ${result.reward_coins} 万花币`);
+                        await loadUserData();
+                        
+                        if (result.is_weekly_bonus) {
+                            showNotification('success', '连续签到7天', '获得额外10万花币奖励！');
+                        }
                     } else {
-                        showToast(data.message);
+                        showNotification('info', '签到失败', result.message);
                     }
-                })
-                .catch(error => {
-                    console.error('Error checking in:', error);
-                    showToast('签到失败，请重试');
+                } catch (error) {
+                    console.error('Check in error:', error);
+                    showNotification('error', '签到失败', '请稍后再试');
+                } finally {
+                    elements.checkInButton.disabled = false;
+                    elements.checkInButton.textContent = '签到';
+                }
+            });
+            
+            // 分享按钮
+            elements.shareButton.addEventListener('click', async () => {
+                if (!gameState.user) return;
+                
+                try {
+                    const shareText = `我正在玩《万象谜题》，一款极具挑战性的创意解谜游戏，已经完成了${gameState.userData.game_progress.levels_completed}个关卡！快来挑战吧！`;
+                    const shareUrl = `https://t.me/${config.telegramBotUsername}?start=share_${gameState.user.id}`;
+                    
+                    if (navigator.share) {
+                        await navigator.share({
+                            title: '万象谜题',
+                            text: shareText,
+                            url: shareUrl
+                        });
+                    } else {
+                        // 复制到剪贴板
+                        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+                        showNotification('info', '已复制到剪贴板', '请粘贴并分享');
+                    }
+                    
+                    // 记录分享
+                    const response = await fetch(config.apiBaseUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'recordShare',
+                            userId: gameState.user.id,
+                            shareType: 'telegram',
+                            shareContent: shareText
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('success', '分享成功', `获得 ${result.reward_coins} 万花币`);
+                        await loadUserData();
+                    }
+                } catch (error) {
+                    console.error('Share error:', error);
+                    showNotification('error', '分享失败', '请稍后再试');
+                }
+            });
+            
+            // 观看广告按钮
+            elements.watchAdButton.addEventListener('click', async () => {
+                if (!gameState.user) return;
+                
+                try {
+                    elements.watchAdButton.disabled = true;
+                    elements.watchAdButton.textContent = '加载中...';
+                    
+                    // 模拟观看广告
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // 记录广告观看
+                    const response = await fetch(config.apiBaseUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'recordAdView',
+                            userId: gameState.user.id,
+                            adType: 'rewarded'
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('success', '广告观看完成', `获得 ${result.reward_coins} 万花币`);
+                        await loadUserData();
+                    }
+                } catch (error) {
+                    console.error('Watch ad error:', error);
+                    showNotification('error', '广告观看失败', '请稍后再试');
+                } finally {
+                    elements.watchAdButton.disabled = false;
+                    elements.watchAdButton.textContent = '观看广告 (+5万花币)';
+                }
+            });
+            
+            // 排行榜标签切换
+            document.querySelectorAll('.leaderboard-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.leaderboard-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const tabType = tab.dataset.tab;
+                    loadLeaderboard(tabType);
                 });
             });
             
             // 提现按钮
-            document.getElementById('submitWithdrawBtn').addEventListener('click', function() {
-                if (!currentUser) return;
+            elements.withdrawButton.addEventListener('click', async () => {
+                if (!gameState.user) return;
                 
-                const amount = parseInt(document.getElementById('withdrawAmount').value);
-                const alipayAccount = document.getElementById('alipayAccount').value.trim();
-                const realName = document.getElementById('realName').value.trim();
+                const amount = parseInt(elements.withdrawAmount.value);
+                const alipayAccount = elements.alipayAccount.value.trim();
+                const realName = elements.realName.value.trim();
                 
-                if (!amount || amount < 1000) {
-                    showToast('提现金额不能少于1000万花币');
+                if (!alipayAccount || !realName) {
+                    showNotification('error', '信息不完整', '请填写支付宝账号和真实姓名');
                     return;
                 }
                 
-                if (!alipayAccount) {
-                    showToast('请输入支付宝账号');
-                    return;
-                }
-                
-                if (!realName) {
-                    showToast('请输入真实姓名');
-                    return;
-                }
-                
-                fetch(`${API_BASE_URL}/withdraw`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionToken}`
-                    },
-                    body: JSON.stringify({
-                        amount,
-                        alipay_account: alipayAccount,
-                        real_name: realName
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast('提现申请已提交，请等待审核');
-                        document.getElementById('withdrawAmount').value = '';
-                        document.getElementById('alipayAccount').value = '';
-                        document.getElementById('realName').value = '';
-                        loadWithdrawRecords();
-                        updateCoins(-amount);
+                try {
+                    elements.withdrawButton.disabled = true;
+                    elements.withdrawButton.textContent = '提交中...';
+                    
+                    const response = await fetch(config.apiBaseUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'requestWithdrawal',
+                            userId: gameState.user.id,
+                            amount,
+                            alipayAccount,
+                            realName
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('success', '提现申请成功', result.message);
+                        elements.alipayAccount.value = '';
+                        elements.realName.value = '';
+                        await loadUserData();
+                        loadWithdrawHistory();
                     } else {
-                        showToast(data.message);
+                        showNotification('error', '提现申请失败', result.error || '请稍后再试');
                     }
-                })
-                .catch(error => {
-                    console.error('Error submitting withdrawal:', error);
-                    showToast('提现失败，请重试');
-                });
+                } catch (error) {
+                    console.error('Withdraw error:', error);
+                    showNotification('error', '提现申请失败', '请稍后再试');
+                } finally {
+                    elements.withdrawButton.disabled = false;
+                    elements.withdrawButton.textContent = '申请提现';
+                }
             });
             
-            // 游戏道具按钮
-            document.querySelectorAll('.game-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const itemType = this.getAttribute('data-item');
-                    useGameItem(itemType);
-                });
+            // 关卡模态框关闭按钮
+            elements.levelModalClose.addEventListener('click', () => {
+                elements.levelModal.style.display = 'none';
+                resetGame();
             });
             
-            // 模态框按钮
-            document.getElementById('cancelModalBtn').addEventListener('click', function() {
-                document.getElementById('noPlaysModal').style.display = 'none';
-            });
-            
-            document.getElementById('shareBtn').addEventListener('click', function() {
-                document.getElementById('noPlaysModal').style.display = 'none';
+            // 提示按钮
+            elements.hintButton.addEventListener('click', async () => {
+                if (!gameState.user || !gameState.currentLevel) return;
                 
-                if (isTelegramWebApp && webApp) {
-                    webApp.shareURL(`https://t.me/bjxcyouxiBot?start=share_${currentUser.id}`);
-                } else {
-                    showToast('请在Telegram内打开游戏');
-                }
-            });
-        }
-        
-        // 切换页面
-        function switchPage(page) {
-            // 隐藏所有页面
-            document.getElementById('mainPage').style.display = 'none';
-            document.getElementById('tasksPage').style.display = 'none';
-            document.getElementById('checkInPage').style.display = 'none';
-            document.getElementById('leaderboardPage').style.display = 'none';
-            document.getElementById('withdrawPage').style.display = 'none';
-            document.getElementById('achievementsPage').style.display = 'none';
-            
-            // 显示选中的页面
-            switch(page) {
-                case 'main':
-                    document.getElementById('mainPage').style.display = 'block';
-                    break;
-                case 'tasks':
-                    document.getElementById('tasksPage').style.display = 'block';
-                    loadTasks();
-                    break;
-                case 'checkin':
-                    document.getElementById('checkInPage').style.display = 'block';
-                    loadCheckInCalendar();
-                    break;
-                case 'leaderboard':
-                    document.getElementById('leaderboardPage').style.display = 'block';
-                    loadLeaderboard();
-                    break;
-                case 'withdraw':
-                    document.getElementById('withdrawPage').style.display = 'block';
-                    loadWithdrawRecords();
-                    break;
-                case 'achievements':
-                    document.getElementById('achievementsPage').style.display = 'block';
-                    loadAchievements();
-                    break;
-            }
-            
-            // 更新导航栏激活状态
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-                if (item.getAttribute('data-page') === page) {
-                    item.classList.add('active');
-                }
-            });
-        }
-        
-        // 显示菜单
-        function showMenu() {
-            if (isTelegramWebApp && webApp) {
-                webApp.showPopup({
-                    title: '菜单',
-                    message: '请选择操作',
-                    buttons: [
-                        { id: 'profile', text: '个人资料' },
-                        { id: 'achievements', text: '我的成就' },
-                        { id: 'help', text: '帮助' },
-                        { id: 'cancel', text: '取消' }
-                    ]
-                }, function(buttonId) {
-                    if (buttonId === 'profile') {
-                        showToast('个人资料功能开发中');
-                    } else if (buttonId === 'achievements') {
-                        switchPage('achievements');
-                    } else if (buttonId === 'help') {
-                        if (isTelegramWebApp && webApp) {
-                            webApp.openTelegramLink(`https://t.me/bjxcyouxiBot?start=help`);
-                        } else {
-                            window.open(`https://t.me/bjxcyouxiBot?start=help`, '_blank');
-                        }
+                try {
+                    if (gameState.userData.user.total_wanhua_coins < 3) {
+                        showNotification('error', '万花币不足', '获取提示需要3个万花币');
+                        return;
                     }
-                });
-            } else {
-                showToast('请在Telegram内打开游戏');
+                    
+                    // 使用提示
+                    gameState.hintsUsed++;
+                    showGameHint();
+                    
+                    // 扣除万花币
+                    const response = await fetch(config.apiBaseUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'useCoins',
+                            userId: gameState.user.id,
+                            amount: 3
+                        })
+                    });
+                    
+                    await loadUserData();
+                } catch (error) {
+                    console.error('Use hint error:', error);
+                    showNotification('error', '使用提示失败', '请稍后再试');
+                }
+            });
+            
+            // 开始关卡按钮
+            elements.startLevelButton.addEventListener('click', () => {
+                if (!gameState.currentLevel) return;
+                
+                if (elements.startLevelButton.textContent === '开始挑战') {
+                    startGameLevel();
+                } else if (elements.startLevelButton.textContent === '重新挑战') {
+                    resetGameLevel();
+                    startGameLevel();
+                } else if (elements.startLevelButton.textContent === '下一关') {
+                    elements.levelModal.style.display = 'none';
+                    startGameMode(gameState.currentLevel.type);
+                }
+            });
+            
+            // 成就弹窗关闭按钮
+            elements.achievementClose.addEventListener('click', () => {
+                elements.achievementPopup.classList.remove('show');
+            });
+        }
+        
+        // 设置Telegram登录
+        function setupTelegramLogin() {
+            // 检查URL参数中是否有Telegram登录数据
+            const urlParams = new URLSearchParams(window.location.search);
+            const tgData = urlParams.get('tg_data');
+            
+            if (tgData) {
+                try {
+                    const userData = JSON.parse(atob(tgData));
+                    if (userData.id) {
+                        // 保存用户数据
+                        gameState.user = userData;
+                        localStorage.setItem('wanhua_user', JSON.stringify(userData));
+                        
+                        // 加载用户数据
+                        loadUserData().then(() => {
+                            showGameContent();
+                            
+                            // 清理URL参数
+                            const newUrl = window.location.pathname;
+                            window.history.pushState({}, document.title, newUrl);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to parse Telegram data:', error);
+                }
             }
         }
         
         // 加载用户数据
-        function loadUserData() {
-            if (!currentUser || !sessionToken) return;
+        async function loadUserData() {
+            if (!gameState.user) return;
             
-            // 更新用户万花币
-            document.getElementById('userCoins').textContent = currentUser.coins;
-            document.getElementById('tasksUserCoins').textContent = currentUser.coins;
-            document.getElementById('checkInUserCoins').textContent = currentUser.coins;
-            document.getElementById('leaderboardUserCoins').textContent = currentUser.coins;
-            document.getElementById('withdrawUserCoins').textContent = currentUser.coins;
-            document.getElementById('achievementsUserCoins').textContent = currentUser.coins;
-            document.getElementById('currentBalance').textContent = `${currentUser.coins} 万花币`;
-            
-            // 获取最新用户数据
-            fetch(`${API_BASE_URL}/user`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${sessionToken}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    currentUser = data.user;
-                    
-                    // 更新用户万花币
-                    document.getElementById('userCoins').textContent = currentUser.coins;
-                    document.getElementById('tasksUserCoins').textContent = currentUser.coins;
-                    document.getElementById('checkInUserCoins').textContent = currentUser.coins;
-                    document.getElementById('leaderboardUserCoins').textContent = currentUser.coins;
-                    document.getElementById('withdrawUserCoins').textContent = currentUser.coins;
-                    document.getElementById('achievementsUserCoins').textContent = currentUser.coins;
-                    document.getElementById('currentBalance').textContent = `${currentUser.coins} 万花币`;
-                }
-            })
-            .catch(error => {
-                console.error('Error loading user data:', error);
-            });
-        }
-        
-        // 加载关卡
-        function loadLevels() {
-            if (!sessionToken) return;
-            
-            fetch(`${API_BASE_URL}/levels`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${sessionToken}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    levels = data.levels;
-                    renderLevelMap();
-                } else {
-                    showToast('加载关卡失败：' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error loading levels:', error);
-                showToast('加载关卡失败，请重试');
-            });
-        }
-        
-        // 渲染关卡地图
-        function renderLevelMap() {
-            const levelPath = document.getElementById('levelPath');
-            levelPath.innerHTML = '';
-            
-            // 计算关卡位置
-            const pathWidth = levelPath.offsetWidth;
-            const pathHeight = levelPath.offsetHeight;
-            
-            levels.forEach((level, index) => {
-                const levelNode = document.createElement('div');
-                levelNode.className = 'level-node';
-                levelNode.textContent = level.level_number;
-                
-                // 添加关卡状态
-                if (level.user_progress.is_completed) {
-                    levelNode.classList.add('completed');
-                } else if (index === 0 || levels[index - 1].user_progress.is_completed) {
-                    levelNode.classList.add('current');
-                } else {
-                    levelNode.classList.add('locked');
-                }
-                
-                // 添加星星
-                if (level.user_progress.stars > 0) {
-                    const starsContainer = document.createElement('div');
-                    starsContainer.className = 'level-stars';
-                    
-                    for (let i = 0; i < 3; i++) {
-                        const star = document.createElement('i');
-                        star.className = i < level.user_progress.stars ? 'fas fa-star' : 'far fa-star';
-                        starsContainer.appendChild(star);
-                    }
-                    
-                    levelNode.appendChild(starsContainer);
-                }
-                
-                // 设置位置
-                const angle = (index / levels.length) * Math.PI * 2;
-                const radius = Math.min(pathWidth, pathHeight) * 0.4;
-                const x = Math.cos(angle) * radius + pathWidth / 2 - 25;
-                const y = Math.sin(angle) * radius + pathHeight / 2 - 25;
-                
-                levelNode.style.left = `${x}px`;
-                levelNode.style.top = `${y}px`;
-                
-                // 添加点击事件
-                levelNode.addEventListener('click', function() {
-                    if (levelNode.classList.contains('locked')) {
-                        showToast('请先完成前一关');
-                    } else {
-                        startLevel(level.id);
-                    }
-                });
-                
-                levelPath.appendChild(levelNode);
-            });
-        }
-        
-        // 开始关卡
-        function startLevel(levelId) {
-            if (!sessionToken) return;
-            
-            // 检查游戏次数
-            fetch(`${API_BASE_URL}/user`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${sessionToken}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const remainingPlays = data.user.remaining_plays;
-                    
-                    if (remainingPlays.total <= 0) {
-                        // 显示游戏次数不足弹窗
-                        document.getElementById('noPlaysModal').style.display = 'flex';
-                        return;
-                    }
-                    
-                    // 使用游戏次数
-                    let playType = 'free';
-                    if (remainingPlays.free > 0) {
-                        playType = 'free';
-                    } else if (remainingPlays.ad > 0) {
-                        playType = 'ad';
-                    } else if (remainingPlays.share > 0) {
-                        playType = 'share';
-                    }
-                    
-                    fetch(`${API_BASE_URL}/use-play`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${sessionToken}`
-                        },
-                        body: JSON.stringify({ type: playType })
+            try {
+                const response = await fetch(config.apiBaseUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'getUserData',
+                        userId: gameState.user.id
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // 加载关卡数据
-                            loadLevelData(levelId);
-                        } else {
-                            showToast(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error using play:', error);
-                        showToast('使用游戏次数失败，请重试');
-                    });
-                } else {
-                    showToast('获取用户信息失败：' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error getting user info:', error);
-                showToast('获取用户信息失败，请重试');
-            });
-        }
-        
-        // 加载关卡数据
-        function loadLevelData(levelId) {
-            fetch(`${API_BASE_URL}/levels/${levelId}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${sessionToken}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    gameLevel = data.level;
-                    gameMoves = gameLevel.max_moves;
-                    gameScore = 0;
-                    gameTarget = gameLevel.target_score;
-                    
-                    // 更新游戏界面
-                    document.getElementById('gameTarget').textContent = gameTarget;
-                    document.getElementById('gameMoves').textContent = gameMoves;
-                    document.getElementById('gameScore').textContent = gameScore;
-                    
-                    // 初始化游戏棋盘
-                    initGameBoard();
-                    
-                    // 显示游戏页面
-                    document.getElementById('mainPage').style.display = 'none';
-                    document.getElementById('gamePage').style.display = 'block';
-                    
-                    // 开始游戏
-                    gameActive = true;
-                } else {
-                    showToast('加载关卡失败：' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error loading level data:', error);
-                showToast('加载关卡失败，请重试');
-            });
-        }
-        
-        // 初始化游戏棋盘
-        function initGameBoard() {
-            const boardElement = document.getElementById('gameBoard');
-            boardElement.innerHTML = '';
-            gameBoard = [];
-            
-            // 创建8x8的棋盘
-            for (let row = 0; row < 8; row++) {
-                gameBoard[row] = [];
-                for (let col = 0; col < 8; col++) {
-                    const tile = document.createElement('div');
-                    tile.className = 'tile';
-                    tile.dataset.row = row;
-                    tile.dataset.col = col;
-                    
-                    // 随机生成方块类型 (1-6)
-                    const type = Math.floor(Math.random() * 6) + 1;
-                    tile.classList.add(`type-${type}`);
-                    
-                    // 添加障碍物
-                    if (gameLevel.obstacles && gameLevel.obstacles.length > 0) {
-                        gameLevel.obstacles.forEach(obstacle => {
-                            if (obstacle.type === 'ice' && obstacle.positions && 
-                                obstacle.positions.some(pos => pos[0] === row && pos[1] === col)) {
-                                tile.classList.add('ice');
-                            } else if (obstacle.type === 'rope' && obstacle.positions && 
-                                obstacle.positions.some(pos => pos[0] === row && pos[1] === col)) {
-                                tile.classList.add('rope');
-                            } else if (obstacle.type === 'cage' && obstacle.positions && 
-                                obstacle.positions.some(pos => pos[0] === row && pos[1] === col)) {
-                                tile.classList.add('cage');
-                            } else if (obstacle.type === 'cloud' && obstacle.positions && 
-                                obstacle.positions.some(pos => pos[0] === row && pos[1] === col)) {
-                                tile.classList.add('cloud');
-                            }
-                        });
-                    }
-                    
-                    // 添加点击事件
-                    tile.addEventListener('click', function() {
-                        handleTileClick(row, col);
-                    });
-                    
-                    boardElement.appendChild(tile);
-                    gameBoard[row][col] = {
-                        type: type,
-                        element: tile,
-                        obstacle: tile.classList.contains('ice') ? 'ice' :
-                                 tile.classList.contains('rope') ? 'rope' :
-                                 tile.classList.contains('cage') ? 'cage' :
-                                 tile.classList.contains('cloud') ? 'cloud' :
-                                 tile.classList.contains('chocolate') ? 'chocolate' : null
-                    };
-                }
-            }
-            
-            // 添加巧克力障碍
-            if (gameLevel.obstacles && gameLevel.obstacles.length > 0) {
-                gameLevel.obstacles.forEach(obstacle => {
-                    if (obstacle.type === 'chocolate' && obstacle.count) {
-                        // 随机放置巧克力
-                        for (let i = 0; i < obstacle.count; i++) {
-                            let row, col;
-                            do {
-                                row = Math.floor(Math.random() * 8);
-                                col = Math.floor(Math.random() * 8);
-                            } while (gameBoard[row][col].obstacle);
-                            
-                            gameBoard[row][col].element.classList.add('chocolate');
-                            gameBoard[row][col].obstacle = 'chocolate';
-                        }
-                    }
                 });
-            }
-            
-            // 确保初始棋盘没有匹配
-            while (checkForMatches().length > 0) {
-                shuffleBoard();
+                
+                const userData = await response.json();
+                
+                if (userData.error) {
+                    throw new Error(userData.error);
+                }
+                
+                gameState.userData = userData;
+                
+                // 更新UI
+                updateUserInterface();
+                
+                // 加载排行榜
+                loadLeaderboard('monthly');
+                
+                // 加载提现记录
+                loadWithdrawHistory();
+                
+                // 检查签到状态
+                updateCheckInButton();
+                
+                // 检查成就
+                checkAchievements();
+            } catch (error) {
+                console.error('Load user data error:', error);
+                showNotification('error', '加载用户数据失败', '请稍后再试');
             }
         }
         
-        // 处理方块点击
-        function handleTileClick(row, col) {
-            if (!gameActive) return;
+        // 更新用户界面
+        function updateUserInterface() {
+            if (!gameState.userData) return;
             
-            const tile = gameBoard[row][col];
+            const { user } = gameState.userData;
             
-            if (selectedTile === null) {
-                // 选择第一个方块
-                selectedTile = { row, col };
-                tile.element.classList.add('selected');
+            // 更新用户信息
+            elements.userAvatar.textContent = (user.username || user.first_name || 'U').charAt(0).toUpperCase();
+            elements.userName.textContent = user.username || user.first_name || '用户';
+            elements.userLevel.textContent = user.current_level;
+            elements.wanhuaCoins.textContent = user.total_wanhua_coins;
+            
+            // 更新提现选项
+            updateWithdrawOptions();
+        }
+        
+        // 更新签到按钮
+        function updateCheckInButton() {
+            if (!gameState.userData) return;
+            
+            if (gameState.userData.today_check_in) {
+                elements.checkInButton.textContent = '已签到';
+                elements.checkInButton.disabled = true;
             } else {
-                // 选择第二个方块
-                const firstTile = gameBoard[selectedTile.row][selectedTile.col];
-                
-                // 检查是否相邻
-                const isAdjacent = 
-                    (Math.abs(selectedTile.row - row) === 1 && selectedTile.col === col) ||
-                    (Math.abs(selectedTile.col - col) === 1 && selectedTile.row === row);
-                
-                if (isAdjacent) {
-                    // 交换方块
-                    swapTiles(selectedTile.row, selectedTile.col, row, col);
-                }
-                
-                // 取消选择
-                firstTile.element.classList.remove('selected');
-                selectedTile = null;
+                elements.checkInButton.textContent = '签到';
+                elements.checkInButton.disabled = false;
             }
         }
         
-        // 交换方块
-        function swapTiles(row1, col1, row2, col2) {
-            // 交换数据
-            const temp = gameBoard[row1][col1];
-            gameBoard[row1][col1] = gameBoard[row2][col2];
-            gameBoard[row2][col2] = temp;
+        // 更新提现选项
+        function updateWithdrawOptions() {
+            if (!gameState.userData) return;
             
-            // 更新DOM
-            updateTileDisplay(row1, col1);
-            updateTileDisplay(row2, col2);
+            const coins = gameState.userData.user.total_wanhua_coins;
             
-            // 检查是否有匹配
-            const matches = checkForMatches();
-            
-            if (matches.length > 0) {
-                // 有匹配，处理消除
-                gameMoves--;
-                document.getElementById('gameMoves').textContent = gameMoves;
+            // 更新提现选项
+            const options = elements.withdrawAmount.options;
+            for (let i = 0; i < options.length; i++) {
+                const amount = parseInt(options[i].value);
+                const requiredCoins = amount * 100;
                 
-                // 处理匹配
-                processMatches(matches);
-                
-                // 检查游戏是否结束
-                checkGameEnd();
-            } else {
-                // 没有匹配，交换回来
-                setTimeout(() => {
-                    const temp = gameBoard[row1][col1];
-                    gameBoard[row1][col1] = gameBoard[row2][col2];
-                    gameBoard[row2][col2] = temp;
-                    
-                    updateTileDisplay(row1, col1);
-                    updateTileDisplay(row2, col2);
-                }, 300);
-            }
-        }
-        
-        // 更新方块显示
-        function updateTileDisplay(row, col) {
-            const tile = gameBoard[row][col];
-            const element = tile.element;
-            
-            // 清除所有类型类
-            element.className = 'tile';
-            element.dataset.row = row;
-            element.dataset.col = col;
-            
-            // 添加类型类
-            if (tile.type) {
-                element.classList.add(`type-${tile.type}`);
-            }
-            
-            // 添加特殊元素类
-            if (tile.special) {
-                element.classList.add(tile.special);
-            }
-            
-            // 添加障碍物类
-            if (tile.obstacle) {
-                element.classList.add(tile.obstacle);
-            }
-        }
-        
-        // 检查匹配
-        function checkForMatches() {
-            const matches = [];
-            
-            // 检查水平匹配
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 6; col++) {
-                    const type = gameBoard[row][col].type;
-                    
-                    if (type && gameBoard[row][col + 1].type === type && gameBoard[row][col + 2].type === type) {
-                        const match = [{ row, col }, { row, col: col + 1 }, { row, col: col + 2 }];
-                        
-                        // 检查是否有更多相同的
-                        let k = col + 3;
-                        while (k < 8 && gameBoard[row][k].type === type) {
-                            match.push({ row, col: k });
-                            k++;
-                        }
-                        
-                        matches.push(match);
-                        col = k - 1; // 跳过已匹配的
-                    }
-                }
-            }
-            
-            // 检查垂直匹配
-            for (let col = 0; col < 8; col++) {
-                for (let row = 0; row < 6; row++) {
-                    const type = gameBoard[row][col].type;
-                    
-                    if (type && gameBoard[row + 1][col].type === type && gameBoard[row + 2][col].type === type) {
-                        const match = [{ row, col }, { row: row + 1, col }, { row: row + 2, col }];
-                        
-                        // 检查是否有更多相同的
-                        let k = row + 3;
-                        while (k < 8 && gameBoard[k][col].type === type) {
-                            match.push({ row: k, col });
-                            k++;
-                        }
-                        
-                        matches.push(match);
-                        row = k - 1; // 跳过已匹配的
-                    }
-                }
-            }
-            
-            return matches;
-        }
-        
-        // 处理匹配
-        function processMatches(matches) {
-            // 标记要消除的方块
-            const toRemove = new Set();
-            
-            matches.forEach(match => {
-                match.forEach(pos => {
-                    toRemove.add(`${pos.row},${pos.col}`);
-                });
-            });
-            
-            // 检查特殊元素形成
-            matches.forEach(match => {
-                if (match.length === 4) {
-                    // 形成火箭
-                    const centerPos = match[1]; // 取第二个位置作为中心
-                    const row = centerPos.row;
-                    const col = centerPos.col;
-                    
-                    // 判断是水平还是垂直
-                    const isHorizontal = match.every(pos => pos.row === row);
-                    
-                    gameBoard[row][col].special = isHorizontal ? 'rocket-h' : 'rocket-v';
-                    updateTileDisplay(row, col);
-                } else if (match.length === 5) {
-                    // 形成彩虹球
-                    const centerPos = match[2]; // 取第三个位置作为中心
-                    const row = centerPos.row;
-                    const col = centerPos.col;
-                    
-                    gameBoard[row][col].special = 'rainbow';
-                    updateTileDisplay(row, col);
-                } else if (match.length >= 3 && (match[0].row !== match[1].row || match[1].row !== match[2].row) && 
-                          (match[0].col !== match[1].col || match[1].col !== match[2].col)) {
-                    // 形成炸弹 (T型或L型)
-                    const centerPos = match[1]; // 取第二个位置作为中心
-                    const row = centerPos.row;
-                    const col = centerPos.col;
-                    
-                    gameBoard[row][col].special = 'bomb';
-                    updateTileDisplay(row, col);
-                }
-            });
-            
-            // 计算分数
-            let score = 0;
-            toRemove.forEach(posStr => {
-                const [row, col] = posStr.split(',').map(Number);
-                score += 10;
-                
-                // 处理障碍物
-                if (gameBoard[row][col].obstacle) {
-                    score += 5;
-                    
-                    // 减少障碍物生命值
-                    if (gameBoard[row][col].obstacle === 'ice' || 
-                        gameBoard[row][col].obstacle === 'rope' || 
-                        gameBoard[row][col].obstacle === 'cage') {
-                        // 这些障碍物需要两次消除
-                        gameBoard[row][col].obstacle = null;
-                        updateTileDisplay(row, col);
-                    } else {
-                        // 其他障碍物直接消除
-                        gameBoard[row][col].obstacle = null;
-                        updateTileDisplay(row, col);
-                    }
-                }
-            });
-            
-            // 更新分数
-            gameScore += score;
-            document.getElementById('gameScore').textContent = gameScore;
-            
-            // 消除方块
-            toRemove.forEach(posStr => {
-                const [row, col] = posStr.split(',').map(Number);
-                
-                // 如果不是特殊元素，则消除
-                if (!gameBoard[row][col].special) {
-                    gameBoard[row][col].type = null;
-                    updateTileDisplay(row, col);
-                }
-            });
-            
-            // 方块下落
-            setTimeout(() => {
-                dropTiles();
-                
-                // 填充新方块
-                setTimeout(() => {
-                    fillBoard();
-                    
-                    // 再次检查匹配
-                    setTimeout(() => {
-                        const newMatches = checkForMatches();
-                        if (newMatches.length > 0) {
-                            processMatches(newMatches);
-                        } else {
-                            // 检查游戏是否结束
-                            checkGameEnd();
-                        }
-                    }, 300);
-                }, 300);
-            }, 300);
-        }
-        
-        // 方块下落
-        function dropTiles() {
-            for (let col = 0; col < 8; col++) {
-                let emptyRow = 7;
-                
-                for (let row = 7; row >= 0; row--) {
-                    if (gameBoard[row][col].type !== null) {
-                        if (row !== emptyRow) {
-                            // 移动方块
-                            gameBoard[emptyRow][col] = gameBoard[row][col];
-                            gameBoard[row][col] = { type: null, element: gameBoard[row][col].element };
-                            updateTileDisplay(emptyRow, col);
-                            updateTileDisplay(row, col);
-                        }
-                        emptyRow--;
-                    }
-                }
-            }
-        }
-        
-        // 填充新方块
-        function fillBoard() {
-            for (let col = 0; col < 8; col++) {
-                for (let row = 0; row < 8; row++) {
-                    if (gameBoard[row][col].type === null) {
-                        // 随机生成新方块
-                        const type = Math.floor(Math.random() * 6) + 1;
-                        gameBoard[row][col].type = type;
-                        updateTileDisplay(row, col);
-                    }
-                }
-            }
-        }
-        
-        // 洗牌
-        function shuffleBoard() {
-            const types = [];
-            
-            // 收集所有类型
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    if (gameBoard[row][col].type !== null) {
-                        types.push(gameBoard[row][col].type);
-                    }
-                }
-            }
-            
-            // 随机打乱
-            for (let i = types.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [types[i], types[j]] = [types[j], types[i]];
-            }
-            
-            // 重新分配
-            let index = 0;
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    if (gameBoard[row][col].type !== null) {
-                        gameBoard[row][col].type = types[index++];
-                        updateTileDisplay(row, col);
-                    }
-                }
-            }
-        }
-        
-        // 检查游戏是否结束
-        function checkGameEnd() {
-            if (gameMoves <= 0) {
-                // 步数用完，游戏结束
-                gameActive = false;
-                
-                // 计算星级
-                let stars = 0;
-                if (gameScore >= gameLevel.target_score) {
-                    stars = 1;
-                    if (gameScore >= gameLevel.target_score * 1.5) {
-                        stars = 2;
-                    }
-                    if (gameScore >= gameLevel.target_score * 2) {
-                        stars = 3;
-                    }
-                }
-                
-                // 显示结果
-                setTimeout(() => {
-                    showGameResult(stars);
-                }, 500);
-            } else if (gameScore >= gameLevel.target_score) {
-                // 达到目标分数，可以提前结束
-                // 这里不自动结束，让玩家继续玩
-            }
-        }
-        
-        // 显示游戏结果
-        function showGameResult(stars) {
-            if (isTelegramWebApp && webApp) {
-                let message = `游戏结束！\n\n得分：${gameScore}\n目标：${gameLevel.target_score}\n星级：`;
-                
-                for (let i = 0; i < 3; i++) {
-                    message += i < stars ? '⭐' : '☆';
-                }
-                
-                webApp.showPopup({
-                    title: '游戏结果',
-                    message: message,
-                    buttons: [
-                        { id: 'ok', text: '确定' }
-                    ]
-                }, function(buttonId) {
-                    // 提交游戏结果
-                    submitGameResult(stars);
-                });
-            } else {
-                let message = `游戏结束！\n\n得分：${gameScore}\n目标：${gameLevel.target_score}\n星级：`;
-                
-                for (let i = 0; i < 3; i++) {
-                    message += i < stars ? '⭐' : '☆';
-                }
-                
-                if (confirm(message + '\n\n点击确定返回主页面')) {
-                    // 提交游戏结果
-                    submitGameResult(stars);
-                }
-            }
-        }
-        
-        // 提交游戏结果
-        function submitGameResult(stars) {
-            fetch(`${API_BASE_URL}/levels/${gameLevel.id}/complete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionToken}`
-                },
-                body: JSON.stringify({
-                    score: gameScore,
-                    stars: stars
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    if (data.coin_reward > 0) {
-                        showToast(`恭喜获得${data.coin_reward}万花币奖励！`);
-                        updateCoins(data.coin_reward);
-                    }
-                    
-                    // 返回主页面
-                    document.getElementById('gamePage').style.display = 'none';
-                    document.getElementById('mainPage').style.display = 'block';
-                    
-                    // 重新加载关卡
-                    loadLevels();
+                if (coins < requiredCoins) {
+                    options[i].disabled = true;
+                    options[i].textContent = `${amount}元 (万花币不足)`;
                 } else {
-                    showToast('提交结果失败：' + data.message);
+                    options[i].disabled = false;
+                    options[i].textContent = `${amount}元 (${requiredCoins}万花币)`;
                 }
-            })
-            .catch(error => {
-                console.error('Error submitting game result:', error);
-                showToast('提交结果失败，请重试');
-            });
-        }
-        
-        // 使用游戏道具
-        function useGameItem(itemType) {
-            if (!gameActive) return;
-            
-            switch(itemType) {
-                case 'refresh':
-                    // 刷新棋盘
-                    shuffleBoard();
-                    gameMoves--;
-                    document.getElementById('gameMoves').textContent = gameMoves;
-                    checkGameEnd();
-                    break;
-                    
-                case 'hammer':
-                    // 锤子：消除单个方块
-                    if (selectedTile) {
-                        const row = selectedTile.row;
-                        const col = selectedTile.col;
-                        
-                        // 消除方块
-                        gameBoard[row][col].type = null;
-                        updateTileDisplay(row, col);
-                        
-                        // 增加分数
-                        gameScore += 20;
-                        document.getElementById('gameScore').textContent = gameScore;
-                        
-                        // 方块下落
-                        setTimeout(() => {
-                            dropTiles();
-                            
-                            // 填充新方块
-                            setTimeout(() => {
-                                fillBoard();
-                                
-                                // 再次检查匹配
-                                setTimeout(() => {
-                                    const newMatches = checkForMatches();
-                                    if (newMatches.length > 0) {
-                                        processMatches(newMatches);
-                                    } else {
-                                        // 检查游戏是否结束
-                                        checkGameEnd();
-                                    }
-                                }, 300);
-                            }, 300);
-                        }, 300);
-                        
-                        // 减少步数
-                        gameMoves--;
-                        document.getElementById('gameMoves').textContent = gameMoves;
-                        checkGameEnd();
-                        
-                        // 取消选择
-                        selectedTile = null;
-                    } else {
-                        showToast('请先选择一个方块');
-                    }
-                    break;
-                    
-                case 'bomb':
-                    // 炸弹：消除3x3区域
-                    if (selectedTile) {
-                        const row = selectedTile.row;
-                        const col = selectedTile.col;
-                        
-                        // 消除3x3区域
-                        for (let r = Math.max(0, row - 1); r <= Math.min(7, row + 1); r++) {
-                            for (let c = Math.max(0, col - 1); c <= Math.min(7, col + 1); c++) {
-                                gameBoard[r][c].type = null;
-                                updateTileDisplay(r, c);
-                                
-                                // 增加分数
-                                gameScore += 20;
-                            }
-                        }
-                        
-                        document.getElementById('gameScore').textContent = gameScore;
-                        
-                        // 方块下落
-                        setTimeout(() => {
-                            dropTiles();
-                            
-                            // 填充新方块
-                            setTimeout(() => {
-                                fillBoard();
-                                
-                                // 再次检查匹配
-                                setTimeout(() => {
-                                    const newMatches = checkForMatches();
-                                    if (newMatches.length > 0) {
-                                        processMatches(newMatches);
-                                    } else {
-                                        // 检查游戏是否结束
-                                        checkGameEnd();
-                                    }
-                                }, 300);
-                            }, 300);
-                        }, 300);
-                        
-                        // 减少步数
-                        gameMoves--;
-                        document.getElementById('gameMoves').textContent = gameMoves;
-                        checkGameEnd();
-                        
-                        // 取消选择
-                        selectedTile = null;
-                    } else {
-                        showToast('请先选择一个方块');
-                    }
-                    break;
-                    
-                case 'color':
-                    // 变色：将一个方块变为特殊元素
-                    if (selectedTile) {
-                        const row = selectedTile.row;
-                        const col = selectedTile.col;
-                        
-                        // 随机变为一种特殊元素
-                        const specialTypes = ['rocket-h', 'rocket-v', 'bomb', 'rainbow'];
-                        const specialType = specialTypes[Math.floor(Math.random() * specialTypes.length)];
-                        
-                        gameBoard[row][col].special = specialType;
-                        updateTileDisplay(row, col);
-                        
-                        // 减少步数
-                        gameMoves--;
-                        document.getElementById('gameMoves').textContent = gameMoves;
-                        checkGameEnd();
-                        
-                        // 取消选择
-                        selectedTile = null;
-                    } else {
-                        showToast('请先选择一个方块');
-                    }
-                    break;
             }
-        }
-        
-        // 加载任务
-        function loadTasks() {
-            if (!sessionToken) return;
-            
-            fetch(`${API_BASE_URL}/daily-tasks`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${sessionToken}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    renderTasks(data.tasks);
-                } else {
-                    showToast('加载任务失败：' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error loading tasks:', error);
-                showToast('加载任务失败，请重试');
-            });
-        }
-        
-        // 渲染任务列表
-        function renderTasks(tasks) {
-            const tasksList = document.getElementById('tasksList');
-            tasksList.innerHTML = '';
-            
-            tasks.forEach(task => {
-                const taskCard = document.createElement('div');
-                taskCard.className = 'task-card';
-                
-                const progress = Math.min(100, (task.progress / task.target_value) * 100);
-                
-                taskCard.innerHTML = `
-                    <div class="task-header">
-                        <div class="task-title">${task.name}</div>
-                        <div class="task-reward">
-                            <i class="fas fa-coins"></i>
-                            <span>${task.coin_reward}</span>
-                        </div>
-                    </div>
-                    <div class="task-description">${task.description}</div>
-                    <div class="task-progress">
-                        <div class="task-progress-bar" style="width: ${progress}%"></div>
-                    </div>
-                    <div class="task-progress-text ${task.is_completed ? 'task-completed' : ''}">
-                        ${task.is_completed ? '已完成' : `${task.progress}/${task.target_value}`}
-                    </div>
-                `;
-                
-                tasksList.appendChild(taskCard);
-            });
-        }
-        
-        // 加载签到日历
-        function loadCheckInCalendar() {
-            if (!sessionToken) return;
-            
-            // 获取当前日期
-            const today = new Date();
-            const currentMonth = today.getMonth();
-            const currentYear = today.getFullYear();
-            const currentDate = today.getDate();
-            
-            // 获取当月第一天
-            const firstDay = new Date(currentYear, currentMonth, 1);
-            const firstDayOfWeek = firstDay.getDay();
-            
-            // 获取当月天数
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            
-            // 生成日历
-            const calendar = document.getElementById('checkInCalendar');
-            calendar.innerHTML = '';
-            
-            // 添加星期标题
-            const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-            weekDays.forEach(day => {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'check-in-day';
-                dayElement.innerHTML = `<div class="check-in-day-number">${day}</div>`;
-                calendar.appendChild(dayElement);
-            });
-            
-            // 添加空白日期
-            for (let i = 0; i < firstDayOfWeek; i++) {
-                const emptyDay = document.createElement('div');
-                emptyDay.className = 'check-in-day';
-                calendar.appendChild(emptyDay);
-            }
-            
-            // 添加日期
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'check-in-day';
-                
-                // 计算签到奖励
-                let reward = 10;
-                if (day === currentDate) {
-                    dayElement.classList.add('today');
-                }
-                
-                if (day < currentDate) {
-                    // 过去的日期，检查是否已签到
-                    // 这里简化处理，实际应该从后端获取签到记录
-                    const isSignedIn = Math.random() > 0.3; // 模拟已签到
-                    
-                    if (isSignedIn) {
-                        dayElement.classList.add('checked');
-                    }
-                }
-                
-                dayElement.innerHTML = `
-                    <div class="check-in-day-number">${day}</div>
-                    <div class="check-in-day-reward">${reward}</div>
-                `;
-                
-                calendar.appendChild(dayElement);
-            }
-            
-            // 检查今日是否已签到
-            fetch(`${API_BASE_URL}/user`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${sessionToken}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // 检查今日是否已签到
-                    const todayStr = today.toISOString().split('T')[0];
-                    const lastCheckIn = data.user.last_check_in;
-                    
-                    if (lastCheckIn === todayStr) {
-                        document.getElementById('checkInBtn').disabled = true;
-                        document.getElementById('checkInBtn').textContent = '已签到';
-                    }
-                    
-                    // 更新连续签到天数
-                    document.getElementById('consecutiveDays').textContent = `已连续签到 ${data.user.consecutive_check_in_days} 天`;
-                }
-            })
-            .catch(error => {
-                console.error('Error checking check-in status:', error);
-            });
         }
         
         // 加载排行榜
-        function loadLeaderboard() {
-            if (!sessionToken) return;
-            
-            fetch(`${API_BASE_URL}/leaderboard`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${sessionToken}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    renderLeaderboard(data.leaderboard, data.user_rank);
-                } else {
-                    showToast('加载排行榜失败：' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error loading leaderboard:', error);
-                showToast('加载排行榜失败，请重试');
-            });
-        }
-        
-        // 渲染排行榜
-        function renderLeaderboard(leaderboard, userRank) {
-            const leaderboardList = document.getElementById('leaderboardList');
-            leaderboardList.innerHTML = '';
-            
-            leaderboard.forEach((entry, index) => {
-                const listItem = document.createElement('li');
-                listItem.className = 'leaderboard-item';
-                
-                const avatar = entry.users.photo_url || `https://ui-avatars.com/api/?name=${entry.users.first_name}&background=ff7e5f&color=fff`;
-                
-                listItem.innerHTML = `
-                    <div class="leaderboard-rank">${entry.rank}</div>
-                    <img class="leaderboard-avatar" src="${avatar}" alt="${entry.users.first_name}">
-                    <div class="leaderboard-info">
-                        <div class="leaderboard-name">${entry.users.first_name || entry.users.username}</div>
-                        <div class="leaderboard-coins">
-                            <i class="fas fa-coins"></i>
-                            <span>${entry.coins_earned}</span>
+        async function loadLeaderboard(type) {
+            try {
+                // 显示加载状态
+                elements.leaderboardList.innerHTML = `
+                    <li class="leaderboard-item">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <div>加载中...</div>
                         </div>
-                    </div>
+                    </li>
                 `;
                 
-                leaderboardList.appendChild(listItem);
-            });
-            
-            // 更新用户排名
-            const userRankElement = document.getElementById('userRank');
-            if (userRank) {
-                userRankElement.querySelector('.user-rank-info').textContent = `第 ${userRank} 名`;
-            } else {
-                userRankElement.querySelector('.user-rank-info').textContent = '未上榜';
+                // 模拟API调用
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 模拟排行榜数据
+                const leaderboardData = [
+                    { rank: 1, name: '玩家一', score: 15000, levels: 50 },
+                    { rank: 2, name: '玩家二', score: 12000, levels: 45 },
+                    { rank: 3, name: '玩家三', score: 10000, levels: 40 },
+                    { rank: 4, name: '玩家四', score: 8000, levels: 35 },
+                    { rank: 5, name: '玩家五', score: 6000, levels: 30 },
+                    { rank: 6, name: '玩家六', score: 5000, levels: 28 },
+                    { rank: 7, name: '玩家七', score: 4000, levels: 25 },
+                    { rank: 8, name: '玩家八', score: 3000, levels: 22 },
+                    { rank: 9, name: '玩家九', score: 2000, levels: 20 },
+                    { rank: 10, name: '玩家十', score: 1000, levels: 18 }
+                ];
+                
+                // 更新排行榜UI
+                elements.leaderboardList.innerHTML = '';
+                
+                leaderboardData.forEach(player => {
+                    const li = document.createElement('li');
+                    li.className = 'leaderboard-item';
+                    
+                    const rankClass = player.rank <= 3 ? `top-${player.rank}` : '';
+                    
+                    li.innerHTML = `
+                        <div class="leaderboard-rank ${rankClass}">${player.rank}</div>
+                        <div class="leaderboard-avatar">${player.name.charAt(0)}</div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">${player.name}</div>
+                            <div class="leaderboard-score">完成关卡: ${player.levels} | 得分: ${player.score}</div>
+                        </div>
+                    `;
+                    
+                    elements.leaderboardList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Load leaderboard error:', error);
+                elements.leaderboardList.innerHTML = `
+                    <li class="leaderboard-item">
+                        <div>加载排行榜失败</div>
+                    </li>
+                `;
             }
         }
         
         // 加载提现记录
-        function loadWithdrawRecords() {
-            if (!sessionToken) return;
+        async function loadWithdrawHistory() {
+            if (!gameState.userData) return;
             
-            fetch(`${API_BASE_URL}/withdrawals`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${sessionToken}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    renderWithdrawRecords(data.withdrawals);
-                } else {
-                    showToast('加载提现记录失败：' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error loading withdrawal records:', error);
-                showToast('加载提现记录失败，请重试');
-            });
-        }
-        
-        // 渲染提现记录
-        function renderWithdrawRecords(withdrawals) {
-            const recordsList = document.getElementById('withdrawRecordsList');
-            recordsList.innerHTML = '';
-            
-            if (withdrawals.length === 0) {
-                recordsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #757575;">暂无提现记录</div>';
-                return;
-            }
-            
-            withdrawals.forEach(withdrawal => {
-                const record = document.createElement('div');
-                record.className = 'withdraw-record';
+            try {
+                const withdrawals = gameState.userData.withdrawals || [];
                 
-                const date = new Date(withdrawal.created_at);
-                const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-                
-                let statusText = '';
-                let statusClass = '';
-                
-                switch(withdrawal.status) {
-                    case 'pending':
-                        statusText = '审核中';
-                        statusClass = 'status-pending';
-                        break;
-                    case 'approved':
-                        statusText = '已通过';
-                        statusClass = 'status-approved';
-                        break;
-                    case 'completed':
-                        statusText = '已完成';
-                        statusClass = 'status-completed';
-                        break;
-                    case 'rejected':
-                        statusText = '已拒绝';
-                        statusClass = 'status-rejected';
-                        break;
+                if (withdrawals.length === 0) {
+                    elements.withdrawHistoryList.innerHTML = `
+                        <li class="withdraw-history-item">
+                            <div>暂无提现记录</div>
+                        </li>
+                    `;
+                    return;
                 }
                 
-                record.innerHTML = `
-                    <div class="withdraw-record-info">
-                        <div class="withdraw-record-amount">${withdrawal.amount} 万花币 (${withdrawal.amount / 1000000} 元)</div>
-                        <div class="withdraw-record-date">${dateStr}</div>
-                    </div>
-                    <div class="withdraw-record-status ${statusClass}">${statusText}</div>
+                elements.withdrawHistoryList.innerHTML = '';
+                
+                withdrawals.forEach(withdrawal => {
+                    const li = document.createElement('li');
+                    li.className = 'withdraw-history-item';
+                    
+                    const statusClass = `status-${withdrawal.status}`;
+                    const statusText = withdrawal.status === 'pending' ? '审核中' : 
+                                      withdrawal.status === 'approved' ? '已通过' : '已拒绝';
+                    
+                    li.innerHTML = `
+                        <div>${withdrawal.amount}元 - ${withdrawal.created_at}</div>
+                        <div class="withdraw-history-status ${statusClass}">${statusText}</div>
+                    `;
+                    
+                    elements.withdrawHistoryList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Load withdrawal history error:', error);
+                elements.withdrawHistoryList.innerHTML = `
+                    <li class="withdraw-history-item">
+                        <div>加载提现记录失败</div>
+                    </li>
                 `;
-                
-                recordsList.appendChild(record);
-            });
-        }
-        
-        // 加载成就
-        function loadAchievements() {
-            if (!sessionToken) return;
-            
-            fetch(`${API_BASE_URL}/achievements`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${sessionToken}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    renderAchievements(data.achievements);
-                } else {
-                    showToast('加载成就失败：' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error loading achievements:', error);
-                showToast('加载成就失败，请重试');
-            });
-        }
-        
-        // 渲染成就
-        function renderAchievements(achievements) {
-            const achievementsList = document.getElementById('achievementsList');
-            achievementsList.innerHTML = '';
-            
-            achievements.forEach(achievement => {
-                const achievementCard = document.createElement('div');
-                achievementCard.className = 'achievement-card';
-                
-                const iconClass = achievement.is_unlocked ? 'achievement-icon unlocked' : 'achievement-icon';
-                const icon = achievement.icon_url || 'fas fa-trophy';
-                
-                achievementCard.innerHTML = `
-                    <div class="achievement-header">
-                        <div class="${iconClass}">
-                            <i class="${icon}"></i>
-                        </div>
-                        <div class="achievement-info">
-                            <div class="achievement-title">${achievement.name}</div>
-                            <div class="achievement-description">${achievement.description}</div>
-                        </div>
-                    </div>
-                    <div class="achievement-reward">
-                        <i class="fas fa-coins"></i>
-                        <span>${achievement.coin_reward}</span>
-                    </div>
-                `;
-                
-                achievementsList.appendChild(achievementCard);
-            });
-        }
-        
-        // 更新万花币
-        function updateCoins(amount) {
-            if (currentUser) {
-                currentUser.coins += amount;
-                
-                // 更新显示
-                document.getElementById('userCoins').textContent = currentUser.coins;
-                document.getElementById('tasksUserCoins').textContent = currentUser.coins;
-                document.getElementById('checkInUserCoins').textContent = currentUser.coins;
-                document.getElementById('leaderboardUserCoins').textContent = currentUser.coins;
-                document.getElementById('withdrawUserCoins').textContent = currentUser.coins;
-                document.getElementById('achievementsUserCoins').textContent = currentUser.coins;
-                document.getElementById('currentBalance').textContent = `${currentUser.coins} 万花币`;
             }
         }
         
-        // 显示提示
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
+        // 检查成就
+        function checkAchievements() {
+            if (!gameState.userData) return;
             
+            const unclaimedAchievements = gameState.userData.achievements.filter(a => !a.claimed);
+            
+            if (unclaimedAchievements.length > 0) {
+                // 显示第一个未领取的成就
+                const achievement = unclaimedAchievements[0];
+                showAchievementPopup(achievement);
+                
+                // 标记为已领取
+                achievement.claimed = true;
+            }
+        }
+        
+        // 显示成就弹窗
+        function showAchievementPopup(achievement) {
+            elements.achievementTitle.textContent = achievement.achievement.name;
+            elements.achievementDescription.textContent = achievement.achievement.description;
+            elements.achievementReward.textContent = achievement.achievement.reward_coins;
+            elements.achievementPopup.classList.add('show');
+        }
+        
+        // 显示游戏内容
+        function showGameContent() {
+            elements.telegramLogin.style.display = 'none';
+            elements.gameContent.style.display = 'block';
+        }
+        
+        // 开始游戏模式
+        function startGameMode(mode) {
+            // 模拟根据模式获取关卡
+            const levelNumber = gameState.userData.user.current_level;
+            
+            // 显示关卡模态框
+            showLevelModal(levelNumber);
+        }
+        
+        // 显示关卡模态框
+        async function showLevelModal(levelNumber) {
+            try {
+                // 重置游戏状态
+                resetGame();
+                
+                // 显示加载状态
+                elements.levelModal.style.display = 'flex';
+                elements.levelModalTitle.textContent = `关卡 ${levelNumber}`;
+                elements.levelTypeContainer.innerHTML = '<div class="loading">加载中...</div>';
+                elements.levelDifficultyContainer.innerHTML = '';
+                elements.levelReward.textContent = '0';
+                elements.levelDescription.textContent = '';
+                elements.gameArea.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>加载中...</div>
+                    </div>
+                `;
+                
+                // 模拟获取关卡数据
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 模拟关卡数据
+                const levelData = {
+                    id: `level_${levelNumber}`,
+                    level_number: levelNumber,
+                    name: `关卡 ${levelNumber}`,
+                    type: ['puzzle', 'strategy', 'action', 'memory'][Math.floor(Math.random() * 4)],
+                    difficulty: Math.floor(Math.random() * 5) + 1,
+                    description: '这是一个示例关卡描述，实际游戏中会根据关卡类型和难度显示不同的描述。',
+                    reward_coins: Math.floor(Math.random() * 20) + 1,
+                    config: {}
+                };
+                
+                gameState.currentLevel = levelData;
+                
+                // 更新关卡信息
+                const typeClass = `type-${levelData.type}`;
+                const typeName = config.levels[levelData.type].name;
+                
+                elements.levelTypeContainer.innerHTML = `
+                    <span class="level-type ${typeClass}">${typeName}</span>
+                `;
+                
+                // 更新难度星级
+                elements.levelDifficultyContainer.innerHTML = '';
+                for (let i = 0; i < 5; i++) {
+                    const star = document.createElement('i');
+                    star.className = 'fas fa-star difficulty-star';
+                    if (i < levelData.difficulty) {
+                        star.style.color = '#ffd700';
+                    } else {
+                        star.style.color = '#ddd';
+                    }
+                    elements.levelDifficultyContainer.appendChild(star);
+                }
+                
+                elements.levelReward.textContent = levelData.reward_coins;
+                elements.levelDescription.textContent = levelData.description;
+                
+                // 初始化游戏区域
+                initGameArea(levelData);
+            } catch (error) {
+                console.error('Show level modal error:', error);
+                showNotification('error', '加载关卡失败', '请稍后再试');
+                elements.levelModal.style.display = 'none';
+            }
+        }
+        
+        // 初始化游戏区域
+        function initGameArea(levelData) {
+            elements.gameArea.innerHTML = '';
+            
+            // 根据关卡类型初始化不同的游戏
+            switch (levelData.type) {
+                case 'puzzle':
+                    initPuzzleGame(levelData);
+                    break;
+                case 'strategy':
+                    initStrategyGame(levelData);
+                    break;
+                case 'action':
+                    initActionGame(levelData);
+                    break;
+                case 'memory':
+                    initMemoryGame(levelData);
+                    break;
+                default:
+                    elements.gameArea.innerHTML = '<div>未知关卡类型</div>';
+            }
+        }
+        
+        // 初始化解谜游戏
+        function initPuzzleGame(levelData) {
+            const gameContainer = document.createElement('div');
+            gameContainer.style.width = '100%';
+            gameContainer.style.height = '100%';
+            gameContainer.style.display = 'flex';
+            gameContainer.style.flexDirection = 'column';
+            gameContainer.style.alignItems = 'center';
+            gameContainer.style.justifyContent = 'center';
+            
+            const puzzleTitle = document.createElement('h3');
+            puzzleTitle.textContent = '图形拼接谜题';
+            puzzleTitle.style.marginBottom = '20px';
+            gameContainer.appendChild(puzzleTitle);
+            
+            const puzzleContainer = document.createElement('div');
+            puzzleContainer.style.width = '300px';
+            puzzleContainer.style.height = '300px';
+            puzzleContainer.style.border = '2px dashed #ccc';
+            puzzleContainer.style.borderRadius = '10px';
+            puzzleContainer.style.position = 'relative';
+            puzzleContainer.style.marginBottom = '20px';
+            
+            // 创建目标图形
+            const targetShape = document.createElement('div');
+            targetShape.style.width = '150px';
+            targetShape.style.height = '150px';
+            targetShape.style.backgroundColor = 'rgba(102, 126, 234, 0.2)';
+            targetShape.style.border = '2px solid #667eea';
+            targetShape.style.position = 'absolute';
+            targetShape.style.top = '50%';
+            targetShape.style.left = '50%';
+            targetShape.style.transform = 'translate(-50%, -50%)';
+            puzzleContainer.appendChild(targetShape);
+            
+            // 创建拼图碎片
+            const piecesContainer = document.createElement('div');
+            piecesContainer.style.display = 'flex';
+            piecesContainer.style.flexWrap = 'wrap';
+            piecesContainer.style.justifyContent = 'center';
+            piecesContainer.style.maxWidth = '300px';
+            
+            const pieceCount = Math.min(levelData.difficulty + 2, 6);
+            for (let i = 0; i < pieceCount; i++) {
+                const piece = document.createElement('div');
+                piece.style.width = '60px';
+                piece.style.height = '60px';
+                piece.style.backgroundColor = `hsl(${i * 60}, 70%, 80%)`;
+                piece.style.border = '1px solid #667eea';
+                piece.style.borderRadius = '5px';
+                piece.style.margin = '5px';
+                piece.style.cursor = 'pointer';
+                piece.dataset.pieceId = i;
+                
+                piece.addEventListener('click', () => {
+                    piece.style.display = 'none';
+                    checkPuzzleComplete();
+                });
+                
+                piecesContainer.appendChild(piece);
+            }
+            
+            gameContainer.appendChild(puzzleContainer);
+            gameContainer.appendChild(piecesContainer);
+            elements.gameArea.appendChild(gameContainer);
+        }
+        
+        // 检查拼图是否完成
+        function checkPuzzleComplete() {
+            const pieces = elements.gameArea.querySelectorAll('[data-piece-id]');
+            const visiblePieces = Array.from(pieces).filter(piece => piece.style.display !== 'none');
+            
+            if (visiblePieces.length === 0) {
+                // 拼图完成
+                completeGameLevel();
+            }
+        }
+        
+        // 初始化策略游戏
+        function initStrategyGame(levelData) {
+            const gameContainer = document.createElement('div');
+            gameContainer.style.width = '100%';
+            gameContainer.style.height = '100%';
+            gameContainer.style.display = 'flex';
+            gameContainer.style.flexDirection = 'column';
+            gameContainer.style.alignItems = 'center';
+            gameContainer.style.justifyContent = 'center';
+            
+            const strategyTitle = document.createElement('h3');
+            strategyTitle.textContent = '资源分配策略';
+            strategyTitle.style.marginBottom = '20px';
+            gameContainer.appendChild(strategyTitle);
+            
+            const resourcesContainer = document.createElement('div');
+            resourcesContainer.style.width = '100%';
+            resourcesContainer.style.maxWidth = '400px';
+            resourcesContainer.style.marginBottom = '20px';
+            
+            const totalEnergy = 10;
+            const energyDisplay = document.createElement('div');
+            energyDisplay.textContent = `总能量: ${totalEnergy}`;
+            energyDisplay.style.fontSize = '1.2rem';
+            energyDisplay.style.fontWeight = 'bold';
+            energyDisplay.style.marginBottom = '15px';
+            energyDisplay.style.textAlign = 'center';
+            resourcesContainer.appendChild(energyDisplay);
+            
+            const devicesContainer = document.createElement('div');
+            
+            const deviceCount = Math.min(levelData.difficulty + 1, 4);
+            const devices = [];
+            
+            for (let i = 0; i < deviceCount; i++) {
+                const deviceContainer = document.createElement('div');
+                deviceContainer.style.display = 'flex';
+                deviceContainer.style.alignItems = 'center';
+                deviceContainer.style.marginBottom = '10px';
+                
+                const deviceName = document.createElement('div');
+                deviceName.textContent = `设备 ${i + 1}`;
+                deviceName.style.width = '80px';
+                deviceContainer.appendChild(deviceName);
+                
+                const energyInput = document.createElement('input');
+                energyInput.type = 'number';
+                energyInput.min = '0';
+                energyInput.max = '10';
+                energyInput.value = '0';
+                energyInput.style.width = '60px';
+                energyInput.style.margin = '0 10px';
+                energyInput.dataset.deviceId = i;
+                
+                energyInput.addEventListener('input', () => {
+                    updateEnergyAllocation();
+                });
+                
+                deviceContainer.appendChild(energyInput);
+                
+                const energyLabel = document.createElement('div');
+                energyLabel.textContent = '能量';
+                deviceContainer.appendChild(energyLabel);
+                
+                devicesContainer.appendChild(deviceContainer);
+                
+                devices.push({
+                    id: i,
+                    input: energyInput,
+                    required: Math.floor(Math.random() * 3) + 2
+                });
+            }
+            
+            resourcesContainer.appendChild(devicesContainer);
+            
+            const remainingEnergy = document.createElement('div');
+            remainingEnergy.textContent = `剩余能量: ${totalEnergy}`;
+            remainingEnergy.style.fontSize = '1rem';
+            remainingEnergy.style.marginTop = '10px';
+            remainingEnergy.style.textAlign = 'center';
+            resourcesContainer.appendChild(remainingEnergy);
+            
+            const checkButton = document.createElement('button');
+            checkButton.textContent = '检查分配';
+            checkButton.style.padding = '8px 15px';
+            checkButton.style.backgroundColor = '#667eea';
+            checkButton.style.color = 'white';
+            checkButton.style.border = 'none';
+            checkButton.style.borderRadius = '5px';
+            checkButton.style.cursor = 'pointer';
+            checkButton.style.marginTop = '15px';
+            
+            checkButton.addEventListener('click', () => {
+                checkStrategyComplete(devices, totalEnergy);
+            });
+            
+            resourcesContainer.appendChild(checkButton);
+            
+            gameContainer.appendChild(resourcesContainer);
+            elements.gameArea.appendChild(gameContainer);
+            
+            // 更新能量分配函数
+            window.updateEnergyAllocation = () => {
+                let allocatedEnergy = 0;
+                devices.forEach(device => {
+                    allocatedEnergy += parseInt(device.input.value) || 0;
+                });
+                
+                const remaining = totalEnergy - allocatedEnergy;
+                remainingEnergy.textContent = `剩余能量: ${remaining}`;
+                
+                if (remaining < 0) {
+                    remainingEnergy.style.color = 'red';
+                } else {
+                    remainingEnergy.style.color = 'black';
+                }
+            };
+        }
+        
+        // 检查策略游戏是否完成
+        function checkStrategyComplete(devices, totalEnergy) {
+            let allocatedEnergy = 0;
+            let satisfiedDevices = 0;
+            
+            devices.forEach(device => {
+                const energy = parseInt(device.input.value) || 0;
+                allocatedEnergy += energy;
+                
+                if (energy >= device.required) {
+                    satisfiedDevices++;
+                }
+            });
+            
+            if (allocatedEnergy <= totalEnergy && satisfiedDevices >= Math.ceil(devices.length / 2)) {
+                // 策略完成
+                completeGameLevel();
+            } else {
+                showNotification('info', '分配不合理', '请重新分配能量，确保至少一半设备满足要求且不超过总能量');
+            }
+        }
+        
+        // 初始化动作游戏
+        function initActionGame(levelData) {
+            const gameContainer = document.createElement('div');
+            gameContainer.style.width = '100%';
+            gameContainer.style.height = '100%';
+            gameContainer.style.display = 'flex';
+            gameContainer.style.flexDirection = 'column';
+            gameContainer.style.alignItems = 'center';
+            gameContainer.style.justifyContent = 'center';
+            
+            const actionTitle = document.createElement('h3');
+            actionTitle.textContent = '精准点击挑战';
+            actionTitle.style.marginBottom = '20px';
+            gameContainer.appendChild(actionTitle);
+            
+            const gameBoard = document.createElement('div');
+            gameBoard.style.width = '300px';
+            gameBoard.style.height = '300px';
+            gameBoard.style.border = '2px solid #667eea';
+            gameBoard.style.borderRadius = '10px';
+            gameBoard.style.position = 'relative';
+            gameBoard.style.marginBottom = '20px';
+            gameBoard.style.backgroundColor = '#f8f9fa';
+            
+            const scoreDisplay = document.createElement('div');
+            scoreDisplay.textContent = '得分: 0/5';
+            scoreDisplay.style.fontSize = '1.2rem';
+            scoreDisplay.style.fontWeight = 'bold';
+            scoreDisplay.style.marginBottom = '10px';
+            gameContainer.appendChild(scoreDisplay);
+            
+            const timerDisplay = document.createElement('div');
+            timerDisplay.textContent = '时间: 30秒';
+            timerDisplay.style.fontSize = '1rem';
+            timerDisplay.style.marginBottom = '20px';
+            gameContainer.appendChild(timerDisplay);
+            
+            let score = 0;
+            let timeLeft = 30;
+            let gameActive = false;
+            let targets = [];
+            
+            const startButton = document.createElement('button');
+            startButton.textContent = '开始挑战';
+            startButton.style.padding = '10px 20px';
+            startButton.style.backgroundColor = '#667eea';
+            startButton.style.color = 'white';
+            startButton.style.border = 'none';
+            startButton.style.borderRadius = '5px';
+            startButton.style.cursor = 'pointer';
+            
+            startButton.addEventListener('click', () => {
+                if (gameActive) return;
+                
+                // 重置游戏状态
+                score = 0;
+                timeLeft = 30;
+                gameActive = true;
+                scoreDisplay.textContent = '得分: 0/5';
+                timerDisplay.textContent = '时间: 30秒';
+                startButton.textContent = '游戏中...';
+                startButton.disabled = true;
+                
+                // 清除现有目标
+                targets.forEach(target => target.remove());
+                targets = [];
+                
+                // 开始计时器
+                const timer = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.textContent = `时间: ${timeLeft}秒`;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        endActionGame(score >= 5);
+                    }
+                }, 1000);
+                
+                // 创建目标
+                const createTarget = () => {
+                    if (!gameActive) return;
+                    
+                    const target = document.createElement('div');
+                    target.style.width = '40px';
+                    target.style.height = '40px';
+                    target.style.backgroundColor = '#ff6b6b';
+                    target.style.borderRadius = '50%';
+                    target.style.position = 'absolute';
+                    target.style.cursor = 'pointer';
+                    
+                    // 随机位置
+                    const maxX = gameBoard.offsetWidth - 40;
+                    const maxY = gameBoard.offsetHeight - 40;
+                    target.style.left = `${Math.random() * maxX}px`;
+                    target.style.top = `${Math.random() * maxY}px`;
+                    
+                    target.addEventListener('click', () => {
+                        score++;
+                        scoreDisplay.textContent = `得分: ${score}/5`;
+                        target.remove();
+                        
+                        if (score >= 5) {
+                            endActionGame(true);
+                        }
+                    });
+                    
+                    gameBoard.appendChild(target);
+                    targets.push(target);
+                    
+                    // 目标自动消失
+                    setTimeout(() => {
+                        if (target.parentNode) {
+                            target.remove();
+                            const index = targets.indexOf(target);
+                            if (index > -1) {
+                                targets.splice(index, 1);
+                            }
+                        }
+                    }, 2000);
+                };
+                
+                // 定期创建目标
+                const targetInterval = setInterval(() => {
+                    if (!gameActive) {
+                        clearInterval(targetInterval);
+                        return;
+                    }
+                    createTarget();
+                }, 1000);
+                
+                // 立即创建第一个目标
+                createTarget();
+                
+                // 结束游戏函数
+                window.endActionGame = (success) => {
+                    gameActive = false;
+                    clearInterval(timer);
+                    clearInterval(targetInterval);
+                    
+                    // 清除所有目标
+                    targets.forEach(target => target.remove());
+                    targets = [];
+                    
+                    startButton.textContent = '开始挑战';
+                    startButton.disabled = false;
+                    
+                    if (success) {
+                        completeGameLevel();
+                    } else {
+                        showNotification('info', '挑战失败', '请在30秒内点击5个目标');
+                    }
+                };
+            });
+            
+            gameContainer.appendChild(gameBoard);
+            gameContainer.appendChild(startButton);
+            elements.gameArea.appendChild(gameContainer);
+        }
+        
+        // 初始化记忆游戏
+        function initMemoryGame(levelData) {
+            const gameContainer = document.createElement('div');
+            gameContainer.style.width = '100%';
+            gameContainer.style.height = '100%';
+            gameContainer.style.display = 'flex';
+            gameContainer.style.flexDirection = 'column';
+            gameContainer.style.alignItems = 'center';
+            gameContainer.style.justifyContent = 'center';
+            
+            const memoryTitle = document.createElement('h3');
+            memoryTitle.textContent = '数字记忆挑战';
+            memoryTitle.style.marginBottom = '20px';
+            gameContainer.appendChild(memoryTitle);
+            
+            const sequenceDisplay = document.createElement('div');
+            sequenceDisplay.style.fontSize = '2rem';
+            sequenceDisplay.style.fontWeight = 'bold';
+            sequenceDisplay.style.marginBottom = '20px';
+            sequenceDisplay.style.minHeight = '50px';
+            gameContainer.appendChild(sequenceDisplay);
+            
+            const inputContainer = document.createElement('div');
+            inputContainer.style.marginBottom = '20px';
+            
+            const sequenceInput = document.createElement('input');
+            sequenceInput.type = 'text';
+            sequenceInput.placeholder = '请输入记住的数字序列';
+            sequenceInput.style.padding = '10px';
+            sequenceInput.style.border = '1px solid #ddd';
+            sequenceInput.style.borderRadius = '5px';
+            sequenceInput.style.fontSize = '1rem';
+            sequenceInput.style.width = '250px';
+            inputContainer.appendChild(sequenceInput);
+            
+            gameContainer.appendChild(inputContainer);
+            
+            const checkButton = document.createElement('button');
+            checkButton.textContent = '检查答案';
+            checkButton.style.padding = '10px 20px';
+            checkButton.style.backgroundColor = '#667eea';
+            checkButton.style.color = 'white';
+            checkButton.style.border = 'none';
+            checkButton.style.borderRadius = '5px';
+            checkButton.style.cursor = 'pointer';
+            checkButton.style.marginBottom = '20px';
+            
+            gameContainer.appendChild(checkButton);
+            
+            const startButton = document.createElement('button');
+            startButton.textContent = '开始记忆';
+            startButton.style.padding = '10px 20px';
+            startButton.style.backgroundColor = '#28a745';
+            startButton.style.color = 'white';
+            startButton.style.border = 'none';
+            startButton.style.borderRadius = '5px';
+            startButton.style.cursor = 'pointer';
+            
+            let sequence = '';
+            let showingSequence = false;
+            
+            startButton.addEventListener('click', () => {
+                if (showingSequence) return;
+                
+                // 生成随机序列
+                const sequenceLength = Math.min(levelData.difficulty + 2, 6);
+                sequence = '';
+                for (let i = 0; i < sequenceLength; i++) {
+                    sequence += Math.floor(Math.random() * 10);
+                }
+                
+                // 显示序列
+                showingSequence = true;
+                sequenceDisplay.textContent = sequence;
+                sequenceInput.value = '';
+                sequenceInput.disabled = true;
+                checkButton.disabled = true;
+                startButton.disabled = true;
+                
+                // 3秒后隐藏序列
+                setTimeout(() => {
+                    sequenceDisplay.textContent = '';
+                    sequenceInput.disabled = false;
+                    checkButton.disabled = false;
+                    startButton.disabled = false;
+                    showingSequence = false;
+                }, 3000);
+            });
+            
+            checkButton.addEventListener('click', () => {
+                if (sequenceInput.value === sequence) {
+                    completeGameLevel();
+                } else {
+                    showNotification('info', '记忆错误', '请重新尝试');
+                }
+            });
+            
+            gameContainer.appendChild(startButton);
+            elements.gameArea.appendChild(gameContainer);
+        }
+        
+        // 开始游戏关卡
+        function startGameLevel() {
+            if (!gameState.currentLevel) return;
+            
+            // 更新按钮状态
+            elements.startLevelButton.textContent = '游戏中...';
+            elements.startLevelButton.disabled = true;
+            elements.hintButton.disabled = false;
+            
+            // 记录开始时间
+            gameState.startTime = Date.now();
+            
+            // 根据关卡类型开始游戏
+            switch (gameState.currentLevel.type) {
+                case 'puzzle':
+                    // 拼图游戏已在初始化时设置好事件监听
+                    break;
+                case 'strategy':
+                    // 策略游戏已在初始化时设置好事件监听
+                    break;
+                case 'action':
+                    // 动作游戏需要手动触发开始
+                    if (window.startActionGame) {
+                        window.startActionGame();
+                    }
+                    break;
+                case 'memory':
+                    // 记忆游戏需要手动触发开始
+                    if (window.startMemoryGame) {
+                        window.startMemoryGame();
+                    }
+                    break;
+            }
+        }
+        
+        // 完成游戏关卡
+        async function completeGameLevel() {
+            if (!gameState.currentLevel || !gameState.user) return;
+            
+            try {
+                // 计算完成时间
+                const completionTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+                
+                // 更新按钮状态
+                elements.startLevelButton.textContent = '完成中...';
+                elements.startLevelButton.disabled = true;
+                
+                // 调用API完成关卡
+                const response = await fetch(config.apiBaseUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'completeLevel',
+                        userId: gameState.user.id,
+                        levelId: gameState.currentLevel.id,
+                        completionTime,
+                        hintsUsed: gameState.hintsUsed
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 显示成功消息
+                    elements.gameArea.innerHTML = `
+                        <div style="text-align: center;">
+                            <i class="fas fa-check-circle" style="font-size: 4rem; color: #28a745; margin-bottom: 20px;"></i>
+                            <h3>关卡完成！</h3>
+                            <p>用时: ${completionTime}秒</p>
+                            <p>获得: ${result.reward_coins} 万花币</p>
+                        </div>
+                    `;
+                    
+                    // 更新按钮状态
+                    elements.startLevelButton.textContent = '下一关';
+                    elements.startLevelButton.disabled = false;
+                    
+                    // 更新用户数据
+                    await loadUserData();
+                } else {
+                    throw new Error(result.error || '完成关卡失败');
+                }
+            } catch (error) {
+                console.error('Complete level error:', error);
+                showNotification('error', '完成关卡失败', '请稍后再试');
+                
+                // 更新按钮状态
+                elements.startLevelButton.textContent = '重新挑战';
+                elements.startLevelButton.disabled = false;
+            }
+        }
+        
+        // 重置游戏
+        function resetGame() {
+            gameState.currentLevel = null;
+            gameState.startTime = null;
+            gameState.hintsUsed = 0;
+            
+            if (gameState.gameTimer) {
+                clearInterval(gameState.gameTimer);
+                gameState.gameTimer = null;
+            }
+        }
+        
+        // 重置游戏关卡
+        function resetGameLevel() {
+            gameState.startTime = null;
+            gameState.hintsUsed = 0;
+            
+            if (gameState.gameTimer) {
+                clearInterval(gameState.gameTimer);
+                gameState.gameTimer = null;
+            }
+            
+            // 重新初始化游戏区域
+            if (gameState.currentLevel) {
+                initGameArea(gameState.currentLevel);
+            }
+        }
+        
+        // 显示游戏提示
+        function showGameHint() {
+            if (!gameState.currentLevel) return;
+            
+            let hintText = '';
+            
+            switch (gameState.currentLevel.type) {
+                case 'puzzle':
+                    hintText = '提示：点击所有拼图碎片，将它们全部隐藏即可完成拼图。';
+                    break;
+                case 'strategy':
+                    hintText = '提示：合理分配能量，确保至少一半设备满足其最低能量需求。';
+                    break;
+                case 'action':
+                    hintText = '提示：快速点击出现的红色目标，在30秒内点击5个目标即可完成挑战。';
+                    break;
+                case 'memory':
+                    hintText = '提示：仔细记住显示的数字序列，3秒后输入正确的序列。';
+                    break;
+            }
+            
+            showNotification('info', '游戏提示', hintText);
+        }
+        
+        // 显示通知
+        function showNotification(type, title, message) {
+            elements.notification.className = `notification ${type}`;
+            elements.notificationTitle.textContent = title;
+            elements.notificationMessage.textContent = message;
+            elements.notification.classList.add('show');
+            
+            // 3秒后自动隐藏
             setTimeout(() => {
-                toast.classList.remove('show');
+                elements.notification.classList.remove('show');
             }, 3000);
         }
     </script>
