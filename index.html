@@ -1300,49 +1300,109 @@
                 tg.expand();
                 
                 // 获取用户信息
-                const user = tg.initDataUnsafe.user;
+                const userData = getTelegramUserData();
                 
-                if (user) {
+                if (userData) {
                     // 获取或创建用户
-                    await fetchUser(user.id);
+                    const user = await fetchUser(userData.id);
                     
-                    // 初始化界面
-                    await loadMainScreen();
-                    
-                    // 设置事件监听器
-                    setupEventListeners();
+                    if (user) {
+                        currentUser = user;
+                        
+                        // 初始化界面
+                        await loadMainScreen();
+                        
+                        // 设置事件监听器
+                        setupEventListeners();
+                    }
                 }
             } else {
                 // 不在Telegram环境中，使用测试账号
-                await fetchUser(123456789);
+                const userData = getTelegramUserData();
                 
-                // 初始化界面
-                await loadMainScreen();
-                
-                // 设置事件监听器
-                setupEventListeners();
+                if (userData) {
+                    const user = await fetchUser(userData.id);
+                    
+                    if (user) {
+                        currentUser = user;
+                        
+                        // 初始化界面
+                        await loadMainScreen();
+                        
+                        // 设置事件监听器
+                        setupEventListeners();
+                    }
+                }
             }
         }
         
         // 获取用户信息
         async function fetchUser(telegramId) {
             try {
+                // 首先尝试获取用户信息
                 const response = await fetch(`${API_BASE_URL}/api/user?telegram_id=${telegramId}`);
-                const data = await response.json();
                 
-                if (data.error) {
-                    // 用户不存在，显示错误
-                    showToast('用户不存在，请先在Telegram中启动游戏');
+                if (response.status === 404) {
+                    // 用户不存在，创建新用户
+                    const userData = getTelegramUserData();
+                    
+                    if (!userData) {
+                        showToast('无法获取用户信息');
+                        return null;
+                    }
+                    
+                    const createResponse = await fetch(`${API_BASE_URL}/api/user/create-or-get`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            telegram_id: userData.id,
+                            username: userData.username,
+                            first_name: userData.first_name,
+                            last_name: userData.last_name
+                        })
+                    });
+                    
+                    if (!createResponse.ok) {
+                        const errorData = await createResponse.json();
+                        showToast(errorData.error || '创建用户失败');
+                        return null;
+                    }
+                    
+                    const newUser = await createResponse.json();
+                    return newUser;
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    showToast(errorData.error || '获取用户信息失败');
                     return null;
                 }
                 
-                currentUser = data;
-                return data;
+                const user = await response.json();
+                return user;
             } catch (error) {
                 console.error('Error fetching user:', error);
                 showToast('获取用户信息失败');
                 return null;
             }
+        }
+        
+        // 获取Telegram用户数据
+        function getTelegramUserData() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                return tg.initDataUnsafe.user;
+            }
+            
+            // 不在Telegram环境中，返回测试用户
+            return {
+                id: 123456789,
+                first_name: 'Test',
+                last_name: 'User',
+                username: 'testuser'
+            };
         }
         
         // 加载主界面
@@ -2273,7 +2333,7 @@
             if (window.Telegram && window.Telegram.WebApp) {
                 const tg = window.Telegram.WebApp;
                 
-                tg.shareURL(`https://t.me/${BOT_USERNAME}?start=ref_${currentUser.telegram_id}`);
+                tg.shareURL(`https://t.me/bjxcwhljiluBot?start=ref_${currentUser.telegram_id}`);
                 
                 // 模拟分享成功，增加游戏次数
                 setTimeout(async () => {
