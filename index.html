@@ -25,9 +25,94 @@
             padding: 10px;
         }
         
+        /* 入口页面样式 */
+        .entry-screen {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .entry-logo {
+            width: 120px;
+            height: 120px;
+            background-color: #ff6b6b;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .entry-logo i {
+            font-size: 60px;
+            color: white;
+        }
+        
+        .entry-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+        
+        .entry-message {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .entry-button {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .entry-button:hover {
+            background-color: #ff5252;
+            transform: scale(1.05);
+        }
+        
+        .entry-button i {
+            margin-right: 10px;
+        }
+        
+        .entry-qr {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .entry-qr img {
+            width: 150px;
+            height: 150px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .entry-qr-text {
+            font-size: 14px;
+            color: #666;
+        }
+        
         /* 主界面样式 */
         .main-screen {
-            display: flex;
+            display: none;
             flex-direction: column;
             min-height: 100vh;
         }
@@ -1024,6 +1109,22 @@
 </head>
 <body>
     <div class="container">
+        <!-- 入口页面 -->
+        <div class="entry-screen" id="entryScreen">
+            <div class="entry-logo">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <h1 class="entry-title">万花楼消消乐</h1>
+            <p class="entry-message">请通过Telegram机器人进入游戏</p>
+            <button class="entry-button" onclick="openTelegramBot()">
+                <i class="fab fa-telegram"></i> 打开Telegram机器人
+            </button>
+            <div class="entry-qr">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://t.me/bjxcwhljiluBot" alt="Telegram机器人二维码">
+                <p class="entry-qr-text">扫描二维码或搜索 @bjxcwhljiluBot</p>
+            </div>
+        </div>
+        
         <!-- 主界面 -->
         <div class="main-screen" id="mainScreen">
             <div class="header">
@@ -1238,6 +1339,7 @@
     <script>
         // 全局变量
         const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev';
+        const BOT_USERNAME = 'bjxcwhljiluBot';
         let currentUser = null;
         let currentLevel = null;
         let gameBoard = [];
@@ -1258,31 +1360,72 @@
         ];
         
         // 初始化
-        document.addEventListener('DOMContentLoaded', async function() {
-            // 从URL获取用户ID
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否通过Telegram进入
             const urlParams = new URLSearchParams(window.location.search);
             const userId = urlParams.get('user_id');
             
             if (!userId) {
-                alert('请通过Telegram进入游戏');
-                return;
+                // 显示入口页面
+                document.getElementById('entryScreen').style.display = 'flex';
+            } else {
+                // 直接进入游戏
+                initGame(userId);
             }
-            
-            // 获取用户信息
-            await loadUserInfo(userId);
-            
-            // 加载关卡
-            await loadLevels();
-            
-            // 加载每日任务
-            await loadDailyTasks();
-            
-            // 加载成就
-            await loadAchievements();
-            
-            // 初始化签到日历
-            initCheckinCalendar();
         });
+        
+        // 打开Telegram机器人
+        function openTelegramBot() {
+            // 检查是否在Telegram应用内
+            if (window.Telegram && window.Telegram.WebApp) {
+                // 在Telegram应用内，可以直接打开机器人
+                window.open(`https://t.me/${BOT_USERNAME}`, '_blank');
+            } else {
+                // 不在Telegram应用内，尝试打开Telegram应用
+                const telegramUrl = `tg://resolve?domain=${BOT_USERNAME}`;
+                
+                // 尝试打开Telegram应用
+                window.open(telegramUrl, '_blank');
+                
+                // 如果无法打开，则打开网页版
+                setTimeout(() => {
+                    window.open(`https://t.me/${BOT_USERNAME}`, '_blank');
+                }, 500);
+            }
+        }
+        
+        // 初始化游戏
+        async function initGame(userId) {
+            try {
+                showLoader();
+                
+                // 隐藏入口页面
+                document.getElementById('entryScreen').style.display = 'none';
+                
+                // 获取用户信息
+                await loadUserInfo(userId);
+                
+                // 加载关卡
+                await loadLevels();
+                
+                // 加载每日任务
+                await loadDailyTasks();
+                
+                // 加载成就
+                await loadAchievements();
+                
+                // 初始化签到日历
+                initCheckinCalendar();
+                
+                // 显示主界面
+                showScreen('mainScreen');
+            } catch (error) {
+                console.error('Error initializing game:', error);
+                alert('初始化游戏失败，请重试');
+            } finally {
+                hideLoader();
+            }
+        }
         
         // 显示加载动画
         function showLoader() {
@@ -1322,7 +1465,6 @@
         // 加载用户信息
         async function loadUserInfo(userId) {
             try {
-                showLoader();
                 const response = await fetch(`${API_BASE_URL}/api/user/info?user_id=${userId}`);
                 const data = await response.json();
                 
@@ -1341,20 +1483,17 @@
                         playCount = 0;
                     }
                 } else {
-                    alert('获取用户信息失败: ' + data.error);
+                    throw new Error(data.error || '获取用户信息失败');
                 }
             } catch (error) {
                 console.error('Error loading user info:', error);
-                alert('获取用户信息失败');
-            } finally {
-                hideLoader();
+                throw error;
             }
         }
         
         // 加载关卡
         async function loadLevels() {
             try {
-                showLoader();
                 const response = await fetch(`${API_BASE_URL}/api/user/levels?user_id=${currentUser.telegram_id}`);
                 const data = await response.json();
                 
@@ -1391,12 +1530,11 @@
                         levelsList.appendChild(level);
                     }
                 } else {
-                    console.error('Failed to load levels:', data);
+                    throw new Error('加载关卡失败');
                 }
             } catch (error) {
                 console.error('Error loading levels:', error);
-            } finally {
-                hideLoader();
+                throw error;
             }
         }
         
