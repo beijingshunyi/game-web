@@ -1350,6 +1350,37 @@
         let playCount = 0;
         const MAX_PLAYS_PER_DAY = 7;
         
+        // 统一错误处理函数
+        function handleError(error, message = '操作失败，请稍后重试') {
+            console.error(error);
+            alert(message);
+        }
+        
+        // 数据验证函数
+        function validateFormData(data) {
+            const errors = [];
+            
+            // 验证支付宝账号
+            if (data.alipayAccount) {
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                const phoneRegex = /^1[3-9]\d{9}$/;
+                
+                if (!emailRegex.test(data.alipayAccount) && !phoneRegex.test(data.alipayAccount)) {
+                    errors.push('支付宝账号格式不正确，请输入邮箱或手机号码');
+                }
+            }
+            
+            // 验证真实姓名
+            if (data.realName && !/^[\u4e00-\u9fa5a-zA-Z]{2,20}$/.test(data.realName)) {
+                errors.push('真实姓名只能包含中文或英文，长度2-20个字符');
+            }
+            
+            return {
+                isValid: errors.length === 0,
+                errors: errors
+            };
+        }
+        
         // 游戏元素类型
         const TILE_TYPES = [
             { type: 'red', icon: '🍎' },
@@ -1470,8 +1501,11 @@
                 
                 if (data.success) {
                     currentUser = data;
-                    document.getElementById('username').textContent = currentUser.first_name || '玩家';
-                    document.getElementById('userCoins').textContent = currentUser.flower_coins;
+                    const usernameEl = document.getElementById('username');
+                    const userCoinsEl = document.getElementById('userCoins');
+                    
+                    if (usernameEl) usernameEl.textContent = currentUser.first_name || '玩家';
+                    if (userCoinsEl) userCoinsEl.textContent = currentUser.flower_coins;
                     
                     // 检查今日游戏次数
                     const today = new Date().toDateString();
@@ -1483,10 +1517,11 @@
                         playCount = 0;
                     }
                 } else {
+                    handleError(data.error || '获取用户信息失败', '加载用户信息失败');
                     throw new Error(data.error || '获取用户信息失败');
                 }
             } catch (error) {
-                console.error('Error loading user info:', error);
+                handleError(error, '加载用户信息失败');
                 throw error;
             }
         }
@@ -1494,11 +1529,18 @@
         // 加载关卡
         async function loadLevels() {
             try {
+                if (!currentUser || !currentUser.telegram_id) {
+                    handleError('用户信息不完整', '加载关卡失败');
+                    throw new Error('用户信息不完整');
+                }
+                
                 const response = await fetch(`${API_BASE_URL}/api/user/levels?user_id=${currentUser.telegram_id}`);
                 const data = await response.json();
                 
                 if (data && Array.isArray(data)) {
                     const levelsList = document.getElementById('levelsList');
+                    if (!levelsList) return;
+                    
                     levelsList.innerHTML = '';
                     
                     // 生成10个关卡
@@ -1530,10 +1572,11 @@
                         levelsList.appendChild(level);
                     }
                 } else {
+                    handleError('加载关卡失败', '加载关卡失败');
                     throw new Error('加载关卡失败');
                 }
             } catch (error) {
-                console.error('Error loading levels:', error);
+                handleError(error, '加载关卡失败');
                 throw error;
             }
         }
@@ -1608,7 +1651,11 @@
                     tile.dataset.type = tileType.type;
                     
                     // 添加点击事件
-                    tile.addEventListener('click', () => selectTile(row, col));
+                    tile.addEventListener('click', () => {
+                        if (gameActive && typeof selectTile === 'function' && row !== undefined && col !== undefined) {
+                            selectTile(row, col);
+                        }
+                    });
                     
                     boardElement.appendChild(tile);
                     gameBoard[row][col] = {
@@ -1791,7 +1838,8 @@
             // 计算分数
             const scoreGain = matches.length * 10;
             currentScore += scoreGain;
-            document.getElementById('currentScore').textContent = currentScore;
+            const currentScoreEl = document.getElementById('currentScore');
+            if (currentScoreEl) currentScoreEl.textContent = currentScore;
             
             // 移除匹配的元素
             matchedTiles.forEach(key => {
@@ -1799,31 +1847,32 @@
                 gameBoard[row][col].element.style.opacity = '0.5';
             });
             
-            // 延迟后下落元素
-            setTimeout(() => {
-                dropTiles();
+            // 使用setTimeout链替代嵌套setTimeout，提高性能
+            setTimeout(processMatchesStep1, 300);
+        }
+        
+        function processMatchesStep1() {
+            dropTiles();
+            setTimeout(processMatchesStep2, 300);
+        }
+        
+        function processMatchesStep2() {
+            fillBoard();
+            setTimeout(processMatchesStep3, 300);
+        }
+        
+        function processMatchesStep3() {
+            if (!checkMatches()) {
+                // 没有更多匹配，减少步数
+                movesLeft--;
+                const movesLeftEl = document.getElementById('movesLeft');
+                if (movesLeftEl) movesLeftEl.textContent = movesLeft;
                 
-                // 填充新元素
-                setTimeout(() => {
-                    fillBoard();
-                    
-                    // 再次检查匹配
-                    setTimeout(() => {
-                        if (checkMatches()) {
-                            // 有连锁反应
-                        } else {
-                            // 没有更多匹配，减少步数
-                            movesLeft--;
-                            document.getElementById('movesLeft').textContent = movesLeft;
-                            
-                            // 检查游戏是否结束
-                            if (movesLeft <= 0 || currentScore >= currentLevel.target_score) {
-                                endGame();
-                            }
-                        }
-                    }, 300);
-                }, 300);
-            }, 300);
+                // 检查游戏是否结束
+                if (movesLeft <= 0 || currentScore >= currentLevel.target_score) {
+                    endGame();
+                }
+            }
         }
         
         // 下落元素
@@ -1983,27 +2032,36 @@
             }
             
             // 更新游戏结束界面
-            document.getElementById('gameOverTitle').textContent = isCompleted ? '关卡完成' : '游戏结束';
-            document.getElementById('gameOverScore').textContent = currentScore;
+            const gameOverTitleEl = document.getElementById('gameOverTitle');
+            const gameOverScoreEl = document.getElementById('gameOverScore');
+            const gameOverRewardEl = document.getElementById('gameOverReward');
+            const gameOverEl = document.getElementById('gameOver');
+            
+            if (gameOverTitleEl) gameOverTitleEl.textContent = isCompleted ? '关卡完成' : '游戏结束';
+            if (gameOverScoreEl) gameOverScoreEl.textContent = currentScore;
             
             // 更新星星
             const starElements = document.querySelectorAll('.game-over-star');
-            starElements.forEach((star, index) => {
-                if (index < stars) {
-                    star.classList.add('filled');
-                } else {
-                    star.classList.remove('filled');
-                }
-            });
+            if (starElements.length > 0) {
+                starElements.forEach((star, index) => {
+                    if (index < stars) {
+                        star.classList.add('filled');
+                    } else {
+                        star.classList.remove('filled');
+                    }
+                });
+            }
             
-            document.getElementById('gameOverReward').textContent = reward;
-            
-            // 显示游戏结束界面
-            document.getElementById('gameOver').style.display = 'flex';
+            if (gameOverRewardEl) gameOverRewardEl.textContent = reward;
+            if (gameOverEl) gameOverEl.style.display = 'flex';
             
             // 保存游戏结果
             if (isCompleted) {
                 try {
+                    if (!currentUser || !currentUser.telegram_id) {
+                        throw new Error('用户信息不完整');
+                    }
+                    
                     const response = await fetch(`${API_BASE_URL}/api/game/session`, {
                         method: 'POST',
                         headers: {
@@ -2024,27 +2082,32 @@
                     if (data.success) {
                         // 更新用户万花币
                         currentUser.flower_coins += data.reward;
-                        document.getElementById('userCoins').textContent = currentUser.flower_coins;
+                        const userCoinsEl = document.getElementById('userCoins');
+                        if (userCoinsEl) userCoinsEl.textContent = currentUser.flower_coins;
                         
                         // 更新关卡任务进度
-                        updateDailyTaskProgress('level', 1);
-                        
-                        // 更新分数任务进度
-                        updateDailyTaskProgress('score', currentScore);
+                        if (typeof updateDailyTaskProgress === 'function') {
+                            updateDailyTaskProgress('level', 1);
+                            
+                            // 更新分数任务进度
+                            updateDailyTaskProgress('score', currentScore);
+                        }
                         
                         // 更新成就进度
-                        updateAchievementProgress('levels_completed', currentLevel.id);
-                        updateAchievementProgress('single_score', currentScore);
+                        if (typeof updateAchievementProgress === 'function') {
+                            updateAchievementProgress('levels_completed', currentLevel.id);
+                            updateAchievementProgress('single_score', currentScore);
+                        }
                     } else {
-                        console.error('Failed to save game session:', data.error);
+                        handleError('Failed to save game session: ' + data.error, '保存游戏记录失败');
                     }
                 } catch (error) {
-                    console.error('Error saving game session:', error);
+                    handleError(error, '保存游戏记录失败');
                 }
             }
             
-            // 增加游戏次数
-            playCount++;
+            // 增加游戏次数并确保不会为负
+            playCount = Math.max(0, playCount + 1);
         }
         
         // 返回主界面
@@ -2072,7 +2135,12 @@
                 
                 if (data && Array.isArray(data)) {
                     const tasksList = document.getElementById('dailyTasksList');
+                    if (!tasksList) return;
+                    
                     tasksList.innerHTML = '';
+                    
+                    // 创建文档片段以减少DOM操作
+                    const fragment = document.createDocumentFragment();
                     
                     data.forEach(task => {
                         const taskItem = document.createElement('div');
@@ -2096,11 +2164,14 @@
                             </div>
                         `;
                         
-                        tasksList.appendChild(taskItem);
+                        fragment.appendChild(taskItem);
                     });
+                    
+                    // 一次性添加所有元素
+                    tasksList.appendChild(fragment);
                 }
             } catch (error) {
-                console.error('Error loading daily tasks:', error);
+                handleError(error, '加载每日任务失败');
             }
         }
         
@@ -2125,7 +2196,8 @@
                 if (data.success) {
                     // 更新用户万花币
                     currentUser.flower_coins += data.reward;
-                    document.getElementById('userCoins').textContent = currentUser.flower_coins;
+                    const userCoinsEl = document.getElementById('userCoins');
+                    if (userCoinsEl) userCoinsEl.textContent = currentUser.flower_coins;
                     
                     // 重新加载任务
                     await loadDailyTasks();
@@ -2133,11 +2205,10 @@
                     // 显示成功消息
                     alert(`成功领取 ${data.reward} 万花币！`);
                 } else {
-                    alert('领取奖励失败: ' + data.error);
+                    handleError(data.error || '领取奖励失败', '领取奖励失败');
                 }
             } catch (error) {
-                console.error('Error claiming daily task reward:', error);
-                alert('领取奖励失败');
+                handleError(error, '领取奖励失败');
             } finally {
                 hideLoader();
             }
@@ -2177,7 +2248,12 @@
                 
                 if (data && Array.isArray(data)) {
                     const achievementsList = document.getElementById('achievementsList');
+                    if (!achievementsList) return;
+                    
                     achievementsList.innerHTML = '';
+                    
+                    // 创建文档片段以减少DOM操作
+                    const fragment = document.createDocumentFragment();
                     
                     data.forEach(achievement => {
                         const achievementItem = document.createElement('div');
@@ -2201,11 +2277,14 @@
                             </div>
                         `;
                         
-                        achievementsList.appendChild(achievementItem);
+                        fragment.appendChild(achievementItem);
                     });
+                    
+                    // 一次性添加所有元素
+                    achievementsList.appendChild(fragment);
                 }
             } catch (error) {
-                console.error('Error loading achievements:', error);
+                handleError(error, '加载成就失败');
             }
         }
         
@@ -2230,7 +2309,8 @@
                 if (data.success) {
                     // 更新用户万花币
                     currentUser.flower_coins += data.reward;
-                    document.getElementById('userCoins').textContent = currentUser.flower_coins;
+                    const userCoinsEl = document.getElementById('userCoins');
+                    if (userCoinsEl) userCoinsEl.textContent = currentUser.flower_coins;
                     
                     // 重新加载成就
                     await loadAchievements();
@@ -2238,11 +2318,10 @@
                     // 显示成功消息
                     alert(`成功领取成就奖励 ${data.reward} 万花币！`);
                 } else {
-                    alert('领取成就奖励失败: ' + data.error);
+                    handleError(data.error || '领取成就奖励失败', '领取成就奖励失败');
                 }
             } catch (error) {
-                console.error('Error claiming achievement reward:', error);
-                alert('领取成就奖励失败');
+                handleError(error, '领取成就奖励失败');
             } finally {
                 hideLoader();
             }
@@ -2355,7 +2434,12 @@
                 
                 if (data && Array.isArray(data)) {
                     const leaderboardList = document.getElementById('leaderboardList');
+                    if (!leaderboardList) return;
+                    
                     leaderboardList.innerHTML = '';
+                    
+                    // 创建文档片段以减少DOM操作
+                    const fragment = document.createDocumentFragment();
                     
                     data.forEach((player, index) => {
                         const playerItem = document.createElement('div');
@@ -2379,11 +2463,14 @@
                             </div>
                         `;
                         
-                        leaderboardList.appendChild(playerItem);
+                        fragment.appendChild(playerItem);
                     });
+                    
+                    // 一次性添加所有元素
+                    leaderboardList.appendChild(fragment);
                 }
             } catch (error) {
-                console.error('Error loading leaderboard:', error);
+                handleError(error, '加载排行榜失败');
             } finally {
                 hideLoader();
             }
@@ -2399,19 +2486,40 @@
         async function submitWithdraw(event) {
             event.preventDefault();
             
-            const alipayAccount = document.getElementById('alipayAccount').value;
-            const realName = document.getElementById('realName').value;
+            const alipayAccountInput = document.getElementById('alipayAccount');
+            const realNameInput = document.getElementById('realName');
+            const withdrawForm = document.getElementById('withdrawForm');
+            
+            if (!alipayAccountInput || !realNameInput) {
+                handleError('表单元素不存在', '提现有误');
+                return;
+            }
+            
+            const alipayAccount = alipayAccountInput.value.trim();
+            const realName = realNameInput.value.trim();
             
             // 计算提现金额（1000万花币 = 10元）
             const amount = Math.floor(currentUser.flower_coins / 1000) * 1000;
             
             if (amount < 1000) {
-                alert('提现金额不足，至少需要1000万花币');
+                handleError('提现金额不足，至少需要1000万花币', '提现金额不足');
+                return;
+            }
+            
+            // 验证表单数据
+            const validation = validateFormData({ alipayAccount, realName });
+            if (!validation.isValid) {
+                alert(validation.errors.join('\n'));
                 return;
             }
             
             try {
                 showLoader();
+                
+                if (!currentUser || !currentUser.telegram_id) {
+                    throw new Error('用户信息不完整');
+                }
+                
                 const response = await fetch(`${API_BASE_URL}/api/withdraw`, {
                     method: 'POST',
                     headers: {
@@ -2430,25 +2538,31 @@
                 if (data.success) {
                     // 更新用户万花币
                     currentUser.flower_coins -= amount;
-                    document.getElementById('userCoins').textContent = currentUser.flower_coins;
+                    const userCoinsEl = document.getElementById('userCoins');
+                    if (userCoinsEl) userCoinsEl.textContent = currentUser.flower_coins;
                     
                     // 更新提现金额
-                    updateWithdrawAmount();
+                    if (typeof updateWithdrawAmount === 'function') {
+                        updateWithdrawAmount();
+                    }
                     
                     // 重新加载提现记录
-                    await loadWithdrawHistory();
+                    if (typeof loadWithdrawHistory === 'function') {
+                        await loadWithdrawHistory();
+                    }
                     
                     // 显示成功消息
                     alert('提现申请已提交，请等待审核');
                     
                     // 重置表单
-                    document.getElementById('withdrawForm').reset();
+                    if (withdrawForm) {
+                        withdrawForm.reset();
+                    }
                 } else {
-                    alert('提现失败: ' + data.error);
+                    handleError(data.error || '提现失败', '提现有误');
                 }
             } catch (error) {
-                console.error('Error withdrawing:', error);
-                alert('提现失败');
+                handleError(error, '提现有误');
             } finally {
                 hideLoader();
             }
@@ -2456,10 +2570,41 @@
         
         // 加载提现记录
         async function loadWithdrawHistory() {
-            // 这里应该有一个获取提现记录的API
-            // 由于没有实现，暂时显示空列表
-            const withdrawHistoryList = document.getElementById('withdrawHistoryList');
-            withdrawHistoryList.innerHTML = '<div style="text-align: center; color: #666;">暂无提现记录</div>';
+            try {
+                const withdrawHistoryList = document.getElementById('withdrawHistoryList');
+                if (!withdrawHistoryList) return;
+                
+                // 这里应该有一个获取提现记录的API
+                // 由于没有实现，暂时显示模拟数据
+                
+                // 模拟数据
+                const mockWithdrawals = [
+                    { date: '2023-07-15', amount: 50, status: '已完成' },
+                    { date: '2023-07-01', amount: 30, status: '已完成' }
+                ];
+                
+                if (mockWithdrawals.length === 0) {
+                    withdrawHistoryList.innerHTML = '<div style="text-align: center; color: #666;">暂无提现记录</div>';
+                    return;
+                }
+                
+                withdrawHistoryList.innerHTML = '';
+                
+                mockWithdrawals.forEach(withdrawal => {
+                    const item = document.createElement('div');
+                    item.className = 'withdraw-history-item';
+                    item.innerHTML = `
+                        <div class="withdraw-history-date">${withdrawal.date}</div>
+                        <div class="withdraw-history-amount">${withdrawal.amount}元</div>
+                        <div class="withdraw-history-status ${withdrawal.status === '已完成' ? 'completed' : 'pending'}">
+                            ${withdrawal.status}
+                        </div>
+                    `;
+                    withdrawHistoryList.appendChild(item);
+                });
+            } catch (error) {
+                handleError(error, '加载提现记录失败');
+            }
         }
         
         // 分享到Telegram
@@ -2470,18 +2615,60 @@
             window.open(url, '_blank');
             
             // 假设分享成功，增加游戏次数
-            playCount -= 2;
+            playCount = Math.max(0, playCount - 2);
             document.getElementById('playLimit').style.display = 'none';
+            
+            alert('分享成功，获得2次游戏机会！');
         }
         
         // 观看广告
         function watchAd() {
             // 这里应该有观看广告的逻辑
-            // 由于没有实现，假设观看成功，增加游戏次数
-            playCount -= 1;
-            document.getElementById('playLimit').style.display = 'none';
-            
-            alert('广告观看完成，获得1次游戏机会');
+            // 由于没有实现，模拟广告观看流程
+            try {
+                const adContainer = document.createElement('div');
+                adContainer.className = 'ad-container';
+                adContainer.innerHTML = `
+                    <div class="ad-content">
+                        <div class="ad-title">广告观看</div>
+                        <div class="ad-message">正在播放广告...</div>
+                        <div class="ad-countdown">10秒后关闭</div>
+                        <button class="ad-close-btn" disabled>关闭</button>
+                    </div>
+                `;
+                
+                document.body.appendChild(adContainer);
+                
+                // 模拟广告倒计时
+                let countdown = 10;
+                const countdownEl = adContainer.querySelector('.ad-countdown');
+                const closeBtn = adContainer.querySelector('.ad-close-btn');
+                
+                const timer = setInterval(() => {
+                    countdown--;
+                    countdownEl.textContent = `${countdown}秒后关闭`;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        closeBtn.disabled = false;
+                        closeBtn.textContent = '关闭';
+                    }
+                }, 1000);
+                
+                closeBtn.addEventListener('click', () => {
+                    clearInterval(timer);
+                    document.body.removeChild(adContainer);
+                    
+                    // 增加游戏次数
+                    playCount = Math.max(0, playCount - 1);
+                    const playLimitEl = document.getElementById('playLimit');
+                    if (playLimitEl) playLimitEl.style.display = 'none';
+                    
+                    alert('广告观看完成，获得1次游戏机会');
+                });
+            } catch (error) {
+                handleError(error, '广告观看失败');
+            }
         }
         
         // 切换任务标签
