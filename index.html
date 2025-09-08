@@ -1267,6 +1267,7 @@
         </div>
     </div>
     
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         // API基础URL
         const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev/api';
@@ -1283,14 +1284,12 @@
         let gameTarget = 0;
         let gameActive = false;
         let isTelegramWebApp = false;
+        let webApp = null;
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 检查是否在Telegram WebApp环境中
             checkTelegramWebApp();
-            
-            // 检查是否已登录
-            checkLoginStatus();
             
             // 绑定事件
             bindEvents();
@@ -1299,34 +1298,42 @@
         // 检查是否在Telegram WebApp环境中
         function checkTelegramWebApp() {
             // 检查Telegram WebApp
-            if (window.Telegram && window.Telegram.WebApp) {
-                isTelegramWebApp = true;
-                const webApp = window.Telegram.WebApp;
-                webApp.ready();
-                webApp.expand();
-                
-                // 设置主题颜色
-                webApp.setHeaderColor('#ff7e5f');
-                webApp.setBackgroundColor('#ffffff');
-                
-                // 设置主按钮
-                webApp.MainButton.setText('开始游戏').show().onClick(function() {
-                    if (!currentUser) {
-                        // 自动登录
-                        autoLogin();
-                    } else {
-                        // 已经登录，切换到主页面
-                        showMainPage();
-                    }
-                });
-                
-                // 隐藏登录按钮，显示主按钮
-                document.getElementById('loginPage').style.display = 'none';
-                document.getElementById('mainPage').style.display = 'block';
-                
-                // 尝试自动登录
-                autoLogin();
-            } else {
+            try {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    isTelegramWebApp = true;
+                    webApp = window.Telegram.WebApp;
+                    webApp.ready();
+                    webApp.expand();
+                    
+                    // 设置主题颜色
+                    webApp.setHeaderColor('#ff7e5f');
+                    webApp.setBackgroundColor('#ffffff');
+                    
+                    // 设置主按钮
+                    webApp.MainButton.setText('开始游戏').show().onClick(function() {
+                        if (!currentUser) {
+                            // 自动登录
+                            autoLogin();
+                        } else {
+                            // 已经登录，切换到主页面
+                            showMainPage();
+                        }
+                    });
+                    
+                    // 隐藏登录按钮，显示主页面
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('mainPage').style.display = 'block';
+                    
+                    // 尝试自动登录
+                    autoLogin();
+                } else {
+                    // 不在Telegram中，显示登录页面
+                    isTelegramWebApp = false;
+                    document.getElementById('loginPage').style.display = 'flex';
+                    document.getElementById('mainPage').style.display = 'none';
+                }
+            } catch (e) {
+                console.error('Error checking Telegram WebApp:', e);
                 // 不在Telegram中，显示登录页面
                 isTelegramWebApp = false;
                 document.getElementById('loginPage').style.display = 'flex';
@@ -1336,15 +1343,20 @@
         
         // 自动登录
         function autoLogin() {
-            if (!isTelegramWebApp || !window.Telegram || !window.Telegram.WebApp) return;
+            if (!isTelegramWebApp || !webApp) {
+                console.log('Not in Telegram WebApp environment');
+                return;
+            }
             
-            const webApp = window.Telegram.WebApp;
             const initData = webApp.initData;
             
             if (!initData) {
+                console.log('No init data available');
                 showToast('无法获取登录信息，请重试');
                 return;
             }
+            
+            console.log('Attempting auto login with init data');
             
             // 发送用户数据到后端进行验证
             fetch(`${API_BASE_URL}/auth`, {
@@ -1356,6 +1368,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Login response:', data);
                 if (data.success) {
                     currentUser = data.user;
                     sessionToken = data.session_token;
@@ -1365,10 +1378,11 @@
                     showToast('登录成功！');
                     
                     // 隐藏主按钮
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        window.Telegram.WebApp.MainButton.hide();
+                    if (webApp) {
+                        webApp.MainButton.hide();
                     }
                 } else {
+                    console.error('Login failed:', data.message);
                     showToast('登录失败：' + data.message);
                 }
             })
@@ -1439,20 +1453,17 @@
             // 登录按钮
             document.getElementById('loginBtn').addEventListener('click', function() {
                 // 使用Telegram登录
-                if (window.Telegram && window.Telegram.WebApp) {
-                    const webApp = window.Telegram.WebApp;
-                    webApp.ready();
+                if (isTelegramWebApp && webApp) {
+                    const initData = webApp.initData;
                     
-                    const user = webApp.initDataUnsafe.user;
-                    
-                    if (user) {
+                    if (initData) {
                         // 发送用户数据到后端进行验证
                         fetch(`${API_BASE_URL}/auth`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify(window.Telegram.WebApp.initData)
+                            body: JSON.stringify(initData)
                         })
                         .then(response => response.json())
                         .then(data => {
@@ -1621,8 +1632,8 @@
             document.getElementById('shareBtn').addEventListener('click', function() {
                 document.getElementById('noPlaysModal').style.display = 'none';
                 
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.shareURL(`https://t.me/bjxcyouxiBot?start=share_${currentUser.id}`);
+                if (isTelegramWebApp && webApp) {
+                    webApp.shareURL(`https://t.me/bjxcyouxiBot?start=share_${currentUser.id}`);
                 } else {
                     showToast('请在Telegram内打开游戏');
                 }
@@ -1677,9 +1688,7 @@
         
         // 显示菜单
         function showMenu() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                const webApp = window.Telegram.WebApp;
-                
+            if (isTelegramWebApp && webApp) {
                 webApp.showPopup({
                     title: '菜单',
                     message: '请选择操作',
@@ -1695,8 +1704,8 @@
                     } else if (buttonId === 'achievements') {
                         switchPage('achievements');
                     } else if (buttonId === 'help') {
-                        if (window.Telegram && window.Telegram.WebApp) {
-                            window.Telegram.WebApp.openTelegramLink(`https://t.me/bjxcyouxiBot?start=help`);
+                        if (isTelegramWebApp && webApp) {
+                            webApp.openTelegramLink(`https://t.me/bjxcyouxiBot?start=help`);
                         } else {
                             window.open(`https://t.me/bjxcyouxiBot?start=help`, '_blank');
                         }
@@ -2358,9 +2367,7 @@
         
         // 显示游戏结果
         function showGameResult(stars) {
-            if (window.Telegram && window.Telegram.WebApp) {
-                const webApp = window.Telegram.WebApp;
-                
+            if (isTelegramWebApp && webApp) {
                 let message = `游戏结束！\n\n得分：${gameScore}\n目标：${gameLevel.target_score}\n星级：`;
                 
                 for (let i = 0; i < 3; i++) {
