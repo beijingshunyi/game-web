@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>万象谜题 - 创意解谜游戏</title>
+    <title>【万花楼】万象谜题 - 创意解谜游戏</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
@@ -54,6 +54,118 @@
             flex-grow: 1;
         }
         
+        /* 登录部分样式 */
+        .telegram-login {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .login-instructions {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .login-instructions h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .login-instructions ol {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .login-instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .login-code-section {
+            margin-top: 30px;
+        }
+        
+        .login-code-input {
+            width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-size: 1rem;
+            margin-right: 10px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        
+        .login-code-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .telegram-login-button {
+            background: #0088cc;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .telegram-login-button:hover {
+            background: #0077b3;
+            transform: translateY(-2px);
+        }
+        
+        .telegram-login-button i {
+            margin-right: 10px;
+        }
+        
+        .bot-link {
+            display: inline-flex;
+            align-items: center;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        
+        .bot-link:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        .bot-link i {
+            margin-right: 8px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 用户信息样式 */
         .user-info {
             display: flex;
             justify-content: space-between;
@@ -108,6 +220,7 @@
             font-size: 1.2rem;
         }
         
+        /* 游戏模式样式 */
         .game-modes {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -147,6 +260,7 @@
             font-size: 0.9rem;
         }
         
+        /* 每日活动样式 */
         .daily-activities {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -213,6 +327,7 @@
             cursor: not-allowed;
         }
         
+        /* 排行榜样式 */
         .leaderboard-section {
             background: white;
             border-radius: 15px;
@@ -326,6 +441,7 @@
             font-size: 0.9rem;
         }
         
+        /* 提现样式 */
         .withdraw-section {
             background: white;
             border-radius: 15px;
@@ -451,23 +567,90 @@
             color: #721c24;
         }
         
-        footer {
+        /* 广告横幅样式 */
+        .ad-banner {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
             text-align: center;
-            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .ad-label {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.5);
             color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+        }
+        
+        .ad-content {
+            color: #666;
             font-size: 0.9rem;
         }
         
-        .footer-link {
+        .ad-cta {
+            background: #667eea;
             color: white;
-            text-decoration: none;
-            margin: 0 10px;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background 0.3s;
         }
         
-        .footer-link:hover {
-            text-decoration: underline;
+        .ad-cta:hover {
+            background: #5a67d8;
         }
         
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            max-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .notification-message {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .notification.success {
+            border-left: 4px solid #28a745;
+        }
+        
+        .notification.error {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .notification.info {
+            border-left: 4px solid #17a2b8;
+        }
+        
+        /* 游戏模态框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -619,114 +802,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            border-radius: 10px;
-            padding: 15px 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 2000;
-            max-width: 300px;
-            transform: translateX(400px);
-            transition: transform 0.3s;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .notification-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .notification-message {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .notification.success {
-            border-left: 4px solid #28a745;
-        }
-        
-        .notification.error {
-            border-left: 4px solid #dc3545;
-        }
-        
-        .notification.info {
-            border-left: 4px solid #17a2b8;
-        }
-        
-        .telegram-login {
-            text-align: center;
-            padding: 40px 20px;
-        }
-        
-        .telegram-login-button {
-            background: #0088cc;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            transition: background 0.3s;
-        }
-        
-        .telegram-login-button:hover {
-            background: #0077b3;
-        }
-        
-        .telegram-login-button i {
-            margin-right: 10px;
-        }
-        
-        .ad-banner {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .ad-label {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(0,0,0,0.5);
-            color: white;
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-size: 0.7rem;
-        }
-        
-        .ad-content {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .ad-cta {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-            transition: background 0.3s;
-        }
-        
-        .ad-cta:hover {
-            background: #5a67d8;
-        }
-        
+        /* 成就弹窗样式 */
         .achievement-popup {
             position: fixed;
             top: 50%;
@@ -787,6 +863,25 @@
             font-weight: bold;
         }
         
+        /* 页脚样式 */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .footer-link {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* 响应式设计 */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -794,6 +889,20 @@
             
             h1 {
                 font-size: 2rem;
+            }
+            
+            .login-instructions {
+                padding: 20px;
+            }
+            
+            .login-code-input {
+                width: 150px;
+                margin-bottom: 10px;
+            }
+            
+            .telegram-login-button {
+                width: 100%;
+                justify-content: center;
             }
             
             .user-info {
@@ -826,18 +935,35 @@
 <body>
     <div class="container">
         <header>
-            <h1>万象谜题</h1>
-            <p class="subtitle">创意解谜游戏，挑战你的智力极限</p>
+            <h1>【万花楼】-万象谜题</h1>
+            <p class="subtitle">创意解谜游戏，挑战你的智力极限，金币可提现</p>
         </header>
         
         <div class="main-content" id="mainContent">
             <!-- 用户未登录时显示 -->
             <div class="telegram-login" id="telegramLogin">
                 <h2>欢迎来到《万象谜题》</h2>
-                <p style="margin: 20px 0; color: #666;">请使用Telegram账号登录开始游戏</p>
-                <button class="telegram-login-button" id="telegramLoginButton">
-                    <i class="fab fa-telegram-plane"></i> 使用Telegram登录
-                </button>
+                
+                <div class="login-instructions">
+                    <h3>登录步骤</h3>
+                    <ol>
+                        <li>点击下方按钮打开Telegram机器人</li>
+                        <li>在机器人中发送命令 <strong>/login</strong></li>
+                        <li>机器人会返回您的登录码</li>
+                        <li>在下方输入框中输入登录码并点击登录</li>
+                    </ol>
+                </div>
+                
+                <div class="login-code-section">
+                    <input type="text" class="login-code-input" id="loginCodeInput" placeholder="输入6位登录码" maxlength="6">
+                    <button class="telegram-login-button" id="loginButton">
+                        <i class="fas fa-sign-in-alt"></i> 登录
+                    </button>
+                </div>
+                
+                <a href="https://t.me/bjxcyouxiBot" target="_blank" class="bot-link">
+                    <i class="fab fa-telegram-plane"></i> 打开Telegram机器人
+                </a>
             </div>
             
             <!-- 用户登录后显示的内容 -->
@@ -1055,7 +1181,7 @@
     <script>
         // 游戏配置
         const config = {
-            apiBaseUrl: 'https://wanhua-game.bingkuijing.workers.dev/api',
+            apiBaseUrl: 'https://wanhua-game.bingkuijing.workers.dev',
             telegramBotUsername: 'bjxcyouxiBot',
             levels: {
                 puzzle: {
@@ -1091,7 +1217,8 @@
         const elements = {
             telegramLogin: document.getElementById('telegramLogin'),
             gameContent: document.getElementById('gameContent'),
-            telegramLoginButton: document.getElementById('telegramLoginButton'),
+            loginCodeInput: document.getElementById('loginCodeInput'),
+            loginButton: document.getElementById('loginButton'),
             userAvatar: document.getElementById('userAvatar'),
             userName: document.getElementById('userName'),
             userLevel: document.getElementById('userLevel'),
@@ -1143,16 +1270,62 @@
             
             // 绑定事件
             bindEvents();
-            
-            // 设置Telegram登录
-            setupTelegramLogin();
         });
         
         // 绑定事件
         function bindEvents() {
-            // Telegram登录按钮
-            elements.telegramLoginButton.addEventListener('click', () => {
-                window.location.href = `https://t.me/${config.telegramBotUsername}`;
+            // 登录按钮
+            elements.loginButton.addEventListener('click', async () => {
+                const loginCode = elements.loginCodeInput.value.trim();
+                
+                if (!loginCode || loginCode.length !== 6) {
+                    showNotification('error', '登录码错误', '请输入6位登录码');
+                    return;
+                }
+                
+                try {
+                    elements.loginButton.disabled = true;
+                    elements.loginButton.innerHTML = '<span class="loading-spinner"></span> 登录中...';
+                    
+                    const response = await fetch(`${config.apiBaseUrl}/api/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            loginCode: loginCode
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // 保存用户数据
+                        gameState.user = result.user;
+                        localStorage.setItem('wanhua_user', JSON.stringify(result.user));
+                        
+                        // 加载用户数据
+                        await loadUserData();
+                        showGameContent();
+                        
+                        showNotification('success', '登录成功', `欢迎回来，${result.user.first_name}！`);
+                    } else {
+                        showNotification('error', '登录失败', result.message || '登录码无效或已过期');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showNotification('error', '登录失败', '请稍后再试');
+                } finally {
+                    elements.loginButton.disabled = false;
+                    elements.loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
+                }
+            });
+            
+            // 登录码输入框回车事件
+            elements.loginCodeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    elements.loginButton.click();
+                }
             });
             
             // 游戏模式选择
@@ -1288,7 +1461,7 @@
                 }
             });
             
-            // 排行榜标签切换
+            // 排行榜样式切换
             document.querySelectorAll('.leaderboard-tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     document.querySelectorAll('.leaderboard-tab').forEach(t => t.classList.remove('active'));
@@ -1411,33 +1584,10 @@
             });
         }
         
-        // 设置Telegram登录
-        function setupTelegramLogin() {
-            // 检查URL参数中是否有Telegram登录数据
-            const urlParams = new URLSearchParams(window.location.search);
-            const tgData = urlParams.get('tg_data');
-            
-            if (tgData) {
-                try {
-                    const userData = JSON.parse(atob(tgData));
-                    if (userData.id) {
-                        // 保存用户数据
-                        gameState.user = userData;
-                        localStorage.setItem('wanhua_user', JSON.stringify(userData));
-                        
-                        // 加载用户数据
-                        loadUserData().then(() => {
-                            showGameContent();
-                            
-                            // 清理URL参数
-                            const newUrl = window.location.pathname;
-                            window.history.pushState({}, document.title, newUrl);
-                        });
-                    }
-                } catch (error) {
-                    console.error('Failed to parse Telegram data:', error);
-                }
-            }
+        // 显示游戏内容
+        function showGameContent() {
+            elements.telegramLogin.style.display = 'none';
+            elements.gameContent.style.display = 'block';
         }
         
         // 加载用户数据
@@ -1660,12 +1810,6 @@
             elements.achievementDescription.textContent = achievement.achievement.description;
             elements.achievementReward.textContent = achievement.achievement.reward_coins;
             elements.achievementPopup.classList.add('show');
-        }
-        
-        // 显示游戏内容
-        function showGameContent() {
-            elements.telegramLogin.style.display = 'none';
-            elements.gameContent.style.display = 'block';
         }
         
         // 开始游戏模式
