@@ -4,21 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>万花楼-《万象谜题》</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #6366f1;
-            --secondary-color: #8b5cf6;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --dark-color: #1f2937;
-            --light-color: #f3f4f6;
-            --white-color: #ffffff;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -26,3119 +12,1031 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #333;
+            line-height: 1.6;
             min-height: 100vh;
             display: flex;
+            align-items: center;
             justify-content: center;
-            align-items: center;
-            color: var(--dark-color);
         }
 
-        .game-container {
-            width: 100%;
-            max-width: 400px;
-            height: 90vh;
-            max-height: 800px;
-            background-color: var(--white-color);
-            border-radius: 20px;
-            box-shadow: var(--shadow-lg);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .game-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: var(--white-color);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .game-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .coins-display {
-            display: flex;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 20px;
-        }
-
-        .coins-icon {
-            color: #fcd34d;
-            margin-right: 5px;
-        }
-
-        .coins-amount {
-            font-weight: bold;
-        }
-
-        .game-content {
-            flex: 1;
-            overflow-y: auto;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
         }
 
         .page {
             display: none;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .page.active {
             display: block;
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeIn 0.8s ease;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .btn {
-            background-color: var(--primary-color);
-            color: var(--white-color);
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            color: #fff;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             margin-bottom: 15px;
+            background: linear-gradient(45deg, #ffd700, #ffa500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #e0e0e0;
+            font-size: 1.3em;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff8c00, #ff2d55);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            margin: 20px 10px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 45, 85, 0.4);
+            letter-spacing: 1px;
         }
 
         .btn:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 45, 85, 0.6);
         }
 
         .btn:active {
-            transform: translateY(0);
+            transform: translateY(1px);
         }
 
         .btn-secondary {
-            background-color: var(--light-color);
-            color: var(--dark-color);
+            background: linear-gradient(45deg, #5865F2, #4aa0ff);
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.4);
         }
 
         .btn-secondary:hover {
-            background-color: #e5e7eb;
+            box-shadow: 0 10px 25px rgba(88, 101, 242, 0.6);
         }
 
         .btn-success {
-            background-color: var(--success-color);
+            background: linear-gradient(45deg, #00c853, #009624);
+            box-shadow: 0 6px 20px rgba(0, 200, 83, 0.4);
         }
 
         .btn-success:hover {
-            background-color: #059669;
+            box-shadow: 0 10px 25px rgba(0, 200, 83, 0.6);
         }
 
         .btn-warning {
-            background-color: var(--warning-color);
+            background: linear-gradient(45deg, #ff4081, #f50057);
+            box-shadow: 0 6px 20px rgba(255, 64, 129, 0.4);
         }
 
         .btn-warning:hover {
-            background-color: #d97706;
+            box-shadow: 0 10px 25px rgba(255, 64, 129, 0.6);
         }
 
-        .btn-danger {
-            background-color: var(--danger-color);
-        }
-
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-
-        .btn-icon {
-            margin-right: 8px;
-        }
-
-        .btn-block {
-            width: 100%;
-        }
-
-        .btn-group {
+        .stats {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .btn-group .btn {
-            flex: 1;
-            margin-bottom: 0;
-        }
-
-        .card {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .card-header {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-        }
-
-        .card-body {
-            color: var(--dark-color);
-        }
-
-        .list-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid var(--light-color);
-        }
-
-        .list-item:last-child {
-            border-bottom: none;
-        }
-
-        .list-item-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            color: var(--white-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-        }
-
-        .list-item-content {
-            flex: 1;
-        }
-
-        .list-item-title {
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-
-        .list-item-subtitle {
-            font-size: 0.9rem;
-            color: #6b7280;
-        }
-
-        .list-item-action {
-            color: var(--primary-color);
-            cursor: pointer;
-        }
-
-        .level-card {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .level-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .level-card.completed {
-            border-left: 4px solid var(--success-color);
-        }
-
-        .level-card.locked {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .level-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            background-color: var(--primary-color);
-            color: var(--white-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-size: 1.5rem;
-        }
-
-        .level-info {
-            flex: 1;
-        }
-
-        .level-title {
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-
-        .level-reward {
-            font-size: 0.9rem;
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-        }
-
-        .level-reward .coins-icon {
-            color: #fcd34d;
-            margin-right: 3px;
-            font-size: 0.8rem;
-        }
-
-        .level-status {
-            font-size: 0.9rem;
-            color: var(--success-color);
-        }
-
-        .sign-in-card {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: var(--shadow);
+            justify-content: space-around;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
             padding: 20px;
-            margin-bottom: 15px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-item {
             text-align: center;
+            color: white;
         }
 
-        .sign-in-title {
-            font-size: 1.2rem;
+        .stat-value {
+            font-size: 2.2em;
             font-weight: bold;
-            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .sign-in-streak {
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 10px 0;
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
         }
 
-        .sign-in-btn {
-            background-color: var(--white-color);
-            color: var(--primary-color);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: bold;
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        .level-item {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 12px;
+            padding: 18px 8px;
+            text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        .sign-in-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .sign-in-btn:disabled {
-            opacity: 0.5;
+        .level-item.locked {
+            background: linear-gradient(45deg, #9e9e9e, #616161);
             cursor: not-allowed;
+        }
+
+        .level-item.completed {
+            background: linear-gradient(45deg, #43e97b, #38f9d7);
+        }
+
+        .level-item:hover:not(.locked) {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
 
         .leaderboard-item {
             display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            margin-bottom: 15px;
             align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid var(--light-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
         }
 
-        .leaderboard-item:last-child {
-            border-bottom: none;
+        .leaderboard-item:hover {
+            transform: translateX(5px);
         }
 
         .leaderboard-rank {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
             font-weight: bold;
-        }
-
-        .leaderboard-rank.top1 {
-            background-color: #fcd34d;
-            color: var(--dark-color);
-        }
-
-        .leaderboard-rank.top2 {
-            background-color: #d1d5db;
-            color: var(--dark-color);
-        }
-
-        .leaderboard-rank.top3 {
-            background-color: #f97316;
-            color: var(--white-color);
-        }
-
-        .leaderboard-info {
-            flex: 1;
+            font-size: 1.4em;
+            color: #667eea;
+            min-width: 40px;
         }
 
         .leaderboard-name {
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-
-        .leaderboard-score {
-            font-size: 0.9rem;
-            color: #6b7280;
-        }
-
-        .leaderboard-reward {
-            font-size: 0.9rem;
-            color: var(--success-color);
-        }
-
-        .achievement-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid var(--light-color);
-        }
-
-        .achievement-item:last-child {
-            border-bottom: none;
-        }
-
-        .achievement-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            background-color: var(--light-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-size: 1.5rem;
-        }
-
-        .achievement-icon.completed {
-            background-color: var(--success-color);
-            color: var(--white-color);
-        }
-
-        .achievement-info {
             flex: 1;
-        }
-
-        .achievement-title {
+            margin-left: 20px;
             font-weight: bold;
-            margin-bottom: 3px;
+            font-size: 1.1em;
         }
 
-        .achievement-desc {
-            font-size: 0.9rem;
-            color: #6b7280;
-            margin-bottom: 3px;
-        }
-
-        .achievement-progress {
-            height: 6px;
-            background-color: var(--light-color);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .achievement-progress-bar {
-            height: 100%;
-            background-color: var(--primary-color);
-        }
-
-        .achievement-reward {
-            font-size: 0.9rem;
-            color: var(--success-color);
-            display: flex;
-            align-items: center;
-        }
-
-        .achievement-reward .coins-icon {
-            color: #fcd34d;
-            margin-right: 3px;
-            font-size: 0.8rem;
-        }
-
-        .withdrawal-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid var(--light-color);
-        }
-
-        .withdrawal-item:last-child {
-            border-bottom: none;
-        }
-
-        .withdrawal-info {
-            flex: 1;
-        }
-
-        .withdrawal-amount {
+        .leaderboard-level {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 25px;
             font-weight: bold;
-            margin-bottom: 3px;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
         }
 
-        .withdrawal-status {
-            font-size: 0.9rem;
-            color: #6b7280;
-        }
-
-        .withdrawal-status.pending {
-            color: var(--warning-color);
-        }
-
-        .withdrawal-status.approved {
-            color: var(--success-color);
-        }
-
-        .withdrawal-status.rejected {
-            color: var(--danger-color);
-        }
-
-        .withdrawal-date {
-            font-size: 0.8rem;
-            color: #9ca3af;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.active {
-            display: flex;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        .modal-content {
-            background-color: var(--white-color);
-            border-radius: 15px;
-            box-shadow: var(--shadow-lg);
-            width: 90%;
-            max-width: 400px;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease-in-out;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--light-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: #6b7280;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .modal-close:hover {
-            color: var(--danger-color);
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: var(--dark-color);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .form-text {
-            font-size: 0.9rem;
-            color: #6b7280;
-            margin-top: 5px;
-        }
-
-        .game-footer {
-            background-color: var(--light-color);
-            padding: 10px 20px;
+        .game-area {
             text-align: center;
-            font-size: 0.8rem;
-            color: #6b7280;
-        }
-
-        .footer-link {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-
-        .footer-link:hover {
-            text-decoration: underline;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--white-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--dark-color);
-            color: var(--white-color);
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: var(--shadow-lg);
-            z-index: 2000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .toast.show {
-            opacity: 1;
-        }
-
-        .toast.success {
-            background-color: var(--success-color);
-        }
-
-        .toast.error {
-            background-color: var(--danger-color);
-        }
-
-        .toast.warning {
-            background-color: var(--warning-color);
-        }
-
-        .ad-container {
-            margin: 15px 0;
-            text-align: center;
-            background-color: var(--light-color);
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            color: #6b7280;
-        }
-
-        .game-level {
-            display: none;
-            width: 100%;
-            height: 100%;
+            min-height: 350px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 25px 0;
+            display: flex;
             flex-direction: column;
-        }
-
-        .game-level.active {
-            display: flex;
-        }
-
-        .level-header {
-            background-color: var(--primary-color);
-            color: var(--white-color);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .level-title {
-            font-size: 1.2rem;
-            font-weight: bold;
+        .game-title {
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            color: #1e3c72;
+            font-weight: 700;
         }
 
-        .level-content {
+        .game-content {
             flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 20px;
-        }
-
-        .level-description {
-            text-align: center;
-            margin-bottom: 20px;
-            color: var(--dark-color);
-        }
-
-        .puzzle-container {
-            width: 100%;
-            max-width: 300px;
-            height: 300px;
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .puzzle-piece {
-            position: absolute;
-            cursor: move;
-            transition: transform 0.2s ease;
-        }
-
-        .puzzle-piece.dragging {
-            z-index: 10;
-            transform: scale(1.05);
-        }
-
-        .puzzle-piece.correct {
-            cursor: default;
-        }
-
-        .password-container {
-            width: 100%;
-            max-width: 300px;
-            margin-bottom: 20px;
-        }
-
-        .password-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 1rem;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .password-clue {
-            background-color: var(--light-color);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .mechanism-container {
-            width: 100%;
-            max-width: 300px;
-            height: 300px;
-            position: relative;
-            margin-bottom: 20px;
-            background-color: var(--light-color);
-            border-radius: 10px;
-        }
-
-        .mechanism {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            border-radius: 10px;
-            background-color: var(--primary-color);
-            color: var(--white-color);
-            display: flex;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .mechanism:hover {
-            transform: scale(1.05);
-        }
-
-        .mechanism.active {
-            background-color: var(--success-color);
-        }
-
-        .resource-container {
-            width: 100%;
-            max-width: 300px;
-            margin-bottom: 20px;
-        }
-
-        .resource-bar {
-            height: 30px;
-            background-color: var(--light-color);
-            border-radius: 15px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        .resource-fill {
-            height: 100%;
-            background-color: var(--primary-color);
-            transition: width 0.3s ease;
-        }
-
-        .resource-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: var(--white-color);
-            font-weight: bold;
-        }
-
-        .resource-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background-color: var(--light-color);
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .resource-name {
-            font-weight: bold;
-        }
-
-        .resource-value {
-            display: flex;
-            align-items: center;
-        }
-
-        .resource-btn {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            color: var(--white-color);
-            border: none;
-            margin: 0 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .path-container {
-            width: 100%;
-            max-width: 300px;
-            height: 300px;
-            position: relative;
-            margin-bottom: 20px;
-            background-color: var(--light-color);
-            border-radius: 10px;
-        }
-
-        .path-cell {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            border-radius: 5px;
-        }
-
-        .path-cell.empty {
-            background-color: #e5e7eb;
-        }
-
-        .path-cell.wall {
-            background-color: var(--dark-color);
-        }
-
-        .path-cell.start {
-            background-color: var(--success-color);
-        }
-
-        .path-cell.end {
-            background-color: var(--danger-color);
-        }
-
-        .path-cell.path {
-            background-color: var(--primary-color);
-        }
-
-        .path-cell.player {
-            background-color: var(--warning-color);
-            z-index: 10;
-        }
-
-        .action-container {
-            width: 100%;
-            max-width: 300px;
-            height: 300px;
-            position: relative;
-            margin-bottom: 20px;
-            background-color: var(--light-color);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .action-target {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .action-target:hover {
-            transform: scale(1.1);
-        }
-
-        .action-target.hit {
-            background-color: var(--success-color);
-        }
-
-        .action-target.miss {
-            background-color: var(--danger-color);
-        }
-
-        .memory-container {
-            width: 100%;
-            max-width: 300px;
-            margin-bottom: 20px;
-        }
-
-        .memory-display {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .memory-item {
-            aspect-ratio: 1;
-            background-color: var(--primary-color);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white-color);
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .memory-input {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
-        .memory-input-item {
-            aspect-ratio: 1;
-            background-color: var(--light-color);
-            border: 2px solid #d1d5db;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--dark-color);
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .memory-input-item.filled {
-            background-color: var(--primary-color);
-            color: var(--white-color);
-            border-color: var(--primary-color);
-        }
-
-        .memory-options {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .memory-option {
-            aspect-ratio: 1;
-            background-color: var(--light-color);
-            border: 2px solid #d1d5db;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--dark-color);
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .memory-option:hover {
-            background-color: var(--primary-color);
-            color: var(--white-color);
-            border-color: var(--primary-color);
-        }
-
-        .process-container {
-            width: 100%;
-            max-width: 300px;
-            margin-bottom: 20px;
-        }
-
-        .process-display {
-            background-color: var(--light-color);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .process-buttons {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .process-btn {
-            padding: 15px;
-            background-color: var(--primary-color);
-            color: var(--white-color);
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .process-btn:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .process-btn:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .process-btn.active {
-            background-color: var(--success-color);
         }
 
         .timer {
-            font-size: 1.5rem;
+            font-size: 2.5em;
             font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .attempts {
-            font-size: 1rem;
-            color: #6b7280;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .hint-btn {
-            background-color: var(--warning-color);
-            color: var(--white-color);
-            border: none;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .hint-btn:hover {
-            background-color: #d97706;
-        }
-
-        .hint-btn:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .hint-text {
-            background-color: #fef3c7;
-            color: #92400e;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .game-over {
-            text-align: center;
-            padding: 20px;
-        }
-
-        .game-over-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-
-        .game-over-message {
-            margin-bottom: 20px;
-            color: var(--dark-color);
-        }
-
-        .game-over-stats {
-            background-color: var(--light-color);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .game-over-stat {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .game-over-stat:last-child {
-            margin-bottom: 0;
-        }
-
-        .game-over-stat-label {
-            color: #6b7280;
-        }
-
-        .game-over-stat-value {
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .sub-header {
-            background-color: var(--light-color);
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .sub-header-title {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--dark-color);
-            flex: 1;
+            color: #ff4757;
+            margin: 25px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .back-btn {
-            background: none;
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
             border: none;
-            color: var(--primary-color);
-            font-size: 1.2rem;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
             cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         .back-btn:hover {
-            background-color: rgba(99, 102, 241, 0.1);
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
         }
 
-        @media (max-width: 480px) {
-            .game-container {
-                height: 100vh;
-                max-height: none;
-                border-radius: 0;
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+
+        .footer a {
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+            color: #ffffff;
+        }
+
+        /* 游戏特色板块样式 */
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .feature-card {
+            flex: 1;
+            min-width: 300px;
+            max-width: 350px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .feature-icon {
+            font-size: 4em;
+            margin-bottom: 25px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-title {
+            font-size: 1.5em;
+            font-weight: 800;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+        }
+
+        .feature-description {
+            color: #2d2d2d; /* 深灰色，对比白色背景更清晰 */
+            line-height: 1.7;
+            font-size: 1.05em;
+        }
+
+        .welcome-section {
+            text-align: center;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+        }
+
+        .welcome-title {
+            font-size: 3em;
+            color: #ffffff;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            font-weight: 800;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.4em;
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            background: linear-gradient(45deg, #f093fb, #f5576c, #5ee7df, #b490ca);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            font-family: 'Microsoft YaHei', 'STHeiti', sans-serif;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .page {
+                padding: 25px 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .header p {
+                font-size: 1.1em;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .stat-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 20px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+            }
+            
+            .features {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+            
+            .feature-card {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .welcome-title {
+                font-size: 2em;
+            }
+            
+            .welcome-subtitle {
+                font-size: 1.1em;
+            }
+            
+            .btn {
+                padding: 14px 30px;
+                font-size: 16px;
+                margin: 10px 5px;
+            }
+            
+            .feature-title {
+                color: #222;
+            }
+            
+            .feature-description {
+                color: #555;
             }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="game-header">
-            <div class="game-title">万花楼-《万象谜题》</div>
-            <div class="coins-display">
-                <i class="fas fa-coins coins-icon"></i>
-                <span class="coins-amount" id="coinsAmount">0</span>
+    <div class="container">
+        <!-- 登录页面 -->
+        <div id="login-page" class="page active">
+            <div class="welcome-section">
+                <h1 class="welcome-title">万花楼-《万象谜题》</h1>
+                <p class="welcome-subtitle">挑战2100关，赢取万花币，兑换现金奖励</p>
+            </div>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🧩</div>
+                    <h3 class="feature-title">丰富多样的关卡设计</h3>
+                    <p class="feature-description">超过2100个精心设计的谜题关卡，涵盖解谜、策略、动作和记忆四大类型，每个关卡都有独特的挑战和玩法，让你体验无穷乐趣。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3 class="feature-title">万花币现金兑换</h3>
+                    <p class="feature-description">通过游戏获得万花币，1000个万花币可直接兑换10元人民币现金奖励，提现至支付宝账户，让娱乐变得更有价值。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <h3 class="feature-title">成就与排行榜系统</h3>
+                    <p class="feature-description">完成挑战解锁丰富成就，与全服玩家一较高下，争夺月度排行榜，赢取额外奖励，展现你的超凡智慧。</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" id="telegram-login" style="padding: 18px 45px; font-size: 1.2em;">
+                    🚀 使用 Telegram 登录
+                </button>
+                <p style="margin-top: 25px; font-size: 1em; color: #e0e0e0;">
+                    登录即表示您同意我们的服务条款和隐私政策
+                </p>
             </div>
         </div>
 
-        <div class="game-content">
-            <!-- 主页 -->
-            <div class="page active" id="homePage">
-                <div class="sign-in-card" id="signInCard">
-                    <div class="sign-in-title">每日签到</div>
-                    <div class="sign-in-streak" id="signInStreak">0</div>
-                    <div>连续签到天数</div>
-                    <button class="sign-in-btn" id="signInBtn">签到</button>
+        <!-- 主页面 -->
+        <div id="main-page" class="page">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="coins-count">0</div>
+                    <div class="stat-label">万花币</div>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">游戏功能</div>
-                    <div class="card-body">
-                        <button class="btn btn-block" id="levelsBtn">
-                            <i class="fas fa-puzzle-piece btn-icon"></i>关卡挑战
-                        </button>
-                        <button class="btn btn-block" id="leaderboardBtn">
-                            <i class="fas fa-trophy btn-icon"></i>排行榜
-                        </button>
-                        <button class="btn btn-block" id="achievementsBtn">
-                            <i class="fas fa-medal btn-icon"></i>成就系统
-                        </button>
-                        <button class="btn btn-block" id="withdrawBtn">
-                            <i class="fas fa-money-bill-wave btn-icon"></i>提现管理
-                        </button>
-                    </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="current-level">1</div>
+                    <div class="stat-label">当前关卡</div>
                 </div>
-
-                <div class="ad-container">
-                    <i class="fas fa-ad"></i> 广告区域
+                <div class="stat-item">
+                    <div class="stat-value" id="checkin-streak">0</div>
+                    <div class="stat-label">签到天数</div>
                 </div>
             </div>
 
-            <!-- 关卡列表页 -->
-            <div class="page" id="levelsPage">
-                <div class="sub-header">
-                    <button class="back-btn" id="backToHomeFromLevelsBtn">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="sub-header-title">关卡列表</div>
-                </div>
-                <div class="card">
-                    <div class="card-body" id="levelsList">
-                        <!-- 关卡列表将通过JS动态生成 -->
-                    </div>
-                </div>
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn" onclick="showPage('levels-page')">🎮 开始游戏</button>
+                <button class="btn btn-secondary" onclick="showPage('checkin-page')">📅 每日签到</button>
+                <button class="btn btn-success" onclick="showPage('leaderboard-page')">🏆 排行榜</button>
+                <button class="btn btn-warning" onclick="showPage('withdraw-page')">💰 提现</button>
             </div>
 
-            <!-- 排行榜页 -->
-            <div class="page" id="leaderboardPage">
-                <div class="sub-header">
-                    <button class="back-btn" id="backToHomeFromLeaderboardBtn">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="sub-header-title">排行榜</div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <div class="btn-group">
-                            <button class="btn btn-secondary" id="monthlyLeaderboardBtn">月度排行</button>
-                            <button class="btn btn-secondary" id="friendsLeaderboardBtn">好友排行</button>
-                        </div>
-                        <div id="leaderboardList">
-                            <!-- 排行榜列表将通过JS动态生成 -->
-                        </div>
-                    </div>
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn" onclick="showPage('achievements-page')">🏅 成就</button>
+                <button class="btn" onclick="showPage('share-page')">📤 分享</button>
+                <button class="btn" onclick="showPage('settings-page')">⚙️ 设置</button>
+            </div>
+        </div>
+
+        <!-- 关卡选择页面 -->
+        <div id="levels-page" class="page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">选择关卡</h2>
+            <div class="level-grid" id="level-grid">
+                <!-- 关卡将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <!-- 游戏关卡页面 -->
+        <div id="game-page" class="page">
+            <button class="back-btn" onclick="showPage('levels-page')">←</button>
+            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;" id="game-level-title">关卡 1</h2>
+            <div class="game-area">
+                <div class="game-content" id="game-content">
+                    <!-- 游戏内容将根据关卡类型动态生成 -->
+                    <p>游戏内容加载中...</p>
                 </div>
             </div>
-
-            <!-- 成就页 -->
-            <div class="page" id="achievementsPage">
-                <div class="sub-header">
-                    <button class="back-btn" id="backToHomeFromAchievementsBtn">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="sub-header-title">成就系统</div>
-                </div>
-                <div class="card">
-                    <div class="card-body" id="achievementsList">
-                        <!-- 成就列表将通过JS动态生成 -->
-                    </div>
-                </div>
+            <div style="text-align: center;">
+                <button class="btn" id="hint-btn">💡 获取提示 (观看广告)</button>
+                <button class="btn btn-success" id="complete-btn">✅ 完成关卡</button>
             </div>
+        </div>
 
-            <!-- 提现页 -->
-            <div class="page" id="withdrawPage">
-                <div class="sub-header">
-                    <button class="back-btn" id="backToHomeFromWithdrawBtn">
-                        <i class="fas fa-arrow-left"></i>
+        <!-- 签到页面 -->
+        <div id="checkin-page" class="page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">每日签到</h2>
+            <div class="game-area">
+                <div class="game-content">
+                    <p style="font-size: 1.2em; margin-bottom: 20px;">连续签到 <span id="streak-count">0</span> 天</p>
+                    <button class="btn btn-success" id="checkin-btn" style="padding: 15px 30px; font-size: 1.2em;">
+                        📅 立即签到
                     </button>
-                    <div class="sub-header-title">提现管理</div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label class="form-label">当前万花币</label>
-                            <div class="form-control" id="currentCoins">0</div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">提现金额（元）</label>
-                            <input type="number" class="form-control" id="withdrawAmount" min="10" step="10" placeholder="请输入提现金额">
-                            <div class="form-text">1000个万花币 = 10元人民币</div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">支付宝账号</label>
-                            <input type="text" class="form-control" id="alipayAccount" placeholder="请输入支付宝账号">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">真实姓名</label>
-                            <input type="text" class="form-control" id="realName" placeholder="请输入真实姓名">
-                        </div>
-                        <button class="btn btn-success btn-block" id="submitWithdrawBtn">提交提现申请</button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">提现记录</div>
-                    <div class="card-body" id="withdrawalsList">
-                        <!-- 提现记录将通过JS动态生成 -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 游戏关卡页 -->
-            <div class="game-level" id="gameLevelPage">
-                <div class="level-header">
-                    <button class="btn btn-icon" id="backToLevelsBtn">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="level-title" id="gameLevelTitle">关卡标题</div>
-                    <div class="coins-display">
-                        <i class="fas fa-coins coins-icon"></i>
-                        <span class="coins-amount" id="gameLevelCoins">0</span>
-                    </div>
-                </div>
-
-                <div class="level-content">
-                    <div class="level-description" id="gameLevelDescription">关卡描述</div>
-                    
-                    <div class="timer" id="gameLevelTimer">00:00</div>
-                    <div class="attempts" id="gameLevelAttempts">尝试次数: 0</div>
-                    
-                    <button class="hint-btn" id="gameLevelHintBtn">
-                        <i class="fas fa-lightbulb"></i> 获取提示
-                    </button>
-                    <div class="hint-text" id="gameLevelHintText" style="display: none;"></div>
-
-                    <!-- 不同类型关卡的游戏区域 -->
-                    <div id="puzzleContainer" class="puzzle-container" style="display: none;">
-                        <!-- 拼图碎片将通过JS动态生成 -->
-                    </div>
-
-                    <div id="passwordContainer" class="password-container" style="display: none;">
-                        <div class="password-clue" id="passwordClue">密码线索</div>
-                        <input type="text" class="password-input" id="passwordInput" placeholder="请输入密码">
-                        <button class="btn btn-success btn-block" id="passwordSubmitBtn">提交</button>
-                    </div>
-
-                    <div id="mechanismContainer" class="mechanism-container" style="display: none;">
-                        <!-- 机关将通过JS动态生成 -->
-                    </div>
-
-                    <div id="resourceContainer" class="resource-container" style="display: none;">
-                        <div class="resource-bar">
-                            <div class="resource-fill" id="resourceFill"></div>
-                            <div class="resource-text" id="resourceText">0/10</div>
-                        </div>
-                        <div id="resourceItems">
-                            <!-- 资源项将通过JS动态生成 -->
-                        </div>
-                        <button class="btn btn-success btn-block" id="resourceSubmitBtn">提交</button>
-                    </div>
-
-                    <div id="pathContainer" class="path-container" style="display: none;">
-                        <!-- 路径网格将通过JS动态生成 -->
-                    </div>
-
-                    <div id="actionContainer" class="action-container" style="display: none;">
-                        <!-- 动作目标将通过JS动态生成 -->
-                    </div>
-
-                    <div id="memoryContainer" class="memory-container" style="display: none;">
-                        <div class="memory-display" id="memoryDisplay">
-                            <!-- 记忆项将通过JS动态生成 -->
-                        </div>
-                        <div class="memory-input" id="memoryInput">
-                            <!-- 记忆输入项将通过JS动态生成 -->
-                        </div>
-                        <div class="memory-options" id="memoryOptions">
-                            <!-- 记忆选项将通过JS动态生成 -->
-                        </div>
-                        <button class="btn btn-success btn-block" id="memorySubmitBtn">提交</button>
-                    </div>
-
-                    <div id="processContainer" class="process-container" style="display: none;">
-                        <div class="process-display" id="processDisplay">
-                            <!-- 流程显示将通过JS动态生成 -->
-                        </div>
-                        <div class="process-buttons" id="processButtons">
-                            <!-- 流程按钮将通过JS动态生成 -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 游戏结束页 -->
-            <div class="game-level" id="gameOverPage">
-                <div class="level-header">
-                    <button class="btn btn-icon" id="backToLevelsFromGameOverBtn">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="level-title">关卡结果</div>
-                    <div class="coins-display">
-                        <i class="fas fa-coins coins-icon"></i>
-                        <span class="coins-amount" id="gameOverCoins">0</span>
-                    </div>
-                </div>
-
-                <div class="level-content">
-                    <div class="game-over">
-                        <div class="game-over-title" id="gameOverTitle">关卡完成</div>
-                        <div class="game-over-message" id="gameOverMessage">恭喜你完成了关卡！</div>
-                        
-                        <div class="game-over-stats">
-                            <div class="game-over-stat">
-                                <div class="game-over-stat-label">完成时间</div>
-                                <div class="game-over-stat-value" id="gameOverTime">00:00</div>
-                            </div>
-                            <div class="game-over-stat">
-                                <div class="game-over-stat-label">尝试次数</div>
-                                <div class="game-over-stat-value" id="gameOverAttempts">0</div>
-                            </div>
-                            <div class="game-over-stat">
-                                <div class="game-over-stat-label">获得奖励</div>
-                                <div class="game-over-stat-value" id="gameOverReward">0个万花币</div>
-                            </div>
-                        </div>
-                        
-                        <div class="btn-group">
-                            <button class="btn btn-secondary" id="retryLevelBtn">重试关卡</button>
-                            <button class="btn" id="nextLevelBtn">下一关</button>
-                        </div>
-                    </div>
+                    <p style="margin-top: 20px;" id="checkin-reward"></p>
                 </div>
             </div>
         </div>
 
-        <div class="game-footer">
-            本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" class="footer-link" target="_blank">@bjxc010</a> 开发
+        <!-- 排行榜页面 -->
+        <div id="leaderboard-page" class="page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">排行榜</h2>
+            <div id="leaderboard-list">
+                <!-- 排行榜将通过JavaScript动态生成 -->
+                <p style="text-align: center;">加载中...</p>
+            </div>
+        </div>
+
+        <!-- 提现页面 -->
+        <div id="withdraw-page" class="page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">万花币提现</h2>
+            <div class="form-group">
+                <label>当前万花币余额：</label>
+                <div style="font-size: 1.5em; font-weight: bold; color: #667eea;" id="balance">0</div>
+            </div>
+            <div class="form-group">
+                <label for="withdraw-amount">提现金额 (1000万花币 = 10元)：</label>
+                <input type="number" id="withdraw-amount" placeholder="请输入提现金额" min="1000" step="1000">
+            </div>
+            <div class="form-group">
+                <label for="alipay-account">支付宝账号：</label>
+                <input type="text" id="alipay-account" placeholder="请输入支付宝账号">
+            </div>
+            <div class="form-group">
+                <label for="real-name">真实姓名：</label>
+                <input type="text" id="real-name" placeholder="请输入真实姓名">
+            </div>
+            <button class="btn btn-success" id="withdraw-btn" style="width: 100%;">提交提现申请</button>
+        </div>
+
+        <!-- 分享页面 -->
+        <div id="share-page" class="page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">分享游戏</h2>
+            <div class="game-area">
+                <div class="game-content">
+                    <p style="margin-bottom: 20px;">分享游戏给朋友，可以获得额外奖励！</p>
+                    <button class="btn" id="share-btn" style="padding: 15px 30px; font-size: 1.1em;">
+                        📤 分享到 Telegram
+                    </button>
+                    <p style="margin-top: 20px;" id="share-reward"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 成就页面 -->
+        <div id="achievements-page" class="page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">成就系统</h2>
+            <div id="achievements-list">
+                <!-- 成就将通过JavaScript动态生成 -->
+                <p style="text-align: center;">加载中...</p>
+            </div>
+        </div>
+
+        <!-- 设置页面 -->
+        <div id="settings-page" class="page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">设置</h2>
+            <div class="form-group">
+                <label>音效设置：</label>
+                <select id="sound-setting">
+                    <option value="on">开启</option>
+                    <option value="off">关闭</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>通知设置：</label>
+                <select id="notification-setting">
+                    <option value="on">开启</option>
+                    <option value="off">关闭</option>
+                </select>
+            </div>
+            <button class="btn" id="save-settings-btn">保存设置</button>
+            <button class="btn btn-warning" id="logout-btn" style="margin-top: 20px;">退出登录</button>
+        </div>
+
+        <div class="footer">
+            <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
         </div>
     </div>
-
-    <!-- 模态框 -->
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="modalTitle">标题</div>
-                <button class="modal-close" id="modalClose">&times;</button>
-            </div>
-            <div class="modal-body" id="modalBody">
-                内容
-            </div>
-        </div>
-    </div>
-
-    <!-- 提示框 -->
-    <div class="toast" id="toast"></div>
 
     <script>
-        // API基础URL
-        const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev/api';
-        const BOT_USERNAME = "bjxcyouxiBot";
-        
-        // 游戏状态
-        let gameState = {
-            user: null,
-            token: null,
-            levels: [],
-            currentLevel: null,
-            levelAttempts: 0,
-            levelStartTime: null,
-            levelTimer: null,
-            levelHints: 0,
-            levelData: null
+        // 配置信息
+        const CONFIG = {
+            API_BASE: 'https://wanhua-game.bingkuijing.workers.dev',
+            BOT_USERNAME: 'bjxcyouxiBot'
         };
 
-        // DOM元素
-        const elements = {
-            // 页面元素
-            pages: {
-                home: document.getElementById('homePage'),
-                levels: document.getElementById('levelsPage'),
-                leaderboard: document.getElementById('leaderboardPage'),
-                achievements: document.getElementById('achievementsPage'),
-                withdraw: document.getElementById('withdrawPage'),
-                gameLevel: document.getElementById('gameLevelPage'),
-                gameOver: document.getElementById('gameOverPage')
-            },
-            
-            // 按钮元素
-            buttons: {
-                levels: document.getElementById('levelsBtn'),
-                leaderboard: document.getElementById('leaderboardBtn'),
-                achievements: document.getElementById('achievementsBtn'),
-                withdraw: document.getElementById('withdrawBtn'),
-                signIn: document.getElementById('signInBtn'),
-                monthlyLeaderboard: document.getElementById('monthlyLeaderboardBtn'),
-                friendsLeaderboard: document.getElementById('friendsLeaderboardBtn'),
-                submitWithdraw: document.getElementById('submitWithdrawBtn'),
-                backToLevels: document.getElementById('backToLevelsBtn'),
-                backToLevelsFromGameOver: document.getElementById('backToLevelsFromGameOverBtn'),
-                retryLevel: document.getElementById('retryLevelBtn'),
-                nextLevel: document.getElementById('nextLevelBtn'),
-                gameLevelHint: document.getElementById('gameLevelHintBtn'),
-                passwordSubmit: document.getElementById('passwordSubmitBtn'),
-                resourceSubmit: document.getElementById('resourceSubmitBtn'),
-                memorySubmit: document.getElementById('memorySubmitBtn'),
-                // 返回主页按钮
-                backToHomeFromLevels: document.getElementById('backToHomeFromLevelsBtn'),
-                backToHomeFromLeaderboard: document.getElementById('backToHomeFromLeaderboardBtn'),
-                backToHomeFromAchievements: document.getElementById('backToHomeFromAchievementsBtn'),
-                backToHomeFromWithdraw: document.getElementById('backToHomeFromWithdrawBtn')
-            },
-            
-            // 显示元素
-            displays: {
-                coinsAmount: document.getElementById('coinsAmount'),
-                signInCard: document.getElementById('signInCard'),
-                signInStreak: document.getElementById('signInStreak'),
-                levelsList: document.getElementById('levelsList'),
-                leaderboardList: document.getElementById('leaderboardList'),
-                achievementsList: document.getElementById('achievementsList'),
-                currentCoins: document.getElementById('currentCoins'),
-                withdrawalsList: document.getElementById('withdrawalsList'),
-                gameLevelTitle: document.getElementById('gameLevelTitle'),
-                gameLevelDescription: document.getElementById('gameLevelDescription'),
-                gameLevelCoins: document.getElementById('gameLevelCoins'),
-                gameLevelTimer: document.getElementById('gameLevelTimer'),
-                gameLevelAttempts: document.getElementById('gameLevelAttempts'),
-                gameLevelHintText: document.getElementById('gameLevelHintText'),
-                gameOverTitle: document.getElementById('gameOverTitle'),
-                gameOverMessage: document.getElementById('gameOverMessage'),
-                gameOverTime: document.getElementById('gameOverTime'),
-                gameOverAttempts: document.getElementById('gameOverAttempts'),
-                gameOverReward: document.getElementById('gameOverReward'),
-                gameOverCoins: document.getElementById('gameOverCoins')
-            },
-            
-            // 输入元素
-            inputs: {
-                withdrawAmount: document.getElementById('withdrawAmount'),
-                alipayAccount: document.getElementById('alipayAccount'),
-                realName: document.getElementById('realName'),
-                passwordInput: document.getElementById('passwordInput')
-            },
-            
-            // 游戏容器
-            containers: {
-                puzzle: document.getElementById('puzzleContainer'),
-                password: document.getElementById('passwordContainer'),
-                mechanism: document.getElementById('mechanismContainer'),
-                resource: document.getElementById('resourceContainer'),
-                path: document.getElementById('pathContainer'),
-                action: document.getElementById('actionContainer'),
-                memory: document.getElementById('memoryContainer'),
-                process: document.getElementById('processContainer')
-            },
-            
-            // 模态框元素
-            modal: {
-                modal: document.getElementById('modal'),
-                title: document.getElementById('modalTitle'),
-                body: document.getElementById('modalBody'),
-                close: document.getElementById('modalClose')
-            },
-            
-            // 提示框元素
-            toast: document.getElementById('toast')
-        };
+        // 用户数据
+        let currentUser = null;
+        let currentLevel = null;
+        let userLevels = [];
 
-        // 初始化游戏
-        async function initGame() {
-            // 检查本地存储中的用户信息
-            const savedUser = localStorage.getItem('gameUser');
-            const savedToken = localStorage.getItem('gameToken');
+        // 页面切换函数
+        function showPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
             
-            if (savedUser && savedToken) {
-                gameState.user = JSON.parse(savedUser);
-                gameState.token = savedToken;
-                
-                // 更新UI
-                updateUI();
-                
-                // 加载关卡列表
-                await loadLevels();
-                
-                // 检查签到状态
-                await checkSignInStatus();
-            } else {
-                // 显示Telegram登录提示
-                showModal('登录提示', '请使用Telegram账号登录游戏');
-                
-                // 尝试通过Telegram登录
-                if (window.Telegram && window.Telegram.WebApp) {
-                    const telegramUser = window.Telegram.WebApp.initDataUnsafe.user;
-                    
-                    if (telegramUser) {
-                        await loginWithTelegram(telegramUser);
-                    }
-                }
+            // 显示指定页面
+            document.getElementById(pageId).classList.add('active');
+            
+            // 根据页面执行相应操作
+            switch(pageId) {
+                case 'levels-page':
+                    loadLevels();
+                    break;
+                case 'leaderboard-page':
+                    loadLeaderboard();
+                    break;
+                case 'achievements-page':
+                    loadAchievements();
+                    break;
+                case 'checkin-page':
+                    updateCheckinStatus();
+                    break;
+                case 'withdraw-page':
+                    document.getElementById('balance').textContent = currentUser ? currentUser.coins : 0;
+                    break;
             }
-            
-            // 绑定事件
-            bindEvents();
         }
 
         // Telegram登录
-        async function loginWithTelegram(telegramUser) {
+        document.getElementById('telegram-login').addEventListener('click', function() {
+            const telegramId = new URLSearchParams(window.location.search).get('telegram_id');
+            if (telegramId) {
+                // 如果URL中有telegram_id参数，直接登录
+                loginWithTelegram(telegramId);
+            } else {
+                // 否则跳转到Telegram Bot
+                window.location.href = `https://t.me/${CONFIG.BOT_USERNAME}`;
+            }
+        });
+
+        // 使用Telegram登录
+        async function loginWithTelegram(telegramId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/auth`, {
+                // 模拟用户名，实际应该从Telegram获取
+                const username = `user_${telegramId}`;
+                
+                const response = await fetch(`${CONFIG.API_BASE}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        telegramData: {
-                            id: telegramUser.id,
-                            username: telegramUser.username,
-                            first_name: telegramUser.first_name,
-                            last_name: telegramUser.last_name,
-                            auth_date: Math.floor(Date.now() / 1000),
-                            hash: 'dummy_hash' // 实际应用中应该有正确的hash
-                        }
+                        telegramId: telegramId,
+                        username: username
                     })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    gameState.user = data.user;
-                    gameState.token = data.token;
-                    
-                    // 保存到本地存储
-                    localStorage.setItem('gameUser', JSON.stringify(data.user));
-                    localStorage.setItem('gameToken', data.token);
-                    
-                    // 更新UI
-                    updateUI();
-                    
-                    // 加载关卡列表
-                    await loadLevels();
-                    
-                    // 检查签到状态
-                    await checkSignInStatus();
-                    
-                    // 绑定设备
-                    await bindDevice();
-                    
-                    showToast('登录成功', 'success');
+                    currentUser = data.user;
+                    showPage('main-page');
+                    updateMainPage();
                 } else {
-                    showToast(`登录失败: ${data.error}`, 'error');
+                    alert('登录失败: ' + data.error);
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                showToast('登录失败，请稍后再试', 'error');
+                alert('登录出错: ' + error.message);
             }
         }
 
-        // 绑定设备
-        async function bindDevice() {
-            try {
-                // 生成设备ID
-                let deviceId = localStorage.getItem('deviceId');
-                
-                if (!deviceId) {
-                    deviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                    localStorage.setItem('deviceId', deviceId);
-                }
-                
-                // 获取设备信息
-                const deviceInfo = {
-                    userAgent: navigator.userAgent,
-                    platform: navigator.platform,
-                    language: navigator.language
-                };
-                
-                const response = await fetch(`${API_BASE_URL}/bind-device`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${gameState.token}`
-                    },
-                    body: JSON.stringify({
-                        deviceId,
-                        deviceInfo
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (!data.success) {
-                    console.error('Bind device error:', data.error);
-                }
-            } catch (error) {
-                console.error('Bind device error:', error);
+        // 更新主页面信息
+        function updateMainPage() {
+            if (currentUser) {
+                document.getElementById('coins-count').textContent = currentUser.coins;
+                document.getElementById('current-level').textContent = currentUser.current_level;
+                document.getElementById('checkin-streak').textContent = currentUser.checkin_streak || 0;
             }
         }
 
-        // 更新UI
-        function updateUI() {
-            if (gameState.user) {
-                elements.displays.coinsAmount.textContent = gameState.user.total_coins;
-                elements.displays.currentCoins.textContent = gameState.user.total_coins;
-                elements.displays.gameLevelCoins.textContent = gameState.user.total_coins;
-                elements.displays.gameOverCoins.textContent = gameState.user.total_coins;
-                
-                // 更新签到信息
-                if (gameState.user.consecutive_sign_in_days !== undefined) {
-                    elements.displays.signInStreak.textContent = gameState.user.consecutive_sign_in_days;
-                }
-            }
-        }
-
-        // 检查签到状态
-        async function checkSignInStatus() {
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                const lastSignIn = gameState.user.last_sign_in_date;
-                
-                if (lastSignIn === today) {
-                    elements.buttons.signIn.textContent = '已签到';
-                    elements.buttons.signIn.disabled = true;
-                } else {
-                    elements.buttons.signIn.textContent = '签到';
-                    elements.buttons.signIn.disabled = false;
-                }
-            } catch (error) {
-                console.error('Check sign in status error:', error);
-            }
-        }
-
-        // 加载关卡列表
+        // 加载关卡
         async function loadLevels() {
             try {
-                const response = await fetch(`${API_BASE_URL}/levels`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${gameState.token}`
+                // 模拟关卡数据，实际应该从API获取
+                const levelGrid = document.getElementById('level-grid');
+                levelGrid.innerHTML = '';
+                
+                // 显示前100关作为示例
+                for (let i = 1; i <= 100; i++) {
+                    const levelItem = document.createElement('div');
+                    levelItem.className = 'level-item';
+                    
+                    // 判断关卡状态
+                    if (currentUser && i > currentUser.current_level) {
+                        levelItem.classList.add('locked');
+                    } else if (userLevels.includes(i)) {
+                        levelItem.classList.add('completed');
                     }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    gameState.levels = data.levels;
-                    renderLevelsList();
-                } else {
-                    showToast(`加载关卡失败: ${data.error}`, 'error');
+                    
+                    levelItem.textContent = i;
+                    levelItem.addEventListener('click', () => {
+                        if (!levelItem.classList.contains('locked')) {
+                            startLevel(i);
+                        }
+                    });
+                    
+                    levelGrid.appendChild(levelItem);
                 }
             } catch (error) {
-                console.error('Load levels error:', error);
-                showToast('加载关卡失败，请稍后再试', 'error');
+                console.error('加载关卡失败:', error);
             }
-        }
-
-        // 渲染关卡列表
-        function renderLevelsList() {
-            elements.displays.levelsList.innerHTML = '';
-            
-            gameState.levels.forEach(level => {
-                const levelCard = document.createElement('div');
-                levelCard.className = `level-card ${level.is_completed ? 'completed' : ''} ${!level.is_unlocked ? 'locked' : ''}`;
-                
-                let levelIcon = '';
-                let levelTypeName = '';
-                
-                switch (level.type) {
-                    case 'puzzle':
-                        levelIcon = 'fa-puzzle-piece';
-                        levelTypeName = '解谜';
-                        break;
-                    case 'strategy':
-                        levelIcon = 'fa-chess';
-                        levelTypeName = '策略';
-                        break;
-                    case 'action':
-                        levelIcon = 'fa-running';
-                        levelTypeName = '动作';
-                        break;
-                    case 'memory':
-                        levelIcon = 'fa-brain';
-                        levelTypeName = '记忆';
-                        break;
-                }
-                
-                levelCard.innerHTML = `
-                    <div class="level-icon">
-                        <i class="fas ${levelIcon}"></i>
-                    </div>
-                    <div class="level-info">
-                        <div class="level-title">${level.name}</div>
-                        <div class="level-reward">
-                            <i class="fas fa-coins coins-icon"></i>
-                            ${level.reward_coins} 个万花币
-                        </div>
-                    </div>
-                    <div class="level-status">
-                        ${level.is_completed ? '已完成' : level.is_unlocked ? '未完成' : '未解锁'}
-                    </div>
-                `;
-                
-                if (level.is_unlocked) {
-                    levelCard.addEventListener('click', () => startLevel(level));
-                }
-                
-                elements.displays.levelsList.appendChild(levelCard);
-            });
         }
 
         // 开始关卡
-        async function startLevel(level) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/level-detail?levelId=${level.id}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${gameState.token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    gameState.currentLevel = data.level;
-                    gameState.levelAttempts = 0;
-                    gameState.levelHints = 0;
-                    gameState.levelStartTime = Date.now();
-                    
-                    // 隐藏所有游戏容器
-                    Object.values(elements.containers).forEach(container => {
-                        container.style.display = 'none';
-                    });
-                    
-                    // 显示游戏关卡页面
-                    showPage('gameLevel');
-                    
-                    // 更新关卡信息
-                    elements.displays.gameLevelTitle.textContent = gameState.currentLevel.name;
-                    elements.displays.gameLevelDescription.textContent = gameState.currentLevel.description || '挑战你的智慧！';
-                    elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
-                    
-                    // 重置提示
-                    elements.displays.gameLevelHintText.style.display = 'none';
-                    elements.buttons.gameLevelHint.disabled = false;
-                    
-                    // 根据关卡类型初始化游戏
-                    initGameLevel();
-                    
-                    // 开始计时
-                    startLevelTimer();
-                } else {
-                    showToast(`加载关卡失败: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                console.error('Start level error:', error);
-                showToast('加载关卡失败，请稍后再试', 'error');
-            }
+        function startLevel(levelId) {
+            currentLevel = levelId;
+            document.getElementById('game-level-title').textContent = `关卡 ${levelId}`;
+            
+            // 根据关卡类型生成游戏内容
+            const gameContent = document.getElementById('game-content');
+            gameContent.innerHTML = `
+                <p>这是第 ${levelId} 关</p>
+                <p>关卡类型: ${getLevelType(levelId)}</p>
+                <div style="margin: 20px 0;">
+                    <p>游戏内容区域</p>
+                    <div style="width: 200px; height: 200px; background: #eee; border: 2px dashed #999; margin: 0 auto;"></div>
+                </div>
+            `;
+            
+            showPage('game-page');
         }
 
-        // 初始化游戏关卡
-        function initGameLevel() {
-            const level = gameState.currentLevel;
-            const parameters = level.parameters ? JSON.parse(level.parameters) : {};
-            
-            switch (level.type) {
-                case 'puzzle':
-                    switch (level.sub_type) {
-                        case 'graphics':
-                            initGraphicsPuzzle(parameters);
-                            break;
-                        case 'password':
-                            initPasswordPuzzle(parameters);
-                            break;
-                        case 'mechanism':
-                            initMechanismPuzzle(parameters);
-                            break;
-                    }
-                    break;
-                    
-                case 'strategy':
-                    switch (level.sub_type) {
-                        case 'resource':
-                            initResourceStrategy(parameters);
-                            break;
-                        case 'path':
-                            initPathStrategy(parameters);
-                            break;
-                    }
-                    break;
-                    
-                case 'action':
-                    switch (level.sub_type) {
-                        case 'precision':
-                            initPrecisionAction(parameters);
-                            break;
-                        case 'reaction':
-                            initReactionAction(parameters);
-                            break;
-                    }
-                    break;
-                    
-                case 'memory':
-                    switch (level.sub_type) {
-                        case 'information':
-                            initInformationMemory(parameters);
-                            break;
-                        case 'process':
-                            initProcessMemory(parameters);
-                            break;
-                    }
-                    break;
-            }
-        }
-
-        // 初始化图形拼图
-        function initGraphicsPuzzle(parameters) {
-            elements.containers.puzzle.style.display = 'block';
-            elements.containers.puzzle.innerHTML = '';
-            
-            const pieces = parameters.pieces || 3;
-            const hints = parameters.hints !== false;
-            const interference = parameters.interference || false;
-            
-            // 创建拼图容器
-            const puzzleContainer = document.createElement('div');
-            puzzleContainer.style.position = 'relative';
-            puzzleContainer.style.width = '100%';
-            puzzleContainer.style.height = '100%';
-            
-            // 创建目标图形
-            const targetShape = document.createElement('div');
-            targetShape.style.position = 'absolute';
-            targetShape.style.width = '150px';
-            targetShape.style.height = '150px';
-            targetShape.style.backgroundColor = '#e5e7eb';
-            targetShape.style.borderRadius = '10px';
-            targetShape.style.top = '50%';
-            targetShape.style.left = '50%';
-            targetShape.style.transform = 'translate(-50%, -50%)';
-            targetShape.style.zIndex = '1';
-            
-            puzzleContainer.appendChild(targetShape);
-            
-            // 创建拼图碎片
-            for (let i = 0; i < pieces; i++) {
-                const piece = document.createElement('div');
-                piece.className = 'puzzle-piece';
-                piece.style.width = `${150 / Math.sqrt(pieces)}px`;
-                piece.style.height = `${150 / Math.sqrt(pieces)}px`;
-                piece.style.backgroundColor = `hsl(${i * 360 / pieces}, 70%, 80%)`;
-                piece.style.borderRadius = '5px';
-                piece.style.left = `${Math.random() * 200}px`;
-                piece.style.top = `${Math.random() * 200}px`;
-                piece.style.zIndex = '2';
-                piece.dataset.index = i;
-                
-                // 使拼图碎片可拖动
-                makeDraggable(piece, targetShape);
-                
-                puzzleContainer.appendChild(piece);
-            }
-            
-            elements.containers.puzzle.appendChild(puzzleContainer);
-            
-            // 保存游戏数据
-            gameState.levelData = {
-                type: 'graphics',
-                pieces: pieces,
-                hints: hints,
-                interference: interference,
-                completedPieces: 0,
-                totalPieces: pieces
-            };
-        }
-
-        // 使元素可拖动
-        function makeDraggable(element, target) {
-            let isDragging = false;
-            let startX, startY, initialX, initialY;
-            
-            element.addEventListener('mousedown', startDrag);
-            element.addEventListener('touchstart', startDrag);
-            
-            function startDrag(e) {
-                // 如果拼图已经放好位置，不允许再拖动
-                if (element.classList.contains('correct')) {
-                    return;
-                }
-                
-                isDragging = true;
-                element.classList.add('dragging');
-                
-                if (e.type === 'mousedown') {
-                    startX = e.clientX;
-                    startY = e.clientY;
-                } else {
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                }
-                
-                initialX = element.offsetLeft;
-                initialY = element.offsetTop;
-                
-                document.addEventListener('mousemove', drag);
-                document.addEventListener('mouseup', stopDrag);
-                document.addEventListener('touchmove', drag);
-                document.addEventListener('touchend', stopDrag);
-            }
-            
-            function drag(e) {
-                if (!isDragging) return;
-                
-                e.preventDefault();
-                
-                let clientX, clientY;
-                
-                if (e.type === 'mousemove') {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                } else {
-                    clientX = e.touches[0].clientX;
-                    clientY = e.touches[0].clientY;
-                }
-                
-                const dx = clientX - startX;
-                const dy = clientY - startY;
-                
-                element.style.left = `${initialX + dx}px`;
-                element.style.top = `${initialY + dy}px`;
-            }
-            
-            function stopDrag() {
-                if (!isDragging) return;
-                
-                isDragging = false;
-                element.classList.remove('dragging');
-                
-                document.removeEventListener('mousemove', drag);
-                document.removeEventListener('mouseup', stopDrag);
-                document.removeEventListener('touchmove', drag);
-                document.removeEventListener('touchend', stopDrag);
-                
-                // 检查是否放在了目标区域内
-                checkIfInTarget(element, target);
-            }
-        }
-
-        // 检查元素是否在目标区域内
-        function checkIfInTarget(element, target) {
-            const elementRect = element.getBoundingClientRect();
-            const targetRect = target.getBoundingClientRect();
-            
-            // 简化的碰撞检测：如果元素大部分在目标内
-            const overlapX = Math.max(0, Math.min(elementRect.right, targetRect.right) - Math.max(elementRect.left, targetRect.left));
-            const overlapY = Math.max(0, Math.min(elementRect.bottom, targetRect.bottom) - Math.max(elementRect.top, targetRect.top));
-            const overlapArea = overlapX * overlapY;
-            const elementArea = elementRect.width * elementRect.height;
-            
-            // 如果重叠面积超过元素面积的70%，认为放置正确
-            if (overlapArea > elementArea * 0.7) {
-                element.classList.add('correct');
-                
-                // 计算应该放置的位置（目标内居中）
-                const targetCenterX = targetRect.left + targetRect.width / 2 - elementRect.width / 2;
-                const targetCenterY = targetRect.top + targetRect.height / 2 - elementRect.height / 2;
-                
-                // 转换为相对于容器的位置
-                const containerRect = elements.containers.puzzle.getBoundingClientRect();
-                const relativeX = targetCenterX - containerRect.left;
-                const relativeY = targetCenterY - containerRect.top;
-                
-                // 平滑移动到目标位置
-                element.style.transition = 'all 0.3s ease';
-                element.style.left = `${relativeX}px`;
-                element.style.top = `${relativeY}px`;
-                
-                // 检查是否所有碎片都已放置正确
-                checkGraphicsPuzzleCompletion();
-            }
-        }
-
-        // 检查图形拼图是否完成
-        function checkGraphicsPuzzleCompletion() {
-            const correctPieces = document.querySelectorAll('.puzzle-piece.correct');
-            gameState.levelData.completedPieces = correctPieces.length;
-            
-            // 如果所有碎片都已放置正确
-            if (gameState.levelData.completedPieces === gameState.levelData.totalPieces) {
-                completeLevel();
-            }
-        }
-
-        // 初始化密码拼图
-        function initPasswordPuzzle(parameters) {
-            elements.containers.password.style.display = 'block';
-            
-            // 设置密码线索
-            document.getElementById('passwordClue').textContent = parameters.clue || '请找出隐藏的密码';
-            
-            // 保存密码
-            gameState.levelData = {
-                type: 'password',
-                correctPassword: parameters.password || '1234'
-            };
-        }
-
-        // 初始化机关拼图
-        function initMechanismPuzzle(parameters) {
-            elements.containers.mechanism.style.display = 'block';
-            elements.containers.mechanism.innerHTML = '';
-            
-            const count = parameters.count || 4;
-            const sequence = parameters.sequence || [0, 1, 2, 3];
-            
-            // 创建机关
-            for (let i = 0; i < count; i++) {
-                const mechanism = document.createElement('div');
-                mechanism.className = 'mechanism';
-                mechanism.style.left = `${50 + (i % 2) * 150}px`;
-                mechanism.style.top = `${50 + Math.floor(i / 2) * 100}px`;
-                mechanism.innerHTML = `<i class="fas fa-cog"></i>`;
-                mechanism.dataset.index = i;
-                
-                mechanism.addEventListener('click', () => {
-                    mechanism.classList.toggle('active');
-                    checkMechanismSequence();
-                });
-                
-                elements.containers.mechanism.appendChild(mechanism);
-            }
-            
-            // 保存游戏数据
-            gameState.levelData = {
-                type: 'mechanism',
-                count: count,
-                sequence: sequence,
-                currentSequence: []
-            };
-        }
-
-        // 检查机关序列是否正确
-        function checkMechanismSequence() {
-            const mechanisms = document.querySelectorAll('.mechanism');
-            const currentSequence = [];
-            
-            mechanisms.forEach((mechanism, index) => {
-                if (mechanism.classList.contains('active')) {
-                    currentSequence.push(index);
-                }
-            });
-            
-            gameState.levelData.currentSequence = currentSequence;
-            
-            // 检查是否与目标序列匹配
-            if (arraysEqual(currentSequence, gameState.levelData.sequence)) {
-                completeLevel();
-            }
-        }
-
-        // 初始化资源策略关卡
-        function initResourceStrategy(parameters) {
-            elements.containers.resource.style.display = 'block';
-            
-            const target = parameters.target || 10;
-            const resources = parameters.resources || [
-                { name: '木材', value: 2 },
-                { name: '石头', value: 3 },
-                { name: '金属', value: 5 }
-            ];
-            
-            // 清空资源项容器
-            document.getElementById('resourceItems').innerHTML = '';
-            
-            // 创建资源项
-            resources.forEach((resource, index) => {
-                const resourceItem = document.createElement('div');
-                resourceItem.className = 'resource-item';
-                resourceItem.innerHTML = `
-                    <div class="resource-name">${resource.name}</div>
-                    <div class="resource-value">
-                        <button class="resource-btn minus" data-index="${index}">-</button>
-                        <span class="resource-count">0</span>
-                        <button class="resource-btn plus" data-index="${index}">+</button>
-                    </div>
-                `;
-                
-                document.getElementById('resourceItems').appendChild(resourceItem);
-                
-                // 添加事件监听
-                resourceItem.querySelector('.plus').addEventListener('click', () => {
-                    updateResourceCount(index, resource.value, 1);
-                });
-                
-                resourceItem.querySelector('.minus').addEventListener('click', () => {
-                    updateResourceCount(index, resource.value, -1);
-                });
-            });
-            
-            // 初始化资源进度条
-            updateResourceProgress(0, target);
-            
-            // 保存游戏数据
-            gameState.levelData = {
-                type: 'resource',
-                target: target,
-                resources: resources,
-                counts: new Array(resources.length).fill(0),
-                total: 0
-            };
-        }
-
-        // 更新资源数量
-        function updateResourceCount(index, value, change) {
-            const maxCount = Math.floor(gameState.levelData.target / value);
-            gameState.levelData.counts[index] = Math.max(0, Math.min(maxCount, gameState.levelData.counts[index] + change));
-            
-            // 更新显示
-            document.querySelectorAll('.resource-count')[index].textContent = gameState.levelData.counts[index];
-            
-            // 计算总资源
-            let total = 0;
-            gameState.levelData.counts.forEach((count, i) => {
-                total += count * gameState.levelData.resources[i].value;
-            });
-            
-            gameState.levelData.total = total;
-            
-            // 更新进度条
-            updateResourceProgress(total, gameState.levelData.target);
-        }
-
-        // 更新资源进度条
-        function updateResourceProgress(current, target) {
-            const percentage = Math.min(100, (current / target) * 100);
-            document.getElementById('resourceFill').style.width = `${percentage}%`;
-            document.getElementById('resourceText').textContent = `${current}/${target}`;
-        }
-
-        // 初始化路径策略关卡
-        function initPathStrategy(parameters) {
-            elements.containers.path.style.display = 'block';
-            elements.containers.path.innerHTML = '';
-            
-            const size = parameters.size || 8;
-            const grid = parameters.grid || createDefaultPathGrid(size);
-            const cellSize = 300 / size;
-            
-            // 找到起点和终点
-            let startX, startY, endX, endY;
-            
-            for (let y = 0; y < size; y++) {
-                for (let x = 0; x < size; x++) {
-                    const cell = document.createElement('div');
-                    cell.className = `path-cell ${getCellClass(grid[y][x])}`;
-                    cell.style.width = `${cellSize}px`;
-                    cell.style.height = `${cellSize}px`;
-                    cell.style.left = `${x * cellSize}px`;
-                    cell.style.top = `${y * cellSize}px`;
-                    cell.dataset.x = x;
-                    cell.dataset.y = y;
-                    
-                    elements.containers.path.appendChild(cell);
-                    
-                    // 记录起点和终点位置
-                    if (grid[y][x] === 'start') {
-                        startX = x;
-                        startY = y;
-                    } else if (grid[y][x] === 'end') {
-                        endX = x;
-                        endY = y;
-                    }
-                }
-            }
-            
-            // 创建玩家
-            const player = document.createElement('div');
-            player.className = 'path-cell player';
-            player.style.width = `${cellSize * 0.8}px`;
-            player.style.height = `${cellSize * 0.8}px`;
-            player.style.left = `${startX * cellSize + cellSize * 0.1}px`;
-            player.style.top = `${startY * cellSize + cellSize * 0.1}px`;
-            player.dataset.x = startX;
-            player.dataset.y = startY;
-            
-            elements.containers.path.appendChild(player);
-            
-            // 添加键盘控制
-            document.addEventListener('keydown', handlePathMovement);
-            
-            // 保存游戏数据
-            gameState.levelData = {
-                type: 'path',
-                size: size,
-                grid: grid,
-                playerX: startX,
-                playerY: startY,
-                endX: endX,
-                endY: endY,
-                cellSize: cellSize,
-                playerElement: player
-            };
-        }
-
-        // 创建默认路径网格
-        function createDefaultPathGrid(size) {
-            const grid = Array(size).fill().map(() => Array(size).fill('empty'));
-            
-            // 设置边界为墙
-            for (let i = 0; i < size; i++) {
-                grid[0][i] = 'wall';
-                grid[size-1][i] = 'wall';
-                grid[i][0] = 'wall';
-                grid[i][size-1] = 'wall';
-            }
-            
-            // 设置起点和终点
-            grid[1][1] = 'start';
-            grid[size-2][size-2] = 'end';
-            
-            // 添加一些随机墙
-            for (let i = 0; i < size * size * 0.2; i++) {
-                const x = Math.floor(Math.random() * (size - 2)) + 1;
-                const y = Math.floor(Math.random() * (size - 2)) + 1;
-                
-                // 确保不是起点或终点
-                if (grid[y][x] === 'empty') {
-                    grid[y][x] = 'wall';
-                }
-            }
-            
-            return grid;
-        }
-
-        // 获取单元格类别
-        function getCellClass(type) {
-            return type === 'start' ? 'start' : 
-                   type === 'end' ? 'end' : 
-                   type === 'wall' ? 'wall' : 'empty';
-        }
-
-        // 处理路径移动
-        function handlePathMovement(e) {
-            if (!gameState.levelData || gameState.levelData.type !== 'path') {
-                return;
-            }
-            
-            let dx = 0, dy = 0;
-            
-            switch (e.key) {
-                case 'ArrowUp':
-                    dy = -1;
-                    break;
-                case 'ArrowDown':
-                    dy = 1;
-                    break;
-                case 'ArrowLeft':
-                    dx = -1;
-                    break;
-                case 'ArrowRight':
-                    dx = 1;
-                    break;
-                default:
-                    return; // 不是方向键则不处理
-            }
-            
-            e.preventDefault();
-            
-            const newX = gameState.levelData.playerX + dx;
-            const newY = gameState.levelData.playerY + dy;
-            
-            // 检查新位置是否有效（不是墙）
-            if (newX >= 0 && newX < gameState.levelData.size && 
-                newY >= 0 && newY < gameState.levelData.size &&
-                gameState.levelData.grid[newY][newX] !== 'wall') {
-                
-                // 更新玩家位置
-                gameState.levelData.playerX = newX;
-                gameState.levelData.playerY = newY;
-                
-                // 更新显示位置
-                const cellSize = gameState.levelData.cellSize;
-                gameState.levelData.playerElement.style.left = `${newX * cellSize + cellSize * 0.1}px`;
-                gameState.levelData.playerElement.style.top = `${newY * cellSize + cellSize * 0.1}px`;
-                
-                // 标记路径
-                if (gameState.levelData.grid[newY][newX] === 'empty') {
-                    const cell = document.querySelector(`.path-cell[data-x="${newX}"][data-y="${newY}"]`);
-                    if (cell) cell.classList.add('path');
-                }
-                
-                // 检查是否到达终点
-                if (newX === gameState.levelData.endX && newY === gameState.levelData.endY) {
-                    // 移除事件监听
-                    document.removeEventListener('keydown', handlePathMovement);
-                    completeLevel();
-                }
-            }
-        }
-
-        // 初始化精准动作关卡
-        function initPrecisionAction(parameters) {
-            elements.containers.action.style.display = 'block';
-            elements.containers.action.innerHTML = '';
-            
-            const targets = parameters.targets || 5;
-            const timeLimit = parameters.timeLimit || 30;
-            
-            // 保存游戏数据
-            gameState.levelData = {
-                type: 'precision',
-                targets: targets,
-                timeLimit: timeLimit,
-                hits: 0,
-                misses: 0,
-                currentTarget: null,
-                timer: null
-            };
-            
-            // 显示第一个目标
-            spawnNewTarget();
-            
-            // 开始计时
-            startActionTimer();
-        }
-
-        // 生成新目标
-        function spawnNewTarget() {
-            // 移除当前目标
-            if (gameState.levelData.currentTarget) {
-                // 如果超时未点击，算作未命中
-                if (!gameState.levelData.currentTarget.classList.contains('hit')) {
-                    gameState.levelData.currentTarget.classList.add('miss');
-                    gameState.levelData.misses++;
-                    
-                    // 短暂延迟后再移除
-                    setTimeout(() => {
-                        if (gameState.levelData.currentTarget && 
-                            elements.containers.action.contains(gameState.levelData.currentTarget)) {
-                            elements.containers.action.removeChild(gameState.levelData.currentTarget);
-                        }
-                    }, 500);
-                } else {
-                    elements.containers.action.removeChild(gameState.levelData.currentTarget);
-                }
-            }
-            
-            // 检查是否完成所有目标
-            if (gameState.levelData.hits >= gameState.levelData.targets) {
-                clearTimeout(gameState.levelData.timer);
-                completeLevel();
-                return;
-            }
-            
-            // 检查是否失败（未命中太多）
-            if (gameState.levelData.misses >= 3) {
-                clearTimeout(gameState.levelData.timer);
-                gameState.levelAttempts++;
-                elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
-                showToast('失败次数过多，重试一次', 'error');
-                initPrecisionAction({
-                    targets: gameState.levelData.targets,
-                    timeLimit: gameState.levelData.timeLimit
-                });
-                return;
-            }
-            
-            // 创建新目标
-            const target = document.createElement('div');
-            target.className = 'action-target';
-            
-            // 随机位置，但确保完全在容器内
-            const containerRect = elements.containers.action.getBoundingClientRect();
-            const maxX = containerRect.width - 40;
-            const maxY = containerRect.height - 40;
-            
-            target.style.left = `${Math.random() * maxX}px`;
-            target.style.top = `${Math.random() * maxY}px`;
-            
-            // 随机大小
-            const size = 20 + Math.random() * 30;
-            target.style.width = `${size}px`;
-            target.style.height = `${size}px`;
-            
-            // 点击目标
-            target.addEventListener('click', () => {
-                target.classList.add('hit');
-                gameState.levelData.hits++;
-                gameState.levelData.currentTarget = target;
-                
-                // 短暂延迟后生成新目标
-                setTimeout(spawnNewTarget, 300);
-            });
-            
-            elements.containers.action.appendChild(target);
-            gameState.levelData.currentTarget = target;
-            
-            // 设置目标超时
-            target.timeout = setTimeout(() => {
-                if (gameState.levelData.currentTarget === target && 
-                    !target.classList.contains('hit')) {
-                    spawnNewTarget();
-                }
-            }, 1500);
-        }
-
-        // 开始动作关卡计时器
-        function startActionTimer() {
-            const startTime = Date.now();
-            
-            gameState.levelData.timer = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const remaining = gameState.levelData.timeLimit - elapsed;
-                
-                if (remaining <= 0) {
-                    clearInterval(gameState.levelData.timer);
-                    gameState.levelAttempts++;
-                    elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
-                    showToast('时间到，重试一次', 'error');
-                    initPrecisionAction({
-                        targets: gameState.levelData.targets,
-                        timeLimit: gameState.levelData.timeLimit
-                    });
-                }
-            }, 1000);
-        }
-
-        // 初始化信息记忆关卡
-        function initInformationMemory(parameters) {
-            elements.containers.memory.style.display = 'block';
-            
-            const size = parameters.size || 3;
-            const duration = parameters.duration || 3000;
-            const values = parameters.values || ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'].slice(0, size * size);
-            
-            // 清空容器
-            document.getElementById('memoryDisplay').innerHTML = '';
-            document.getElementById('memoryInput').innerHTML = '';
-            document.getElementById('memoryOptions').innerHTML = '';
-            
-            // 创建记忆显示区
-            for (let i = 0; i < size * size; i++) {
-                const memoryItem = document.createElement('div');
-                memoryItem.className = 'memory-item';
-                memoryItem.textContent = values[i];
-                memoryItem.dataset.index = i;
-                
-                document.getElementById('memoryDisplay').appendChild(memoryItem);
-            }
-            
-            // 创建记忆输入区
-            for (let i = 0; i < size * size; i++) {
-                const inputItem = document.createElement('div');
-                inputItem.className = 'memory-input-item';
-                inputItem.dataset.index = i;
-                
-                document.getElementById('memoryInput').appendChild(inputItem);
-            }
-            
-            // 创建选项区
-            const shuffledValues = [...values].sort(() => Math.random() - 0.5);
-            shuffledValues.forEach((value, index) => {
-                const option = document.createElement('div');
-                option.className = 'memory-option';
-                option.textContent = value;
-                option.dataset.value = value;
-                
-                option.addEventListener('click', () => {
-                    selectMemoryOption(value);
-                });
-                
-                document.getElementById('memoryOptions').appendChild(option);
-            });
-            
-            // 保存游戏数据
-            gameState.levelData = {
-                type: 'information',
-                size: size,
-                duration: duration,
-                values: values,
-                input: new Array(size * size).fill(''),
-                currentIndex: 0,
-                completed: false
-            };
-            
-            // 显示记忆内容，一段时间后隐藏
-            setTimeout(() => {
-                document.querySelectorAll('.memory-item').forEach(item => {
-                    item.textContent = '';
-                });
-            }, duration);
-        }
-
-        // 选择记忆选项
-        function selectMemoryOption(value) {
-            if (gameState.levelData.completed) return;
-            
-            const currentIndex = gameState.levelData.currentIndex;
-            
-            if (currentIndex < gameState.levelData.size * gameState.levelData.size) {
-                // 更新输入
-                gameState.levelData.input[currentIndex] = value;
-                
-                // 更新显示
-                const inputItems = document.querySelectorAll('.memory-input-item');
-                inputItems[currentIndex].textContent = value;
-                inputItems[currentIndex].classList.add('filled');
-                
-                // 移动到下一个位置
-                gameState.levelData.currentIndex++;
-            }
-        }
-
-        // 初始化流程记忆关卡
-        function initProcessMemory(parameters) {
-            elements.containers.process.style.display = 'block';
-            
-            const steps = parameters.steps || [
-                '步骤 1: 打开盒子',
-                '步骤 2: 取出物品',
-                '步骤 3: 组合零件',
-                '步骤 4: 完成组装'
-            ];
-            
-            // 清空容器
-            document.getElementById('processDisplay').innerHTML = '';
-            document.getElementById('processButtons').innerHTML = '';
-            
-            // 创建流程显示区
-            const processDisplay = document.getElementById('processDisplay');
-            processDisplay.textContent = '记住以下步骤顺序，然后按正确顺序点击按钮';
-            
-            const stepsList = document.createElement('div');
-            stepsList.style.marginTop = '15px';
-            
-            steps.forEach((step, index) => {
-                const stepItem = document.createElement('div');
-                stepItem.style.marginBottom = '5px';
-                stepItem.textContent = step;
-                stepsList.appendChild(stepItem);
-            });
-            
-            processDisplay.appendChild(stepsList);
-            
-            // 打乱步骤顺序作为按钮
-            const shuffledSteps = [...steps].sort(() => Math.random() - 0.5);
-            
-            shuffledSteps.forEach((step, index) => {
-                const button = document.createElement('button');
-                button.className = 'process-btn';
-                button.textContent = `步骤 ${index + 1}`;
-                button.dataset.step = step;
-                button.dataset.originalIndex = steps.indexOf(step);
-                
-                button.addEventListener('click', () => {
-                    selectProcessStep(button);
-                });
-                
-                document.getElementById('processButtons').appendChild(button);
-            });
-            
-            // 保存游戏数据
-            gameState.levelData = {
-                type: 'process',
-                steps: steps,
-                currentStep: 0,
-                selectedButtons: []
-            };
-            
-            // 一段时间后隐藏步骤说明
-            setTimeout(() => {
-                stepsList.style.display = 'none';
-                processDisplay.textContent = '请按正确顺序点击按钮';
-            }, 5000);
-        }
-
-        // 选择流程步骤
-        function selectProcessStep(button) {
-            // 如果已经选择过，不处理
-            if (button.classList.contains('active')) return;
-            
-            // 检查是否是正确的下一步
-            const stepIndex = parseInt(button.dataset.originalIndex);
-            
-            if (stepIndex === gameState.levelData.currentStep) {
-                button.classList.add('active');
-                gameState.levelData.selectedButtons.push(button);
-                gameState.levelData.currentStep++;
-                
-                // 检查是否完成所有步骤
-                if (gameState.levelData.currentStep === gameState.levelData.steps.length) {
-                    completeLevel();
-                }
-            } else {
-                // 错误的步骤，重置
-                gameState.levelData.selectedButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                
-                gameState.levelData.selectedButtons = [];
-                gameState.levelData.currentStep = 0;
-                
-                gameState.levelAttempts++;
-                elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
-                showToast('顺序错误，请重新尝试', 'error');
-            }
-        }
-
-        // 开始关卡计时器
-        function startLevelTimer() {
-            // 清除之前的计时器
-            if (gameState.levelTimer) {
-                clearInterval(gameState.levelTimer);
-            }
-            
-            const startTime = gameState.levelStartTime;
-            
-            gameState.levelTimer = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-                const seconds = (elapsed % 60).toString().padStart(2, '0');
-                
-                elements.displays.gameLevelTimer.textContent = `${minutes}:${seconds}`;
-            }, 1000);
+        // 获取关卡类型
+        function getLevelType(levelId) {
+            if (levelId <= 200) return '图形重构解谜';
+            if (levelId <= 400) return '密码逻辑解谜';
+            if (levelId <= 600) return '机关联动解谜';
+            if (levelId <= 840) return '高级图形重构';
+            if (levelId <= 1040) return '资源分配策略';
+            if (levelId <= 1265) return '路径规划策略';
+            if (levelId <= 1465) return '精准操作';
+            if (levelId <= 1685) return '限时反应';
+            if (levelId <= 1890) return '信息记忆';
+            return '流程记忆';
         }
 
         // 完成关卡
-        async function completeLevel() {
-            // 停止计时器
-            if (gameState.levelTimer) {
-                clearInterval(gameState.levelTimer);
-                gameState.levelTimer = null;
-            }
-            
-            const timeTaken = Math.floor((Date.now() - gameState.levelStartTime) / 1000);
-            const attempts = gameState.levelAttempts + 1; // 加1是因为当前尝试成功了
+        document.getElementById('complete-btn').addEventListener('click', async function() {
+            if (!currentLevel || !currentUser) return;
             
             try {
-                // 调用API标记关卡完成
-                const response = await fetch(`${API_BASE_URL}/complete-level`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${gameState.token}`
-                    },
-                    body: JSON.stringify({
-                        levelId: gameState.currentLevel.id,
-                        time: timeTaken,
-                        attempts: attempts
-                    })
-                });
+                // 模拟API调用
+                // 实际应该调用API完成关卡并获取奖励
+                const reward = Math.floor(Math.random() * 20) + 5; // 随机奖励
                 
-                const data = await response.json();
+                // 更新用户数据
+                currentUser.coins += reward;
+                currentUser.current_level = Math.max(currentUser.current_level, currentLevel + 1);
+                userLevels.push(currentLevel);
                 
-                if (data.success) {
-                    // 更新用户数据
-                    gameState.user.total_coins = data.new_coins || (gameState.user.total_coins + gameState.currentLevel.reward_coins);
-                    localStorage.setItem('gameUser', JSON.stringify(gameState.user));
-                    updateUI();
-                    
-                    // 显示游戏结束页面
-                    showPage('gameOver');
-                    
-                    // 更新游戏结束页面信息
-                    const minutes = Math.floor(timeTaken / 60).toString().padStart(2, '0');
-                    const seconds = (timeTaken % 60).toString().padStart(2, '0');
-                    
-                    elements.displays.gameOverTime.textContent = `${minutes}:${seconds}`;
-                    elements.displays.gameOverAttempts.textContent = attempts;
-                    elements.displays.gameOverReward.textContent = `${gameState.currentLevel.reward_coins}个万花币`;
-                    
-                    // 检查是否有下一关
-                    const currentLevelIndex = gameState.levels.findIndex(level => level.id === gameState.currentLevel.id);
-                    const hasNextLevel = currentLevelIndex < gameState.levels.length - 1;
-                    
-                    elements.buttons.nextLevel.disabled = !hasNextLevel;
-                    elements.buttons.nextLevel.style.opacity = hasNextLevel ? 1 : 0.5;
-                } else {
-                    showToast(`完成关卡失败: ${data.error}`, 'error');
-                }
+                // 更新界面
+                updateMainPage();
+                
+                alert(`恭喜完成关卡！获得 ${reward} 万花币奖励！`);
+                showPage('levels-page');
             } catch (error) {
-                console.error('Complete level error:', error);
-                showToast('完成关卡失败，请稍后再试', 'error');
+                alert('完成关卡失败: ' + error.message);
+            }
+        });
+
+        // 更新签到状态
+        function updateCheckinStatus() {
+            if (currentUser) {
+                document.getElementById('streak-count').textContent = currentUser.checkin_streak || 0;
+                document.getElementById('checkin-reward').textContent = `今日签到可获得 ${Math.min((currentUser.checkin_streak || 0) + 1, 6) + (currentUser.checkin_streak && (currentUser.checkin_streak + 1) % 7 === 0 ? 10 : 0)} 万花币`;
             }
         }
 
-        // 显示页面
-        function showPage(pageName) {
-            // 隐藏所有页面
-            Object.values(elements.pages).forEach(page => {
-                page.classList.remove('active');
-            });
+        // 签到
+        document.getElementById('checkin-btn').addEventListener('click', async function() {
+            if (!currentUser) return;
             
-            // 显示指定页面
-            if (elements.pages[pageName]) {
-                elements.pages[pageName].classList.add('active');
+            try {
+                // 模拟签到API调用
+                const reward = Math.floor(Math.random() * 10) + 1;
+                
+                // 更新用户数据
+                currentUser.coins += reward;
+                currentUser.checkin_streak = (currentUser.checkin_streak || 0) + 1;
+                
+                // 更新界面
+                updateMainPage();
+                updateCheckinStatus();
+                
+                document.getElementById('checkin-reward').textContent = `签到成功！获得 ${reward} 万花币奖励！`;
+            } catch (error) {
+                alert('签到失败: ' + error.message);
             }
-        }
-
-        // 显示模态框
-        function showModal(title, content) {
-            elements.modal.title.textContent = title;
-            elements.modal.body.innerHTML = content;
-            elements.modal.modal.classList.add('active');
-        }
-
-        // 隐藏模态框
-        function hideModal() {
-            elements.modal.modal.classList.remove('active');
-        }
-
-        // 显示提示框
-        function showToast(message, type = 'info') {
-            const toast = elements.toast;
-            toast.textContent = message;
-            toast.className = 'toast';
-            toast.classList.add(type);
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // 检查两个数组是否相等
-        function arraysEqual(a, b) {
-            if (a.length !== b.length) return false;
-            for (let i = 0; i < a.length; i++) {
-                if (a[i] !== b[i]) return false;
-            }
-            return true;
-        }
-
-        // 绑定事件
-        function bindEvents() {
-            // 页面导航按钮
-            elements.buttons.levels.addEventListener('click', () => showPage('levels'));
-            elements.buttons.leaderboard.addEventListener('click', () => showPage('leaderboard'));
-            elements.buttons.achievements.addEventListener('click', () => showPage('achievements'));
-            elements.buttons.withdraw.addEventListener('click', () => showPage('withdraw'));
-            
-            // 返回主页按钮
-            elements.buttons.backToHomeFromLevels.addEventListener('click', () => showPage('home'));
-            elements.buttons.backToHomeFromLeaderboard.addEventListener('click', () => showPage('home'));
-            elements.buttons.backToHomeFromAchievements.addEventListener('click', () => showPage('home'));
-            elements.buttons.backToHomeFromWithdraw.addEventListener('click', () => showPage('home'));
-            
-            // 关卡相关按钮
-            elements.buttons.backToLevels.addEventListener('click', () => {
-                if (gameState.levelTimer) {
-                    clearInterval(gameState.levelTimer);
-                    gameState.levelTimer = null;
-                }
-                showPage('levels');
-            });
-            
-            elements.buttons.backToLevelsFromGameOver.addEventListener('click', () => showPage('levels'));
-            
-            elements.buttons.retryLevel.addEventListener('click', () => {
-                if (gameState.currentLevel) {
-                    startLevel(gameState.currentLevel);
-                }
-            });
-            
-            elements.buttons.nextLevel.addEventListener('click', () => {
-                const currentIndex = gameState.levels.findIndex(level => level.id === gameState.currentLevel.id);
-                if (currentIndex < gameState.levels.length - 1) {
-                    const nextLevel = gameState.levels[currentIndex + 1];
-                    if (nextLevel.is_unlocked) {
-                        startLevel(nextLevel);
-                    } else {
-                        showToast('下一关尚未解锁', 'warning');
-                    }
-                }
-            });
-            
-            // 签到按钮
-            elements.buttons.signIn.addEventListener('click', async () => {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/sign-in`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${gameState.token}`
-                        }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        // 更新用户数据
-                        gameState.user = data.user;
-                        localStorage.setItem('gameUser', JSON.stringify(gameState.user));
-                        updateUI();
-                        
-                        // 更新签到状态
-                        elements.buttons.signIn.textContent = '已签到';
-                        elements.buttons.signIn.disabled = true;
-                        
-                        showToast(`签到成功，获得${data.reward_coins}个万花币`, 'success');
-                    } else {
-                        showToast(`签到失败: ${data.error}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Sign in error:', error);
-                    showToast('签到失败，请稍后再试', 'error');
-                }
-            });
-            
-            // 提示按钮
-            elements.buttons.gameLevelHint.addEventListener('click', async () => {
-                gameState.levelHints++;
-                elements.buttons.gameLevelHint.disabled = gameState.levelHints >= 2; // 限制最多2次提示
-                
-                // 显示提示文本
-                elements.displays.gameLevelHintText.style.display = 'block';
-                
-                // 根据关卡类型显示不同提示
-                let hintText = '';
-                
-                switch (gameState.currentLevel.type) {
-                    case 'puzzle':
-                        switch (gameState.currentLevel.sub_type) {
-                            case 'graphics':
-                                hintText = '尝试将所有碎片放入灰色区域内';
-                                break;
-                            case 'password':
-                                hintText = '密码通常与关卡主题相关';
-                                break;
-                            case 'mechanism':
-                                hintText = `尝试按顺序激活机关: ${gameState.levelData.sequence.map(i => i + 1).join(' → ')}`;
-                                break;
-                        }
-                        break;
-                    case 'strategy':
-                        switch (gameState.currentLevel.sub_type) {
-                            case 'resource':
-                                hintText = `尝试组合资源达到${gameState.levelData.target}点`;
-                                break;
-                            case 'path':
-                                hintText = '找到从绿色到红色的路径，避开黑色墙壁';
-                                break;
-                        }
-                        break;
-                    case 'action':
-                        switch (gameState.currentLevel.sub_type) {
-                            case 'precision':
-                                hintText = '快速点击出现的目标';
-                                break;
-                            case 'reaction':
-                                hintText = '注意观察并及时反应';
-                                break;
-                        }
-                        break;
-                    case 'memory':
-                        switch (gameState.currentLevel.sub_type) {
-                            case 'information':
-                                hintText = '记住最初显示的符号和位置';
-                                break;
-                            case 'process':
-                                hintText = '按正确的步骤顺序点击按钮';
-                                break;
-                        }
-                        break;
-                }
-                
-                elements.displays.gameLevelHintText.textContent = hintText;
-                
-                // 记录广告观看以获取提示（实际应用中应该显示广告）
-                try {
-                    await fetch(`${API_BASE_URL}/ad-view`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${gameState.token}`
-                        },
-                        body: JSON.stringify({
-                            adType: 'interstitial',
-                            rewardType: 'hint'
-                        })
-                    });
-                } catch (error) {
-                    console.error('Record ad view error:', error);
-                }
-            });
-            
-            // 密码提交按钮
-            elements.buttons.passwordSubmit.addEventListener('click', () => {
-                const inputPassword = elements.inputs.passwordInput.value.trim();
-                
-                if (inputPassword === gameState.levelData.correctPassword) {
-                    completeLevel();
-                } else {
-                    gameState.levelAttempts++;
-                    elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
-                    showToast('密码错误，请重试', 'error');
-                }
-            });
-            
-            // 资源提交按钮
-            elements.buttons.resourceSubmit.addEventListener('click', () => {
-                if (gameState.levelData.total === gameState.levelData.target) {
-                    completeLevel();
-                } else {
-                    gameState.levelAttempts++;
-                    elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
-                    showToast(`资源总和需要正好是${gameState.levelData.target}`, 'error');
-                }
-            });
-            
-            // 记忆提交按钮
-            elements.buttons.memorySubmit.addEventListener('click', () => {
-                if (arraysEqual(gameState.levelData.input, gameState.levelData.values)) {
-                    completeLevel();
-                } else {
-                    gameState.levelAttempts++;
-                    elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
-                    showToast('记忆不正确，请重试', 'error');
-                }
-            });
-            
-            // 提现提交按钮
-            elements.buttons.submitWithdraw.addEventListener('click', async () => {
-                const amount = elements.inputs.withdrawAmount.value;
-                const alipayAccount = elements.inputs.alipayAccount.value.trim();
-                const realName = elements.inputs.realName.value.trim();
-                
-                if (!amount || !alipayAccount || !realName) {
-                    showToast('请填写所有必填字段', 'error');
-                    return;
-                }
-                
-                if (amount < 10) {
-                    showToast('最低提现金额为10元', 'error');
-                    return;
-                }
-                
-                const requiredCoins = amount * 100;
-                
-                if (gameState.user.total_coins < requiredCoins) {
-                    showToast('万花币不足', 'error');
-                    return;
-                }
-                
-                try {
-                    const response = await fetch(`${API_BASE_URL}/withdraw`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${gameState.token}`
-                        },
-                        body: JSON.stringify({
-                            amount: parseInt(amount),
-                            alipayAccount: alipayAccount,
-                            realName: realName
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        // 更新用户数据
-                        gameState.user.total_coins -= requiredCoins;
-                        localStorage.setItem('gameUser', JSON.stringify(gameState.user));
-                        updateUI();
-                        
-                        // 重置表单
-                        elements.inputs.withdrawAmount.value = '';
-                        elements.inputs.alipayAccount.value = '';
-                        elements.inputs.realName.value = '';
-                        
-                        // 重新加载提现记录
-                        loadWithdrawals();
-                        
-                        showToast('提现申请已提交', 'success');
-                    } else {
-                        showToast(`提现失败: ${data.error}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Withdrawal error:', error);
-                    showToast('提现失败，请稍后再试', 'error');
-                }
-            });
-            
-            // 排行榜按钮
-            elements.buttons.monthlyLeaderboard.addEventListener('click', () => {
-                loadLeaderboard('monthly');
-            });
-            
-            elements.buttons.friendsLeaderboard.addEventListener('click', () => {
-                loadLeaderboard('friends');
-            });
-            
-            // 模态框关闭按钮
-            elements.modal.close.addEventListener('click', hideModal);
-            
-            // 点击模态框外部关闭
-            elements.modal.modal.addEventListener('click', (e) => {
-                if (e.target === elements.modal.modal) {
-                    hideModal();
-                }
-            });
-        }
+        });
 
         // 加载排行榜
-        async function loadLeaderboard(type = 'monthly') {
+        async function loadLeaderboard() {
             try {
-                const response = await fetch(`${API_BASE_URL}/leaderboard?type=${type}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${gameState.token}`
-                    }
+                // 模拟排行榜数据
+                const leaderboardList = document.getElementById('leaderboard-list');
+                leaderboardList.innerHTML = '';
+                
+                // 模拟数据
+                const leaderboard = [
+                    { username: '玩家1', current_level: 1500 },
+                    { username: '玩家2', current_level: 1200 },
+                    { username: '玩家3', current_level: 1000 },
+                    { username: '玩家4', current_level: 800 },
+                    { username: '玩家5', current_level: 600 }
+                ];
+                
+                leaderboard.forEach((user, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'leaderboard-item';
+                    item.innerHTML = `
+                        <div class="leaderboard-rank">#${index + 1}</div>
+                        <div class="leaderboard-name">${user.username}</div>
+                        <div class="leaderboard-level">${user.current_level}关</div>
+                    `;
+                    leaderboardList.appendChild(item);
                 });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    renderLeaderboard(data.leaderboard, data.user_rank);
-                } else {
-                    showToast(`加载排行榜失败: ${data.error}`, 'error');
-                }
             } catch (error) {
-                console.error('Load leaderboard error:', error);
-                showToast('加载排行榜失败，请稍后再试', 'error');
+                document.getElementById('leaderboard-list').innerHTML = '<p>加载排行榜失败</p>';
             }
         }
 
-        // 渲染排行榜
-        function renderLeaderboard(leaderboard, userRank) {
-            elements.displays.leaderboardList.innerHTML = '';
+        // 提现
+        document.getElementById('withdraw-btn').addEventListener('click', async function() {
+            if (!currentUser) return;
             
-            if (leaderboard.length === 0) {
-                elements.displays.leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px
+            const amount = parseInt(document.getElementById('withdraw-amount').value);
+            const alipayAccount = document.getElementById('alipay-account').value;
+            const realName = document.getElementById('real-name').value;
+            
+            if (!amount || !alipayAccount || !realName) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            if (amount > currentUser.coins) {
+                alert('万花币余额不足');
+                return;
+            }
+            
+            if (amount < 1000 || amount % 1000 !== 0) {
+                alert('提现金额必须为1000的倍数');
+                return;
+            }
+            
+            try {
+                // 模拟提现API调用
+                currentUser.coins -= amount;
+                
+                // 更新界面
+                document.getElementById('balance').textContent = currentUser.coins;
+                updateMainPage();
+                
+                alert(`提现申请已提交！${amount}万花币 (${amount/100}元) 将在1-3个工作日内到账`);
+                
+                // 清空表单
+                document.getElementById('withdraw-amount').value = '';
+                document.getElementById('alipay-account').value = '';
+                document.getElementById('real-name').value = '';
+            } catch (error) {
+                alert('提现申请失败: ' + error.message);
+            }
+        });
+
+        // 分享
+        document.getElementById('share-btn').addEventListener('click', async function() {
+            try {
+                // 模拟分享API调用
+                const reward = 5;
+                
+                // 更新用户数据
+                if (currentUser) {
+                    currentUser.coins += reward;
+                    updateMainPage();
+                }
+                
+                document.getElementById('share-reward').textContent = `分享成功！获得 ${reward} 万花币奖励！`;
+            } catch (error) {
+                alert('分享失败: ' + error.message);
+            }
+        });
+
+        // 加载成就
+        async function loadAchievements() {
+            try {
+                const achievementsList = document.getElementById('achievements-list');
+                achievementsList.innerHTML = '';
+                
+                // 模拟成就数据
+                const achievements = [
+                    { name: '初出茅庐', description: '完成前10关', reward: 50, achieved: true },
+                    { name: '小有所成', description: '完成前50关', reward: 100, achieved: true },
+                    { name: '渐入佳境', description: '完成前100关', reward: 200, achieved: false },
+                    { name: '坚持不懈', description: '连续签到7天', reward: 100, achieved: false }
+                ];
+                
+                achievements.forEach(achievement => {
+                    const item = document.createElement('div');
+                    item.className = 'leaderboard-item';
+                    item.style.opacity = achievement.achieved ? '1' : '0.6';
+                    item.innerHTML = `
+                        <div>
+                            <div style="font-weight: bold; font-size: 1.1em;">${achievement.name}</div>
+                            <div style="font-size: 0.9em; color: #666;">${achievement.description}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #667eea;">${achievement.reward} 万花币</div>
+                            <div style="font-size: 0.9em;">${achievement.achieved ? '已完成' : '未完成'}</div>
+                        </div>
+                    `;
+                    achievementsList.appendChild(item);
+                });
+            } catch (error) {
+                document.getElementById('achievements-list').innerHTML = '<p>加载成就失败</p>';
+            }
+        }
+
+        // 保存设置
+        document.getElementById('save-settings-btn').addEventListener('click', function() {
+            const soundSetting = document.getElementById('sound-setting').value;
+            const notificationSetting = document.getElementById('notification-setting').value;
+            
+            // 保存设置到本地存储
+            localStorage.setItem('soundSetting', soundSetting);
+            localStorage.setItem('notificationSetting', notificationSetting);
+            
+            alert('设置已保存');
+        });
+
+        // 退出登录
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            if (confirm('确定要退出登录吗？')) {
+                currentUser = null;
+                showPage('login-page');
+            }
+        });
+
+        // 页面加载完成后检查URL参数
+        document.addEventListener('DOMContentLoaded', function() {
+            const telegramId = new URLSearchParams(window.location.search).get('telegram_id');
+            if (telegramId) {
+                loginWithTelegram(telegramId);
+            }
+        });
+    </script>
+</body>
+</html>
