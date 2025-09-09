@@ -403,17 +403,6 @@
             font-family: 'Microsoft YaHei', 'STHeiti', sans-serif;
         }
 
-        /* 页面样式 */
-        .page {
-            display: none;
-            width: 100%;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .page.active {
-            display: block;
-        }
-
         @media (max-width: 768px) {
             .container {
                 padding: 5px;
@@ -521,7 +510,7 @@
 <body>
     <div class="container">
         <!-- 登录页面 -->
-        <div class="page login-page active">
+        <div class="login-page">
             <div class="welcome-section">
                 <h1 class="welcome-title">万花楼-《万象谜题》</h1>
                 <p class="welcome-subtitle">挑战2100关，赢取万花币，兑换现金奖励</p>
@@ -560,188 +549,9 @@
             </div>
         </div>
 
-        <!-- 主页面 -->
-        <div class="page main-page">
-            <div class="header">
-                <h1>万花楼-《万象谜题》</h1>
-                <p>挑战2100关，赢取万花币，兑换现金奖励</p>
-            </div>
-            
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="coins-count">0</div>
-                    <div class="stat-label">万花币</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="current-level">1</div>
-                    <div class="stat-label">当前关卡</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="checkin-streak">0</div>
-                    <div class="stat-label">签到天数</div>
-                </div>
-            </div>
-            
-            <div style="text-align: center;">
-                <button class="btn" onclick="showPage('levels-page')">🎮 开始游戏</button>
-                <button class="btn btn-secondary" onclick="showPage('checkin-page')">📅 每日签到</button>
-                <button class="btn btn-success" onclick="showPage('leaderboard-page')">🏆 排行榜</button>
-                <button class="btn btn-warning" onclick="showPage('achievements-page')">🎖 成就</button>
-                <button class="btn" onclick="showPage('withdraw-page')">💰 提现</button>
-                <button class="btn btn-secondary" onclick="showPage('settings-page')">⚙️ 设置</button>
-                <button class="btn" id="logout-btn">🚪 退出登录</button>
-            </div>
-            
-            <div class="footer">
-                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
-            </div>
-        </div>
 
-        <!-- 关卡选择页面 -->
-        <div class="page levels-page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <div class="header">
-                <h1>选择关卡</h1>
-            </div>
-            
-            <div class="level-grid" id="level-grid">
-                <!-- 关卡将通过JavaScript动态生成 -->
-            </div>
-            
-            <div class="footer">
-                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
-            </div>
-        </div>
-
-        <!-- 游戏页面 -->
-        <div class="page game-page">
-            <button class="back-btn" onclick="showPage('levels-page')">←</button>
-            <div class="game-area">
-                <h2 class="game-title" id="game-level-title">关卡</h2>
-                <div class="game-content" id="game-content">
-                    <!-- 游戏内容将通过JavaScript动态生成 -->
-                </div>
-                <button class="btn" id="complete-btn">✅ 完成关卡</button>
-            </div>
-            
-            <div class="footer">
-                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
-            </div>
-        </div>
-
-        <!-- 签到页面 -->
-        <div class="page checkin-page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <div class="header">
-                <h1>每日签到</h1>
-            </div>
-            
-            <div class="game-area">
-                <h2 class="game-title">连续签到 <span id="streak-count">0</span> 天</h2>
-                <p id="checkin-reward">今日签到可获得奖励</p>
-                <button class="btn" id="checkin-btn">📅 立即签到</button>
-            </div>
-            
-            <div class="footer">
-                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
-            </div>
-        </div>
-
-        <!-- 排行榜页面 -->
-        <div class="page leaderboard-page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <div class="header">
-                <h1>排行榜</h1>
-            </div>
-            
-            <div id="leaderboard-list">
-                <!-- 排行榜将通过JavaScript动态生成 -->
-            </div>
-            
-            <div class="footer">
-                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
-            </div>
-        </div>
-
-        <!-- 成就页面 -->
-        <div class="page achievements-page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <div class="header">
-                <h1>成就系统</h1>
-            </div>
-            
-            <div id="achievements-list">
-                <!-- 成就将通过JavaScript动态生成 -->
-            </div>
-            
-            <div class="footer">
-                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
-            </div>
-        </div>
-
-        <!-- 提现页面 -->
-        <div class="page withdraw-page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <div class="header">
-                <h1>提现</h1>
-            </div>
-            
-            <div class="game-area">
-                <h2 class="game-title">当前余额: <span id="balance">0</span> 万花币</h2>
-                
-                <div class="form-group">
-                    <label for="withdraw-amount">提现金额 (1000万花币=10元)</label>
-                    <input type="number" id="withdraw-amount" placeholder="请输入提现金额(1000的倍数)">
-                </div>
-                
-                <div class="form-group">
-                    <label for="alipay-account">支付宝账号</label>
-                    <input type="text" id="alipay-account" placeholder="请输入支付宝账号">
-                </div>
-                
-                <div class="form-group">
-                    <label for="real-name">真实姓名</label>
-                    <input type="text" id="real-name" placeholder="请输入真实姓名">
-                </div>
-                
-                <button class="btn" id="withdraw-btn">💰 申请提现</button>
-            </div>
-            
-            <div class="footer">
-                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
-            </div>
-        </div>
-
-        <!-- 设置页面 -->
-        <div class="page settings-page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <div class="header">
-                <h1>设置</h1>
-            </div>
-            
-            <div class="game-area">
-                <div class="form-group">
-                    <label for="sound-setting">音效设置</label>
-                    <select id="sound-setting">
-                        <option value="on">开启</option>
-                        <option value="off">关闭</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="notification-setting">通知设置</label>
-                    <select id="notification-setting">
-                        <option value="on">开启</option>
-                        <option value="off">关闭</option>
-                    </select>
-                </div>
-                
-                <button class="btn" id="save-settings-btn">💾 保存设置</button>
-            </div>
-            
-            <div class="footer">
-                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
-            </div>
+        <div class="footer">
+            <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
         </div>
     </div>
 
@@ -790,23 +600,26 @@
         }
 
         // Telegram登录
-        document.getElementById('telegram-login').addEventListener('click', function () {
-            const telegramId = new URLSearchParams(window.location.search).get('telegram_id');
-            if (telegramId) {
-                // 如果URL中有telegram_id参数，直接登录
-                loginWithTelegram(telegramId);
-                return;
-            }
+        const telegramLoginBtn = document.getElementById('telegram-login');
+        if (telegramLoginBtn) {
+            telegramLoginBtn.addEventListener('click', function () {
+                const telegramId = new URLSearchParams(window.location.search).get('telegram_id');
+                if (telegramId) {
+                    // 如果URL中有telegram_id参数，直接登录
+                    loginWithTelegram(telegramId);
+                    return;
+                }
 
-            // 在Telegram Web App环境中使用Telegram Web App API
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-                Telegram.WebApp.openTelegramLink(`https://t.me/${CONFIG.BOT_USERNAME}`);
-                return;
-            }
+                // 在Telegram Web App环境中使用Telegram Web App API
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                    Telegram.WebApp.openTelegramLink(`https://t.me/${CONFIG.BOT_USERNAME}`);
+                    return;
+                }
 
-            // 回退到新窗口打开
-            window.open(`https://t.me/${CONFIG.BOT_USERNAME}`, '_blank');
-        });
+                // 回退到新窗口打开
+                window.open(`https://t.me/${CONFIG.BOT_USERNAME}`, '_blank');
+            });
+        }
 
         // 使用Telegram登录
         async function loginWithTelegram(telegramId) {
@@ -826,8 +639,6 @@
                     username = params.get('username') || `user_${telegramId}`;
                 }
                 
-                showNotification('正在登录...', 'info');
-                
                 const response = await fetch(`${CONFIG.API_BASE}/api/login`, {
                     method: 'POST',
                     headers: {
@@ -845,58 +656,12 @@
                     currentUser = data.user;
                     showPage('main-page');
                     updateMainPage();
-                    showNotification('登录成功!', 'success');
                 } else {
-                    showNotification('登录失败: ' + data.error, 'error');
+                    alert('登录失败: ' + data.error);
                 }
             } catch (error) {
-                showNotification('登录出错: ' + error.message, 'error');
+                alert('登录出错: ' + error.message);
             }
-        }
-
-        // 显示通知
-        function showNotification(message, type = 'info') {
-            // 创建或获取通知元素
-            let notification = document.getElementById('notification');
-            if (!notification) {
-                notification = document.createElement('div');
-                notification.id = 'notification';
-                notification.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 20px;
-                    border-radius: 5px;
-                    color: white;
-                    font-weight: bold;
-                    z-index: 1000;
-                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-                    transition: opacity 0.3s;
-                `;
-                document.body.appendChild(notification);
-            }
-            
-            // 设置样式和内容
-            notification.textContent = message;
-            switch(type) {
-                case 'success':
-                    notification.style.background = 'linear-gradient(45deg, #43e97b, #38f9d7)';
-                    break;
-                case 'error':
-                    notification.style.background = 'linear-gradient(45deg, #ff4081, #f50057)';
-                    break;
-                case 'info':
-                default:
-                    notification.style.background = 'linear-gradient(45deg, #5865F2, #4aa0ff)';
-            }
-            
-            // 显示通知
-            notification.style.opacity = '1';
-            
-            // 3秒后自动隐藏
-            setTimeout(() => {
-                notification.style.opacity = '0';
-            }, 3000);
         }
 
         // 更新主页面信息
@@ -975,58 +740,75 @@
         }
 
         // 完成关卡
-        document.getElementById('complete-btn').addEventListener('click', async function() {
-            if (!currentLevel || !currentUser) return;
-            
-            try {
-                // 模拟API调用
-                // 实际应该调用API完成关卡并获取奖励
-                const reward = Math.floor(Math.random() * 20) + 5; // 随机奖励
+        const completeBtn = document.getElementById('complete-btn');
+        if (completeBtn) {
+            completeBtn.addEventListener('click', async function() {
+                if (!currentLevel || !currentUser) return;
                 
-                // 更新用户数据
-                currentUser.coins += reward;
-                currentUser.current_level = Math.max(currentUser.current_level, currentLevel + 1);
-                userLevels.push(currentLevel);
-                
-                // 更新界面
-                updateMainPage();
-                
-                alert(`恭喜完成关卡！获得 ${reward} 万花币奖励！`);
-                showPage('levels-page');
-            } catch (error) {
-                alert('完成关卡失败: ' + error.message);
-            }
-        });
+                try {
+                    // 模拟API调用
+                    // 实际应该调用API完成关卡并获取奖励
+                    const reward = Math.floor(Math.random() * 20) + 5; // 随机奖励
+                    
+                    // 更新用户数据
+                    currentUser.coins += reward;
+                    currentUser.current_level = Math.max(currentUser.current_level, currentLevel + 1);
+                    userLevels.push(currentLevel);
+                    
+                    // 更新界面
+                    updateMainPage();
+                    
+                    alert(`恭喜完成关卡！获得 ${reward} 万花币奖励！`);
+                    showPage('levels-page');
+                } catch (error) {
+                    alert('完成关卡失败: ' + error.message);
+                }
+            });
+        }
 
         // 更新签到状态
         function updateCheckinStatus() {
             if (currentUser) {
-                document.getElementById('streak-count').textContent = currentUser.checkin_streak || 0;
-                document.getElementById('checkin-reward').textContent = `今日签到可获得 ${Math.min((currentUser.checkin_streak || 0) + 1, 6) + (currentUser.checkin_streak && (currentUser.checkin_streak + 1) % 7 === 0 ? 10 : 0)} 万花币`;
+                const streakCountEl = document.getElementById('streak-count');
+                const checkinRewardEl = document.getElementById('checkin-reward');
+                
+                if (streakCountEl) {
+                    streakCountEl.textContent = currentUser.checkin_streak || 0;
+                }
+                
+                if (checkinRewardEl) {
+                    checkinRewardEl.textContent = `今日签到可获得 ${Math.min((currentUser.checkin_streak || 0) + 1, 6) + (currentUser.checkin_streak && (currentUser.checkin_streak + 1) % 7 === 0 ? 10 : 0)} 万花币`;
+                }
             }
         }
 
         // 签到
-        document.getElementById('checkin-btn').addEventListener('click', async function() {
-            if (!currentUser) return;
-            
-            try {
-                // 模拟签到API调用
-                const reward = Math.floor(Math.random() * 10) + 1;
+        const checkinBtn = document.getElementById('checkin-btn');
+        if (checkinBtn) {
+            checkinBtn.addEventListener('click', async function() {
+                if (!currentUser) return;
                 
-                // 更新用户数据
-                currentUser.coins += reward;
-                currentUser.checkin_streak = (currentUser.checkin_streak || 0) + 1;
-                
-                // 更新界面
-                updateMainPage();
-                updateCheckinStatus();
-                
-                document.getElementById('checkin-reward').textContent = `签到成功！获得 ${reward} 万花币奖励！`;
-            } catch (error) {
-                alert('签到失败: ' + error.message);
-            }
-        });
+                try {
+                    // 模拟签到API调用
+                    const reward = Math.floor(Math.random() * 10) + 1;
+                    
+                    // 更新用户数据
+                    currentUser.coins += reward;
+                    currentUser.checkin_streak = (currentUser.checkin_streak || 0) + 1;
+                    
+                    // 更新界面
+                    updateMainPage();
+                    updateCheckinStatus();
+                    
+                    const checkinRewardEl = document.getElementById('checkin-reward');
+                    if (checkinRewardEl) {
+                        checkinRewardEl.textContent = `签到成功！获得 ${reward} 万花币奖励！`;
+                    }
+                } catch (error) {
+                    alert('签到失败: ' + error.message);
+                }
+            });
+        }
 
         // 加载排行榜
         async function loadLeaderboard() {
@@ -1060,64 +842,82 @@
         }
 
         // 提现
-        document.getElementById('withdraw-btn').addEventListener('click', async function() {
-            if (!currentUser) return;
-            
-            const amount = parseInt(document.getElementById('withdraw-amount').value);
-            const alipayAccount = document.getElementById('alipay-account').value;
-            const realName = document.getElementById('real-name').value;
-            
-            if (!amount || !alipayAccount || !realName) {
-                alert('请填写完整信息');
-                return;
-            }
-            
-            if (amount > currentUser.coins) {
-                alert('万花币余额不足');
-                return;
-            }
-            
-            if (amount < 1000 || amount % 1000 !== 0) {
-                alert('提现金额必须为1000的倍数');
-                return;
-            }
-            
-            try {
-                // 模拟提现API调用
-                currentUser.coins -= amount;
+        const withdrawBtn = document.getElementById('withdraw-btn');
+        if (withdrawBtn) {
+            withdrawBtn.addEventListener('click', async function() {
+                if (!currentUser) return;
                 
-                // 更新界面
-                document.getElementById('balance').textContent = currentUser.coins;
-                updateMainPage();
+                const amountInput = document.getElementById('withdraw-amount');
+                const alipayAccountInput = document.getElementById('alipay-account');
+                const realNameInput = document.getElementById('real-name');
                 
-                alert(`提现申请已提交！${amount}万花币 (${amount/100}元) 将在1-3个工作日内到账`);
+                if (!amountInput || !alipayAccountInput || !realNameInput) return;
                 
-                // 清空表单
-                document.getElementById('withdraw-amount').value = '';
-                document.getElementById('alipay-account').value = '';
-                document.getElementById('real-name').value = '';
-            } catch (error) {
-                alert('提现申请失败: ' + error.message);
-            }
-        });
-
-        // 分享
-        document.getElementById('share-btn').addEventListener('click', async function() {
-            try {
-                // 模拟分享API调用
-                const reward = 5;
+                const amount = parseInt(amountInput.value);
+                const alipayAccount = alipayAccountInput.value;
+                const realName = realNameInput.value;
                 
-                // 更新用户数据
-                if (currentUser) {
-                    currentUser.coins += reward;
-                    updateMainPage();
+                if (!amount || !alipayAccount || !realName) {
+                    alert('请填写完整信息');
+                    return;
                 }
                 
-                document.getElementById('share-reward').textContent = `分享成功！获得 ${reward} 万花币奖励！`;
-            } catch (error) {
-                alert('分享失败: ' + error.message);
-            }
-        });
+                if (amount > currentUser.coins) {
+                    alert('万花币余额不足');
+                    return;
+                }
+                
+                if (amount < 1000 || amount % 1000 !== 0) {
+                    alert('提现金额必须为1000的倍数');
+                    return;
+                }
+                
+                try {
+                    // 模拟提现API调用
+                    currentUser.coins -= amount;
+                    
+                    // 更新界面
+                    const balanceEl = document.getElementById('balance');
+                    if (balanceEl) {
+                        balanceEl.textContent = currentUser.coins;
+                    }
+                    updateMainPage();
+                    
+                    alert(`提现申请已提交！${amount}万花币 (${amount/100}元) 将在1-3个工作日内到账`);
+                    
+                    // 清空表单
+                    amountInput.value = '';
+                    alipayAccountInput.value = '';
+                    realNameInput.value = '';
+                } catch (error) {
+                    alert('提现申请失败: ' + error.message);
+                }
+            });
+        }
+
+        // 分享
+        const shareBtn = document.getElementById('share-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', async function() {
+                try {
+                    // 模拟分享API调用
+                    const reward = 5;
+                    
+                    // 更新用户数据
+                    if (currentUser) {
+                        currentUser.coins += reward;
+                        updateMainPage();
+                    }
+                    
+                    const shareRewardEl = document.getElementById('share-reward');
+                    if (shareRewardEl) {
+                        shareRewardEl.textContent = `分享成功！获得 ${reward} 万花币奖励！`;
+                    }
+                } catch (error) {
+                    alert('分享失败: ' + error.message);
+                }
+            });
+        }
 
         // 加载成就
         async function loadAchievements() {
@@ -1155,42 +955,38 @@
         }
 
         // 保存设置
-        document.getElementById('save-settings-btn').addEventListener('click', function() {
-            const soundSetting = document.getElementById('sound-setting').value;
-            const notificationSetting = document.getElementById('notification-setting').value;
-            
-            // 保存设置到本地存储
-            localStorage.setItem('soundSetting', soundSetting);
-            localStorage.setItem('notificationSetting', notificationSetting);
-            
-            alert('设置已保存');
-        });
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        if (saveSettingsBtn) {
+            saveSettingsBtn.addEventListener('click', function() {
+                const soundSettingEl = document.getElementById('sound-setting');
+                const notificationSettingEl = document.getElementById('notification-setting');
+                
+                if (!soundSettingEl || !notificationSettingEl) return;
+                
+                const soundSetting = soundSettingEl.value;
+                const notificationSetting = notificationSettingEl.value;
+                
+                // 保存设置到本地存储
+                localStorage.setItem('soundSetting', soundSetting);
+                localStorage.setItem('notificationSetting', notificationSetting);
+                
+                alert('设置已保存');
+            });
+        }
 
         // 退出登录
-        document.getElementById('logout-btn').addEventListener('click', function() {
-            if (confirm('确定要退出登录吗？')) {
-                currentUser = null;
-                showPage('login-page');
-            }
-        });
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                if (confirm('确定要退出登录吗？')) {
+                    currentUser = null;
+                    showPage('login-page');
+                }
+            });
+        }
 
         // 页面加载完成后检查URL参数
-        document.addEventListener('DOMContentLoaded', function () {
-            // 初始化 Telegram Web App
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-                Telegram.WebApp.ready();
-                Telegram.WebApp.expand(); // 全屏显示
-
-                // 获取用户信息
-                const initData = Telegram.WebApp.initDataUnsafe;
-                if (initData && initData.user) {
-                    const user = initData.user;
-                    loginWithTelegram(user.id);
-                    return;
-                }
-            }
-
-            // 回退到传统登录方式
+        document.addEventListener('DOMContentLoaded', function() {
             const telegramId = new URLSearchParams(window.location.search).get('telegram_id');
             if (telegramId) {
                 loginWithTelegram(telegramId);
