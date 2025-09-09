@@ -403,6 +403,17 @@
             font-family: 'Microsoft YaHei', 'STHeiti', sans-serif;
         }
 
+        /* 页面样式 */
+        .page {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 5px;
@@ -510,7 +521,7 @@
 <body>
     <div class="container">
         <!-- 登录页面 -->
-        <div class="login-page">
+        <div class="page login-page active">
             <div class="welcome-section">
                 <h1 class="welcome-title">万花楼-《万象谜题》</h1>
                 <p class="welcome-subtitle">挑战2100关，赢取万花币，兑换现金奖励</p>
@@ -549,9 +560,188 @@
             </div>
         </div>
 
+        <!-- 主页面 -->
+        <div class="page main-page">
+            <div class="header">
+                <h1>万花楼-《万象谜题》</h1>
+                <p>挑战2100关，赢取万花币，兑换现金奖励</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="coins-count">0</div>
+                    <div class="stat-label">万花币</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="current-level">1</div>
+                    <div class="stat-label">当前关卡</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="checkin-streak">0</div>
+                    <div class="stat-label">签到天数</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn" onclick="showPage('levels-page')">🎮 开始游戏</button>
+                <button class="btn btn-secondary" onclick="showPage('checkin-page')">📅 每日签到</button>
+                <button class="btn btn-success" onclick="showPage('leaderboard-page')">🏆 排行榜</button>
+                <button class="btn btn-warning" onclick="showPage('achievements-page')">🎖 成就</button>
+                <button class="btn" onclick="showPage('withdraw-page')">💰 提现</button>
+                <button class="btn btn-secondary" onclick="showPage('settings-page')">⚙️ 设置</button>
+                <button class="btn" id="logout-btn">🚪 退出登录</button>
+            </div>
+            
+            <div class="footer">
+                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+            </div>
+        </div>
 
-        <div class="footer">
-            <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+        <!-- 关卡选择页面 -->
+        <div class="page levels-page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <div class="header">
+                <h1>选择关卡</h1>
+            </div>
+            
+            <div class="level-grid" id="level-grid">
+                <!-- 关卡将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="footer">
+                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+            </div>
+        </div>
+
+        <!-- 游戏页面 -->
+        <div class="page game-page">
+            <button class="back-btn" onclick="showPage('levels-page')">←</button>
+            <div class="game-area">
+                <h2 class="game-title" id="game-level-title">关卡</h2>
+                <div class="game-content" id="game-content">
+                    <!-- 游戏内容将通过JavaScript动态生成 -->
+                </div>
+                <button class="btn" id="complete-btn">✅ 完成关卡</button>
+            </div>
+            
+            <div class="footer">
+                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+            </div>
+        </div>
+
+        <!-- 签到页面 -->
+        <div class="page checkin-page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <div class="header">
+                <h1>每日签到</h1>
+            </div>
+            
+            <div class="game-area">
+                <h2 class="game-title">连续签到 <span id="streak-count">0</span> 天</h2>
+                <p id="checkin-reward">今日签到可获得奖励</p>
+                <button class="btn" id="checkin-btn">📅 立即签到</button>
+            </div>
+            
+            <div class="footer">
+                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+            </div>
+        </div>
+
+        <!-- 排行榜页面 -->
+        <div class="page leaderboard-page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <div class="header">
+                <h1>排行榜</h1>
+            </div>
+            
+            <div id="leaderboard-list">
+                <!-- 排行榜将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="footer">
+                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+            </div>
+        </div>
+
+        <!-- 成就页面 -->
+        <div class="page achievements-page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <div class="header">
+                <h1>成就系统</h1>
+            </div>
+            
+            <div id="achievements-list">
+                <!-- 成就将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="footer">
+                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+            </div>
+        </div>
+
+        <!-- 提现页面 -->
+        <div class="page withdraw-page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <div class="header">
+                <h1>提现</h1>
+            </div>
+            
+            <div class="game-area">
+                <h2 class="game-title">当前余额: <span id="balance">0</span> 万花币</h2>
+                
+                <div class="form-group">
+                    <label for="withdraw-amount">提现金额 (1000万花币=10元)</label>
+                    <input type="number" id="withdraw-amount" placeholder="请输入提现金额(1000的倍数)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="alipay-account">支付宝账号</label>
+                    <input type="text" id="alipay-account" placeholder="请输入支付宝账号">
+                </div>
+                
+                <div class="form-group">
+                    <label for="real-name">真实姓名</label>
+                    <input type="text" id="real-name" placeholder="请输入真实姓名">
+                </div>
+                
+                <button class="btn" id="withdraw-btn">💰 申请提现</button>
+            </div>
+            
+            <div class="footer">
+                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+            </div>
+        </div>
+
+        <!-- 设置页面 -->
+        <div class="page settings-page">
+            <button class="back-btn" onclick="showPage('main-page')">←</button>
+            <div class="header">
+                <h1>设置</h1>
+            </div>
+            
+            <div class="game-area">
+                <div class="form-group">
+                    <label for="sound-setting">音效设置</label>
+                    <select id="sound-setting">
+                        <option value="on">开启</option>
+                        <option value="off">关闭</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notification-setting">通知设置</label>
+                    <select id="notification-setting">
+                        <option value="on">开启</option>
+                        <option value="off">关闭</option>
+                    </select>
+                </div>
+                
+                <button class="btn" id="save-settings-btn">💾 保存设置</button>
+            </div>
+            
+            <div class="footer">
+                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
+            </div>
         </div>
     </div>
 
