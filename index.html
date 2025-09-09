@@ -1281,12 +1281,14 @@
         let levels = [];
         let currentLevel = null;
         let activeCategory = 'all';
+        
         // 初始化
         document.addEventListener('DOMContentLoaded', async () => {
             // 检查URL参数中是否有token
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             const authStatus = urlParams.get('auth');
+            
             if (token) {
                 // 保存token
                 localStorage.setItem('jwt_token', token);
@@ -1294,17 +1296,21 @@
                 // 清除URL参数
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
+            
             // 检查认证状态
             if (authStatus === 'failed') {
                 showToast('认证失败，请重试', 'error');
             } else if (authStatus === 'error') {
                 showToast('认证出错，请稍后再试', 'error');
             }
+            
             // 初始化页面
             await initApp();
+            
             // 绑定事件
             bindEvents();
         });
+        
         // 初始化应用
         async function initApp() {
             // 如果有token，验证并获取用户信息
@@ -1324,11 +1330,13 @@
                     userToken = null;
                 }
             }
+            
             // 如果没有用户信息，显示登录提示
             if (!currentUser) {
                 showLoginModal();
             }
         }
+        
         // 绑定事件
         function bindEvents() {
             // 导航事件
@@ -1340,27 +1348,35 @@
                     showLoginModal();
                 }
             });
+            
             document.getElementById('backToHomeFromLevels').addEventListener('click', () => {
                 showPage('homePage');
             });
+            
             document.getElementById('backToLevelsFromDetail').addEventListener('click', () => {
                 showPage('levelsPage');
             });
+            
             document.getElementById('backToHomeFromCheckIn').addEventListener('click', () => {
                 showPage('homePage');
             });
+            
             document.getElementById('backToHomeFromLeaderboard').addEventListener('click', () => {
                 showPage('homePage');
             });
+            
             document.getElementById('backToHomeFromWithdraw').addEventListener('click', () => {
                 showPage('homePage');
             });
+            
             document.getElementById('backToHomeFromAchievements').addEventListener('click', () => {
                 showPage('homePage');
             });
+            
             document.getElementById('backToHomeFromSettings').addEventListener('click', () => {
                 showPage('homePage');
             });
+            
             // 关卡分类事件
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1370,22 +1386,26 @@
                     renderLevels();
                 });
             });
+            
             // 开始关卡
             document.getElementById('startLevelBtn').addEventListener('click', () => {
                 if (currentLevel) {
                     startLevel(currentLevel.id);
                 }
             });
+            
             // 观看广告获取提示
             document.getElementById('watchAdForHintBtn').addEventListener('click', () => {
                 showToast('广告功能开发中，敬请期待', 'warning');
             });
+            
             // 签相关事件
             document.getElementById('checkInBtn').addEventListener('click', async () => {
                 if (!currentUser) {
                     showLoginModal();
                     return;
                 }
+                
                 try {
                     const result = await checkIn();
                     if (result.success) {
@@ -1401,13 +1421,16 @@
                     showToast('签到失败，请稍后再试', 'error');
                 }
             });
+            
             document.getElementById('repairCheckInBtn').addEventListener('click', () => {
                 if (!currentUser) {
                     showLoginModal();
                     return;
                 }
+                
                 showRepairCheckInModal();
             });
+            
             // 排行榜标签事件
             document.querySelectorAll('.leaderboard-tab').forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -1416,6 +1439,7 @@
                     loadLeaderboard(tab.dataset.tab);
                 });
             });
+            
             // 提现表单事件
             document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1424,13 +1448,16 @@
                     showLoginModal();
                     return;
                 }
+                
                 const amount = parseInt(document.getElementById('withdrawAmount').value);
                 const alipayAccount = document.getElementById('alipayAccount').value.trim();
                 const realName = document.getElementById('realName').value.trim();
+                
                 if (!alipayAccount || !realName) {
                     showToast('请填写完整的提现信息', 'error');
                     return;
                 }
+                
                 try {
                     const result = await withdraw(amount, alipayAccount, realName);
                     if (result.success) {
@@ -1447,29 +1474,35 @@
                     showToast('提现失败，请稍后再试', 'error');
                 }
             });
+            
             // 设置开关事件
             document.getElementById('soundToggle').addEventListener('click', function() {
                 this.classList.toggle('active');
                 localStorage.setItem('soundEnabled', this.classList.contains('active'));
             });
+            
             document.getElementById('musicToggle').addEventListener('click', function() {
                 this.classList.toggle('active');
                 localStorage.setItem('musicEnabled', this.classList.contains('active'));
             });
+            
             document.getElementById('vibrationToggle').addEventListener('click', function() {
                 this.classList.toggle('active');
                 localStorage.setItem('vibrationEnabled', this.classList.contains('active'));
             });
+            
             document.getElementById('notificationToggle').addEventListener('click', function() {
                 this.classList.toggle('active');
                 localStorage.setItem('notificationEnabled', this.classList.contains('active'));
             });
+            
             // 分享事件
             document.getElementById('shareToTelegramBtn').addEventListener('click', async () => {
                 if (!currentUser) {
                     showLoginModal();
                     return;
                 }
+                
                 try {
                     const shareText = `我在玩《万象谜题》，一款非常有趣的益智游戏，快来挑战吧！`;
                     const shareUrl = `https://beijingshunyi.github.io/game-web/`;
@@ -1485,6 +1518,7 @@
                     showToast('分享失败，请稍后再试', 'error');
                 }
             });
+            
             document.getElementById('copyLinkBtn').addEventListener('click', () => {
                 const shareUrl = `https://beijingshunyi.github.io/game-web/`;
                 navigator.clipboard.writeText(shareUrl).then(() => {
@@ -1493,6 +1527,7 @@
                     showToast('复制失败，请手动复制', 'error');
                 });
             });
+            
             // 模态框事件
             document.getElementById('modalClose').addEventListener('click', closeModal);
             document.getElementById('modal').addEventListener('click', (e) => {
@@ -1500,26 +1535,31 @@
                     closeModal();
                 }
             });
+            
             // 初始化设置
             initSettings();
         }
+        
         // 初始化设置
         function initSettings() {
             const soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
             const musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
             const vibrationEnabled = localStorage.getItem('vibrationEnabled') === 'true';
             const notificationEnabled = localStorage.getItem('notificationEnabled') !== 'false';
+            
             document.getElementById('soundToggle').classList.toggle('active', soundEnabled);
             document.getElementById('musicToggle').classList.toggle('active', musicEnabled);
             document.getElementById('vibrationToggle').classList.toggle('active', vibrationEnabled);
             document.getElementById('notificationToggle').classList.toggle('active', notificationEnabled);
         }
+        
         // 显示页面
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
             document.getElementById(pageId).classList.add('active');
+            
             // 页面切换时的特殊处理
             if (pageId === 'checkInPage' && currentUser) {
                 loadCheckInData();
@@ -1531,6 +1571,7 @@
                 loadAchievements();
             }
         }
+        
         // 显示登录模态框
         function showLoginModal() {
             const modalTitle = '登录游戏';
@@ -1545,17 +1586,19 @@
                 </button>
                 <button class="btn btn-outline" id="cancelLoginBtn">取消</button>
             `;
+            
             showModal(modalTitle, modalBody, modalFooter);
+            
             // 绑定登录按钮事件
             document.getElementById('telegramLoginBtn').addEventListener('click', () => {
                 const botUsername = 'bjxcyouxiBot';
-                const botId = '6203295224'; // 添加机器人ID
+                const botId = '6203295224'; // 机器人ID
                 const origin = 'https://beijingshunyi.github.io';
                 const callbackUrl = `${API_BASE_URL}/api/auth/telegram/callback`;
                 
                 // 构建Telegram OAuth URL
                 const params = new URLSearchParams();
-                params.append('bot_id', botId); // 添加bot_id参数
+                params.append('bot_id', botId);
                 params.append('bot_username', botUsername);
                 params.append('origin', origin);
                 params.append('embed', '0');
@@ -1566,8 +1609,10 @@
                 
                 window.location.href = telegramAuthUrl;
             });
+            
             document.getElementById('cancelLoginBtn').addEventListener('click', closeModal);
         }
+        
         // 显示补签模态框
         function showRepairCheckInModal() {
             const modalTitle = '补签';
@@ -1582,7 +1627,9 @@
                 <button class="btn btn-primary" id="confirmRepairBtn">确认补签</button>
                 <button class="btn btn-outline" id="cancelRepairBtn">取消</button>
             `;
+            
             showModal(modalTitle, modalBody, modalFooter);
+            
             // 绑定确认补签按钮事件
             document.getElementById('confirmRepairBtn').addEventListener('click', async () => {
                 const repairDate = document.getElementById('repairDate').value;
@@ -1591,10 +1638,12 @@
                     showToast('请选择补签日期', 'error');
                     return;
                 }
+                
                 if (currentUser.flower_coins < 5) {
                     showToast('万花币不足，无法补签', 'error');
                     return;
                 }
+                
                 try {
                     const result = await repairCheckIn(repairDate);
                     if (result.success) {
@@ -1611,8 +1660,10 @@
                     showToast('补签失败，请稍后再试', 'error');
                 }
             });
+            
             document.getElementById('cancelRepairBtn').addEventListener('click', closeModal);
         }
+        
         // 显示模态框
         function showModal(title, body, footer) {
             document.getElementById('modalTitle').textContent = title;
@@ -1620,10 +1671,12 @@
             document.getElementById('modalFooter').innerHTML = footer;
             document.getElementById('modal').classList.add('active');
         }
+        
         // 关闭模态框
         function closeModal() {
             document.getElementById('modal').classList.remove('active');
         }
+        
         // 显示提示
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');
@@ -1642,6 +1695,7 @@
                 toast.classList.remove('show');
             }, 3000);
         }
+        
         // API请求函数
         async function apiRequest(endpoint, options = {}) {
             const url = `${API_BASE_URL}${endpoint}`;
@@ -1649,19 +1703,24 @@
                 'Content-Type': 'application/json',
                 ...options.headers
             };
+            
             if (userToken) {
                 headers['Authorization'] = `Bearer ${userToken}`;
             }
+            
             const response = await fetch(url, {
                 ...options,
                 headers
             });
+            
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || `Request failed with status ${response.status}`);
             }
+            
             return await response.json();
         }
+        
         // 获取用户信息
         async function fetchUserInfo() {
             try {
@@ -1672,9 +1731,11 @@
                 return null;
             }
         }
+        
         // 更新用户信息显示
         function updateUserInfo() {
             if (!currentUser) return;
+            
             document.getElementById('userCoins').textContent = currentUser.flower_coins;
             
             // 显示用户头像
@@ -1687,6 +1748,7 @@
                 avatar.textContent = '?';
             }
         }
+        
         // 加载关卡列表
         async function loadLevels() {
             try {
@@ -1698,14 +1760,17 @@
                 showToast('加载关卡失败，请稍后再试', 'error');
             }
         }
+        
         // 渲染关卡列表
         function renderLevels() {
             const levelGrid = document.getElementById('levelGrid');
             levelGrid.innerHTML = '';
+            
             // 过滤关卡
             const filteredLevels = activeCategory === 'all' 
                 ? levels 
                 : levels.filter(level => level.type === activeCategory);
+            
             // 渲染关卡
             filteredLevels.forEach(level => {
                 const levelItem = document.createElement('div');
@@ -1718,6 +1783,7 @@
                 if (level.progress && level.progress.completed) {
                     levelItem.classList.add('completed');
                 }
+                
                 levelItem.innerHTML = `
                     <div class="level-number">${level.id}</div>
                     <div class="level-type">${getLevelTypeName(level.type)}</div>
@@ -1727,14 +1793,17 @@
                     </div>
                     ${!level.unlocked ? '<div class="level-lock"><i class="fas fa-lock"></i></div>' : ''}
                 `;
+                
                 if (level.unlocked) {
                     levelItem.addEventListener('click', () => {
                         showLevelDetail(level);
                     });
                 }
+                
                 levelGrid.appendChild(levelItem);
             });
         }
+        
         // 获取关卡类型名称
         function getLevelTypeName(type) {
             const typeNames = {
@@ -1745,6 +1814,7 @@
             };
             return typeNames[type] || type;
         }
+        
         // 显示关卡详情
         function showLevelDetail(level) {
             currentLevel = level;
@@ -1753,6 +1823,7 @@
             document.getElementById('levelDifficulty').textContent = `难度 ${level.difficulty}`;
             document.getElementById('levelReward').textContent = `${level.reward} 万花币`;
             document.getElementById('levelDescription').textContent = level.description || '暂无描述';
+            
             // 更新状态显示
             const statusElement = document.getElementById('levelStatus');
             if (level.progress && level.progress.completed) {
@@ -1769,14 +1840,17 @@
                     </div>
                 `;
             }
+            
             showPage('levelDetailPage');
         }
+        
         // 格式化时间
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
             const secs = seconds % 60;
             return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
+        
         // 开始关卡
         function startLevel(levelId) {
             // 这里应该根据关卡类型和配置加载相应的游戏界面
@@ -1797,6 +1871,7 @@
                     </button>
                 </div>
             `;
+            
             // 绑定完成按钮事件
             document.getElementById('completeLevelBtn').addEventListener('click', async () => {
                 try {
@@ -1816,6 +1891,7 @@
                 }
             });
         }
+        
         // 完成关卡
         async function completeLevel(levelId, time, attempts) {
             try {
@@ -1829,6 +1905,7 @@
                 throw error;
             }
         }
+        
         // 签到
         async function checkIn() {
             try {
@@ -1841,6 +1918,7 @@
                 throw error;
             }
         }
+        
         // 补签
         async function repairCheckIn(date) {
             try {
@@ -1854,19 +1932,23 @@
                 throw error;
             }
         }
+        
         // 加载签到数据
         async function loadCheckInData() {
             try {
                 const response = await apiRequest('/api/check-ins');
                 const { checkIns, consecutiveDays } = response;
+                
                 // 更新连续签到天数
                 document.getElementById('consecutiveDays').textContent = consecutiveDays;
+                
                 // 计算今日奖励
                 let todayReward = consecutiveDays;
                 if (consecutiveDays >= 7) {
                     todayReward += 10;
                 }
                 document.getElementById('todayReward').textContent = todayReward;
+                
                 // 生成日历
                 generateCheckInCalendar(checkIns);
             } catch (error) {
@@ -1874,16 +1956,19 @@
                 showToast('加载签到数据失败', 'error');
             }
         }
+        
         // 生成签到日历
         function generateCheckInCalendar(checkIns) {
             const calendar = document.getElementById('checkInCalendar');
             calendar.innerHTML = '';
+            
             // 获取当前月份信息
             const now = new Date();
             const year = now.getFullYear();
             const month = now.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const firstDayOfMonth = new Date(year, month, 1).getDay();
+            
             // 添加星期标题
             const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
             weekDays.forEach(day => {
@@ -1892,11 +1977,13 @@
                 dayElement.textContent = day;
                 calendar.appendChild(dayElement);
             });
+            
             // 添加空白日期
             for (let i = 0; i < firstDayOfMonth; i++) {
                 const emptyDay = document.createElement('div');
                 calendar.appendChild(emptyDay);
             }
+            
             // 添加日期
             const today = now.getDate();
             const checkInMap = {};
@@ -1904,6 +1991,7 @@
                 const date = new Date(checkIn.check_in_date);
                 checkInMap[date.getDate()] = checkIn;
             });
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day';
@@ -1920,12 +2008,15 @@
                 } else {
                     dayElement.innerHTML = `<div class="calendar-day-number">${day}</div>`;
                 }
+                
                 if (day === today) {
                     dayElement.classList.add('today');
                 }
+                
                 calendar.appendChild(dayElement);
             }
         }
+        
         // 加载排行榜
         async function loadLeaderboard(type) {
             try {
@@ -1936,27 +2027,33 @@
                 showToast('加载排行榜失败', 'error');
             }
         }
+        
         // 渲染排行榜
         function renderLeaderboard(leaderboard, type) {
             const leaderboardList = document.getElementById('leaderboardList');
             leaderboardList.innerHTML = '';
+            
             if (leaderboard.length === 0) {
                 leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px;">暂无数据</div>';
                 return;
             }
+            
             leaderboard.forEach((item, index) => {
                 const itemElement = document.createElement('div');
                 itemElement.className = 'leaderboard-item';
+                
                 let rankClass = '';
                 if (item.rank === 1) rankClass = 'top-1';
                 else if (item.rank === 2) rankClass = 'top-2';
                 else if (item.rank === 3) rankClass = 'top-3';
+                
                 let scoreText = '';
                 if (type === 'monthly') {
                     scoreText = `完成关卡: ${item.levelsCompleted} | 积分: ${item.score}`;
                 } else {
                     scoreText = `万花币: ${item.score}`;
                 }
+                
                 itemElement.innerHTML = `
                     <div class="leaderboard-rank ${rankClass}">${item.rank}</div>
                     <div class="leaderboard-info">
@@ -1964,9 +2061,11 @@
                         <div class="leaderboard-score">${scoreText}</div>
                     </div>
                 `;
+                
                 leaderboardList.appendChild(itemElement);
             });
         }
+        
         // 提现
         async function withdraw(amount, alipayAccount, realName) {
             try {
@@ -1980,6 +2079,7 @@
                 throw error;
             }
         }
+        
         // 加载提现记录
         async function loadWithdrawHistory() {
             try {
@@ -1990,19 +2090,24 @@
                 showToast('加载提现记录失败', 'error');
             }
         }
+        
         // 渲染提现记录
         function renderWithdrawHistory(withdrawals) {
             const historyList = document.getElementById('withdrawHistoryList');
             historyList.innerHTML = '';
+            
             if (withdrawals.length === 0) {
                 historyList.innerHTML = '<div style="text-align: center; padding: 20px;">暂无提现记录</div>';
                 return;
             }
+            
             withdrawals.forEach(withdrawal => {
                 const itemElement = document.createElement('div');
                 itemElement.className = 'withdraw-history-item';
+                
                 const date = new Date(withdrawal.created_at);
                 const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+                
                 itemElement.innerHTML = `
                     <div class="withdraw-history-info">
                         <div class="withdraw-history-amount">${withdrawal.amount / 100}元</div>
@@ -2014,9 +2119,11 @@
                           withdrawal.status === 'rejected' ? '已拒绝' : withdrawal.status}
                     </div>
                 `;
+                
                 historyList.appendChild(itemElement);
             });
         }
+        
         // 加载成就
         async function loadAchievements() {
             try {
@@ -2027,10 +2134,12 @@
                 const totalAchievements = achievements.length;
                 const completedAchievements = achievements.filter(a => a.completed).length;
                 const progress = totalAchievements > 0 ? Math.round((completedAchievements / totalAchievements) * 100) : 0;
+                
                 // 更新统计显示
                 document.getElementById('totalAchievements').textContent = totalAchievements;
                 document.getElementById('completedAchievements').textContent = completedAchievements;
                 document.getElementById('achievementProgress').textContent = `${progress}%`;
+                
                 // 渲染成就列表
                 renderAchievements(achievements);
             } catch (error) {
@@ -2038,10 +2147,12 @@
                 showToast('加载成就失败', 'error');
             }
         }
+        
         // 渲染成就列表
         function renderAchievements(achievements) {
             const achievementList = document.getElementById('achievementList');
             achievementList.innerHTML = '';
+            
             achievements.forEach(achievement => {
                 const itemElement = document.createElement('div');
                 itemElement.className = 'achievement-item';
@@ -2049,12 +2160,14 @@
                 if (achievement.completed) {
                     itemElement.classList.add('completed');
                 }
+                
                 // 根据成就类型选择图标
                 let icon = 'fa-trophy';
                 if (achievement.type === 'levels') icon = 'fa-puzzle-piece';
                 else if (achievement.type === 'coins') icon = 'fa-coins';
                 else if (achievement.type === 'time') icon = 'fa-clock';
                 else if (achievement.type === 'streak') icon = 'fa-calendar-check';
+                
                 itemElement.innerHTML = `
                     <div class="achievement-icon">
                         <i class="fas ${icon}"></i>
@@ -2068,9 +2181,11 @@
                         <span>${achievement.reward}</span>
                     </div>
                 `;
+                
                 achievementList.appendChild(itemElement);
             });
         }
+        
         // 记录分享
         async function recordShare(shareType, shareData) {
             try {
