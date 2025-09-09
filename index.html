@@ -1796,7 +1796,16 @@
                 const botUsername = 'bjxcyouxiBot';
                 const origin = 'https://beijingshunyi.github.io';
                 const callbackUrl = `${API_BASE_URL}/api/auth/telegram/callback`;
-                const telegramAuthUrl = `https://oauth.telegram.org/auth?bot_id=${botUsername}&origin=${origin}&embed=0&request_access=write&return_to=${callbackUrl}`;
+                
+                // 构建Telegram OAuth URL
+                const params = new URLSearchParams();
+                params.append('bot_username', botUsername);
+                params.append('origin', origin);
+                params.append('embed', '0');
+                params.append('request_access', 'write');
+                params.append('return_to', callbackUrl);
+                
+                const telegramAuthUrl = `https://oauth.telegram.org/auth?${params.toString()}`;
                 
                 window.location.href = telegramAuthUrl;
             });
