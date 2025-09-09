@@ -36,25 +36,6 @@
             justify-content: center;
         }
 
-        .page {
-            display: none;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 20px 15px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-            margin-bottom: 10px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            max-width: 100%;
-            width: 100%;
-            max-height: 95vh;
-            overflow-y: auto;
-        }
-
-        .page.active {
-            display: block;
-            animation: fadeIn 0.8s ease;
-        }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -524,49 +505,12 @@
             }
         }
         
-        @media (max-height: 600px) {
-            .welcome-title {
-                font-size: 1.2em;
-            }
-            
-            .welcome-subtitle {
-                font-size: 0.7em;
-                margin-bottom: 10px;
-            }
-            
-            .features {
-                margin: 10px 0;
-                gap: 10px;
-            }
-            
-            .feature-card {
-                padding: 10px 5px;
-            }
-            
-            .feature-title {
-                font-size: 0.9em;
-            }
-            
-            .feature-description {
-                font-size: 0.75em;
-            }
-            
-            .feature-icon {
-                font-size: 1.5em;
-            }
-            
-            .btn {
-                padding: 10px 20px;
-                font-size: 14px;
-                margin: 5px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- 登录页面 -->
-        <div id="login-page" class="page active">
+        <div class="login-page">
             <div class="welcome-section">
                 <h1 class="welcome-title">万花楼-《万象谜题》</h1>
                 <p class="welcome-subtitle">挑战2100关，赢取万花币，兑换现金奖励</p>
@@ -576,182 +520,35 @@
                 <div class="feature-card">
                     <div class="feature-icon">🧩</div>
                     <h3 class="feature-title">丰富多样的关卡设计</h3>
-                    <p class="feature-description">超过2100个精心设计的谜题关卡，涵盖解谜、策略、动作和记忆四大类型，每个关卡都有独特的挑战和玩法，让你体验无穷乐趣。</p>
+                    <p class="feature-description">超过2100个精心设计的谜题关卡，涵盖解谜、策略、动作和记忆四大类型。</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">💰</div>
                     <h3 class="feature-title">万花币现金兑换</h3>
-                    <p class="feature-description">通过游戏获得万花币，1000个万花币可直接兑换10元人民币现金奖励，提现至支付宝账户，让娱乐变得更有价值。</p>
+                    <p class="feature-description">1000个万花币可直接兑换10元人民币现金奖励，提现至支付宝账户。</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">🏆</div>
                     <h3 class="feature-title">成就与排行榜系统</h3>
-                    <p class="feature-description">完成挑战解锁丰富成就，与全服玩家一较高下，争夺月度排行榜，赢取额外奖励，展现你的超凡智慧。</p>
+                    <p class="feature-description">完成挑战解锁丰富成就，与全服玩家一较高下，赢取额外奖励。</p>
                 </div>
             </div>
             
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn" id="telegram-login" style="padding: 16px 35px; font-size: 1.1em;">
-                    🚀 使用 Telegram 登录
-                </button>
-                <p style="margin-top: 20px; font-size: 0.9em; color: #e0e0e0;">
-                    登录即表示您同意我们的服务条款和隐私政策
-                </p>
+            <button class="btn" id="telegram-login">
+                🚀 使用 Telegram 登录
+            </button>
+            
+            <p style="text-align: center; font-size: 0.8em; color: #999;">
+                登录即表示您同意服务条款和隐私政策
+            </p>
+            
+            <div class="footer">
+                <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
             </div>
         </div>
 
-        <!-- 主页面 -->
-        <div id="main-page" class="page">
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="coins-count">0</div>
-                    <div class="stat-label">万花币</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="current-level">1</div>
-                    <div class="stat-label">当前关卡</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="checkin-streak">0</div>
-                    <div class="stat-label">签到天数</div>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin: 20px 0;">
-                <button class="btn" onclick="showPage('levels-page')">🎮 开始游戏</button>
-                <button class="btn btn-secondary" onclick="showPage('checkin-page')">📅 每日签到</button>
-                <button class="btn btn-success" onclick="showPage('leaderboard-page')">🏆 排行榜</button>
-                <button class="btn btn-warning" onclick="showPage('withdraw-page')">💰 提现</button>
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-                <button class="btn" onclick="showPage('achievements-page')">🏅 成就</button>
-                <button class="btn" onclick="showPage('share-page')">📤 分享</button>
-                <button class="btn" onclick="showPage('settings-page')">⚙️ 设置</button>
-            </div>
-        </div>
-
-        <!-- 关卡选择页面 -->
-        <div id="levels-page" class="page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">选择关卡</h2>
-            <div class="level-grid" id="level-grid">
-                <!-- 关卡将通过JavaScript动态生成 -->
-            </div>
-        </div>
-
-        <!-- 游戏关卡页面 -->
-        <div id="game-page" class="page">
-            <button class="back-btn" onclick="showPage('levels-page')">←</button>
-            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;" id="game-level-title">关卡 1</h2>
-            <div class="game-area">
-                <div class="game-content" id="game-content">
-                    <!-- 游戏内容将根据关卡类型动态生成 -->
-                    <p>游戏内容加载中...</p>
-                </div>
-            </div>
-            <div style="text-align: center;">
-                <button class="btn" id="hint-btn">💡 获取提示 (观看广告)</button>
-                <button class="btn btn-success" id="complete-btn">✅ 完成关卡</button>
-            </div>
-        </div>
-
-        <!-- 签到页面 -->
-        <div id="checkin-page" class="page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">每日签到</h2>
-            <div class="game-area">
-                <div class="game-content">
-                    <p style="font-size: 1.2em; margin-bottom: 20px;">连续签到 <span id="streak-count">0</span> 天</p>
-                    <button class="btn btn-success" id="checkin-btn" style="padding: 15px 30px; font-size: 1.2em;">
-                        📅 立即签到
-                    </button>
-                    <p style="margin-top: 20px;" id="checkin-reward"></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 排行榜页面 -->
-        <div id="leaderboard-page" class="page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">排行榜</h2>
-            <div id="leaderboard-list">
-                <!-- 排行榜将通过JavaScript动态生成 -->
-                <p style="text-align: center;">加载中...</p>
-            </div>
-        </div>
-
-        <!-- 提现页面 -->
-        <div id="withdraw-page" class="page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">万花币提现</h2>
-            <div class="form-group">
-                <label>当前万花币余额：</label>
-                <div style="font-size: 1.5em; font-weight: bold; color: #667eea;" id="balance">0</div>
-            </div>
-            <div class="form-group">
-                <label for="withdraw-amount">提现金额 (1000万花币 = 10元)：</label>
-                <input type="number" id="withdraw-amount" placeholder="请输入提现金额" min="1000" step="1000">
-            </div>
-            <div class="form-group">
-                <label for="alipay-account">支付宝账号：</label>
-                <input type="text" id="alipay-account" placeholder="请输入支付宝账号">
-            </div>
-            <div class="form-group">
-                <label for="real-name">真实姓名：</label>
-                <input type="text" id="real-name" placeholder="请输入真实姓名">
-            </div>
-            <button class="btn btn-success" id="withdraw-btn" style="width: 100%;">提交提现申请</button>
-        </div>
-
-        <!-- 分享页面 -->
-        <div id="share-page" class="page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">分享游戏</h2>
-            <div class="game-area">
-                <div class="game-content">
-                    <p style="margin-bottom: 20px;">分享游戏给朋友，可以获得额外奖励！</p>
-                    <button class="btn" id="share-btn" style="padding: 15px 30px; font-size: 1.1em;">
-                        📤 分享到 Telegram
-                    </button>
-                    <p style="margin-top: 20px;" id="share-reward"></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 成就页面 -->
-        <div id="achievements-page" class="page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">成就系统</h2>
-            <div id="achievements-list">
-                <!-- 成就将通过JavaScript动态生成 -->
-                <p style="text-align: center;">加载中...</p>
-            </div>
-        </div>
-
-        <!-- 设置页面 -->
-        <div id="settings-page" class="page">
-            <button class="back-btn" onclick="showPage('main-page')">←</button>
-            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">设置</h2>
-            <div class="form-group">
-                <label>音效设置：</label>
-                <select id="sound-setting">
-                    <option value="on">开启</option>
-                    <option value="off">关闭</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>通知设置：</label>
-                <select id="notification-setting">
-                    <option value="on">开启</option>
-                    <option value="off">关闭</option>
-                </select>
-            </div>
-            <button class="btn" id="save-settings-btn">保存设置</button>
-            <button class="btn btn-warning" id="logout-btn" style="margin-top: 20px;">退出登录</button>
-        </div>
 
         <div class="footer">
             <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
@@ -1128,21 +925,7 @@
         });
 
         // 页面加载完成后检查URL参数
-        document.addEventListener('DOMContentLoaded', function () {
-            // 初始化 Telegram Web App
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-                Telegram.WebApp.ready();
-                Telegram.WebApp.expand(); // 全屏显示
-
-                // 可选：获取用户信息
-                const user = Telegram.WebApp.initDataUnsafe?.user;
-                if (user && user.id) {
-                    loginWithTelegram(user.id);
-                    return;
-                }
-            }
-
-            // 回退到传统登录方式
+        document.addEventListener('DOMContentLoaded', function() {
             const telegramId = new URLSearchParams(window.location.search).get('telegram_id');
             if (telegramId) {
                 loginWithTelegram(telegramId);
