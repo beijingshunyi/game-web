@@ -1994,6 +1994,11 @@
             element.addEventListener('touchstart', startDrag);
             
             function startDrag(e) {
+                // 如果拼图已经放好位置，不允许再拖动
+                if (element.classList.contains('correct')) {
+                    return;
+                }
+                
                 isDragging = true;
                 element.classList.add('dragging');
                 
@@ -2037,6 +2042,8 @@
             }
             
             function stopDrag() {
+                if (!isDragging) return;
+                
                 isDragging = false;
                 element.classList.remove('dragging');
                 
@@ -2045,40 +2052,53 @@
                 document.removeEventListener('touchmove', drag);
                 document.removeEventListener('touchend', stopDrag);
                 
-                // 检查是否放置在目标位置
-                checkPiecePosition(element, target);
+                // 检查是否放在了目标区域内
+                checkIfInTarget(element, target);
             }
         }
 
-        // 检查拼图碎片位置
-        function checkPiecePosition(piece, target) {
-            const pieceRect = piece.getBoundingClientRect();
+        // 检查元素是否在目标区域内
+        function checkIfInTarget(element, target) {
+            const elementRect = element.getBoundingClientRect();
             const targetRect = target.getBoundingClientRect();
             
-            const pieceCenterX = pieceRect.left + pieceRect.width / 2;
-            const pieceCenterY = pieceRect.top + pieceRect.height / 2;
+            // 简化的碰撞检测：如果元素大部分在目标内
+            const overlapX = Math.max(0, Math.min(elementRect.right, targetRect.right) - Math.max(elementRect.left, targetRect.left));
+            const overlapY = Math.max(0, Math.min(elementRect.bottom, targetRect.bottom) - Math.max(elementRect.top, targetRect.top));
+            const overlapArea = overlapX * overlapY;
+            const elementArea = elementRect.width * elementRect.height;
             
-            const targetCenterX = targetRect.left + targetRect.width / 2;
-            const targetCenterY = targetRect.top + targetRect.height / 2;
-            
-            const distance = Math.sqrt(
-                Math.pow(pieceCenterX - targetCenterX, 2) + 
-                Math.pow(pieceCenterY - targetCenterY, 2)
-            );
-            
-            // 如果距离足够近，则认为放置正确
-            if (distance < 30) {
-                piece.classList.add('correct');
-                piece.style.left = `${targetRect.left - piece.parentElement.getBoundingClientRect().left + (targetRect.width - pieceRect.width) / 2}px`;
-                piece.style.top = `${targetRect.top - piece.parentElement.getBoundingClientRect().top + (targetRect.height - pieceRect.height) / 2}px`;
+            // 如果重叠面积超过元素面积的70%，认为放置正确
+            if (overlapArea > elementArea * 0.7) {
+                element.classList.add('correct');
                 
-                // 更新游戏数据
-                gameState.levelData.completedPieces++;
+                // 计算应该放置的位置（目标内居中）
+                const targetCenterX = targetRect.left + targetRect.width / 2 - elementRect.width / 2;
+                const targetCenterY = targetRect.top + targetRect.height / 2 - elementRect.height / 2;
                 
-                // 检查是否完成拼图
-                if (gameState.levelData.completedPieces === gameState.levelData.totalPieces) {
-                    completeLevel();
-                }
+                // 转换为相对于容器的位置
+                const containerRect = elements.containers.puzzle.getBoundingClientRect();
+                const relativeX = targetCenterX - containerRect.left;
+                const relativeY = targetCenterY - containerRect.top;
+                
+                // 平滑移动到目标位置
+                element.style.transition = 'all 0.3s ease';
+                element.style.left = `${relativeX}px`;
+                element.style.top = `${relativeY}px`;
+                
+                // 检查是否所有碎片都已放置正确
+                checkGraphicsPuzzleCompletion();
+            }
+        }
+
+        // 检查图形拼图是否完成
+        function checkGraphicsPuzzleCompletion() {
+            const correctPieces = document.querySelectorAll('.puzzle-piece.correct');
+            gameState.levelData.completedPieces = correctPieces.length;
+            
+            // 如果所有碎片都已放置正确
+            if (gameState.levelData.completedPieces === gameState.levelData.totalPieces) {
+                completeLevel();
             }
         }
 
@@ -2086,62 +2106,13 @@
         function initPasswordPuzzle(parameters) {
             elements.containers.password.style.display = 'block';
             
-            const length = parameters.length || 4;
-            const complexity = parameters.complexity || 'low';
-            const misleading = parameters.misleading || false;
+            // 设置密码线索
+            document.getElementById('passwordClue').textContent = parameters.clue || '请找出隐藏的密码';
             
-            // 生成密码和线索
-            let password = '';
-            let clue = '';
-            
-            switch (complexity) {
-                case 'low':
-                    // 简单密码：纯数字
-                    password = Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, '0');
-                    clue = `密码是一个${length}位数字`;
-                    break;
-                    
-                case 'medium':
-                    // 中等密码：数字和字母
-                    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                    for (let i = 0; i < length; i++) {
-                        password += chars.charAt(Math.floor(Math.random() * chars.length));
-                    }
-                    clue = `密码是一个${length}位的数字和字母组合`;
-                    break;
-                    
-                case 'high':
-                    // 高级密码：数字、字母和符号
-                    const complexChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*';
-                    for (let i = 0; i < length; i++) {
-                        password += complexChars.charAt(Math.floor(Math.random() * complexChars.length));
-                    }
-                    clue = `密码是一个${length}位的复杂组合，包含数字、字母和符号`;
-                    break;
-            }
-            
-            // 如果有误导线索，添加一些干扰信息
-            if (misleading) {
-                const misleadingClues = [
-                    '密码的首字母是A',
-                    '密码包含数字7',
-                    '密码的末尾是0',
-                    '密码的总和是15'
-                ];
-                clue += `，但请注意：${misleadingClues[Math.floor(Math.random() * misleadingClues.length)]}`;
-            }
-            
-            elements.displays.passwordClue.textContent = clue;
-            elements.inputs.passwordInput.value = '';
-            elements.inputs.passwordInput.focus();
-            
-            // 保存游戏数据
+            // 保存密码
             gameState.levelData = {
                 type: 'password',
-                password: password,
-                length: length,
-                complexity: complexity,
-                misleading: misleading
+                correctPassword: parameters.password || '1234'
             };
         }
 
@@ -2150,33 +2121,22 @@
             elements.containers.mechanism.style.display = 'block';
             elements.containers.mechanism.innerHTML = '';
             
-            const mechanisms = parameters.mechanisms || 3;
-            const timeLimit = parameters.time_limit;
-            const multiplePaths = parameters.multiplePaths || false;
+            const count = parameters.count || 4;
+            const sequence = parameters.sequence || [0, 1, 2, 3];
             
             // 创建机关
-            const mechanismTypes = ['button', 'lever', 'gear', 'laser'];
-            const mechanismIcons = ['fa-hand-pointer', 'fa-exchange-alt', 'fa-cog', 'fa-bolt'];
-            
-            for (let i = 0; i < mechanisms; i++) {
+            for (let i = 0; i < count; i++) {
                 const mechanism = document.createElement('div');
                 mechanism.className = 'mechanism';
+                mechanism.style.left = `${50 + (i % 2) * 150}px`;
+                mechanism.style.top = `${50 + Math.floor(i / 2) * 100}px`;
+                mechanism.innerHTML = `<i class="fas fa-cog"></i>`;
                 mechanism.dataset.index = i;
-                mechanism.dataset.active = 'false';
                 
-                const typeIndex = i % mechanismTypes.length;
-                const icon = document.createElement('i');
-                icon.className = `fas ${mechanismIcons[typeIndex]}`;
-                mechanism.appendChild(icon);
-                
-                // 随机位置
-                const x = Math.random() * 240;
-                const y = Math.random() * 240;
-                mechanism.style.left = `${x}px`;
-                mechanism.style.top = `${y}px`;
-                
-                // 添加点击事件
-                mechanism.addEventListener('click', () => toggleMechanism(mechanism));
+                mechanism.addEventListener('click', () => {
+                    mechanism.classList.toggle('active');
+                    checkMechanismSequence();
+                });
                 
                 elements.containers.mechanism.appendChild(mechanism);
             }
@@ -2184,878 +2144,594 @@
             // 保存游戏数据
             gameState.levelData = {
                 type: 'mechanism',
-                mechanisms: mechanisms,
-                timeLimit: timeLimit,
-                multiplePaths: multiplePaths,
-                activeMechanisms: [],
-                correctOrder: generateCorrectOrder(mechanisms),
-                currentOrder: []
+                count: count,
+                sequence: sequence,
+                currentSequence: []
             };
-            
-            // 如果有时间限制，开始倒计时
-            if (timeLimit) {
-                startMechanismTimer(timeLimit);
-            }
         }
 
-        // 生成正确的机关顺序
-        function generateCorrectOrder(mechanisms) {
-            const order = [];
-            for (let i = 0; i < mechanisms; i++) {
-                order.push(i);
-            }
+        // 检查机关序列是否正确
+        function checkMechanismSequence() {
+            const mechanisms = document.querySelectorAll('.mechanism');
+            const currentSequence = [];
             
-            // 随机打乱顺序
-            for (let i = order.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [order[i], order[j]] = [order[j], order[i]];
-            }
-            
-            return order;
-        }
-
-        // 切换机关状态
-        function toggleMechanism(mechanism) {
-            const index = parseInt(mechanism.dataset.index);
-            const isActive = mechanism.dataset.active === 'true';
-            
-            if (isActive) {
-                mechanism.dataset.active = 'false';
-                mechanism.classList.remove('active');
-                
-                // 从当前顺序中移除
-                const pos = gameState.levelData.currentOrder.indexOf(index);
-                if (pos !== -1) {
-                    gameState.levelData.currentOrder.splice(pos, 1);
+            mechanisms.forEach((mechanism, index) => {
+                if (mechanism.classList.contains('active')) {
+                    currentSequence.push(index);
                 }
-            } else {
-                mechanism.dataset.active = 'true';
-                mechanism.classList.add('active');
-                
-                // 添加到当前顺序
-                gameState.levelData.currentOrder.push(index);
-            }
+            });
             
-            // 检查是否完成
-            checkMechanismCompletion();
-        }
-
-        // 检查机关是否完成
-        function checkMechanismCompletion() {
-            const { correctOrder, currentOrder, multiplePaths } = gameState.levelData;
+            gameState.levelData.currentSequence = currentSequence;
             
-            // 如果当前顺序与正确顺序匹配，则完成
-            if (currentOrder.length === correctOrder.length) {
-                let isCorrect = true;
-                
-                if (multiplePaths) {
-                    // 多路径情况下，检查是否所有机关都被激活
-                    isCorrect = currentOrder.length === gameState.levelData.mechanisms;
-                } else {
-                    // 单一路径情况下，检查顺序是否正确
-                    for (let i = 0; i < correctOrder.length; i++) {
-                        if (currentOrder[i] !== correctOrder[i]) {
-                            isCorrect = false;
-                            break;
-                        }
-                    }
-                }
-                
-                if (isCorrect) {
-                    completeLevel();
-                }
+            // 检查是否与目标序列匹配
+            if (arraysEqual(currentSequence, gameState.levelData.sequence)) {
+                completeLevel();
             }
         }
 
-        // 开始机关倒计时
-        function startMechanismTimer(timeLimit) {
-            let timeLeft = timeLimit;
-            
-            const timerInterval = setInterval(() => {
-                timeLeft--;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    failLevel('时间到！');
-                }
-            }, 1000);
-            
-            // 保存计时器ID
-            gameState.levelData.timerInterval = timerInterval;
-        }
-
-        // 初始化资源策略
+        // 初始化资源策略关卡
         function initResourceStrategy(parameters) {
             elements.containers.resource.style.display = 'block';
             
-            const resources = parameters.resources || 10;
-            const targets = parameters.targets || 3;
-            const shortage = parameters.shortage || false;
-            const fluctuation = parameters.fluctuation || false;
+            const target = parameters.target || 10;
+            const resources = parameters.resources || [
+                { name: '木材', value: 2 },
+                { name: '石头', value: 3 },
+                { name: '金属', value: 5 }
+            ];
+            
+            // 清空资源项容器
+            document.getElementById('resourceItems').innerHTML = '';
             
             // 创建资源项
-            const resourceItems = document.getElementById('resourceItems');
-            resourceItems.innerHTML = '';
-            
-            const targetResources = [];
-            
-            for (let i = 0; i < targets; i++) {
-                const minResource = shortage ? Math.ceil(resources / targets) - 1 : Math.ceil(resources / targets);
-                const maxResource = Math.ceil(resources / targets) + 1;
-                const targetValue = Math.floor(Math.random() * (maxResource - minResource + 1)) + minResource;
-                
-                targetResources.push(targetValue);
-                
-                const item = document.createElement('div');
-                item.className = 'resource-item';
-                item.innerHTML = `
-                    <div class="resource-name">设备 ${i + 1}</div>
+            resources.forEach((resource, index) => {
+                const resourceItem = document.createElement('div');
+                resourceItem.className = 'resource-item';
+                resourceItem.innerHTML = `
+                    <div class="resource-name">${resource.name}</div>
                     <div class="resource-value">
-                        <button class="resource-btn" data-index="${i}" data-action="decrease">-</button>
-                        <span id="resource-value-${i}">0</span>
-                        <button class="resource-btn" data-index="${i}" data-action="increase">+</button>
+                        <button class="resource-btn minus" data-index="${index}">-</button>
+                        <span class="resource-count">0</span>
+                        <button class="resource-btn plus" data-index="${index}">+</button>
                     </div>
                 `;
                 
-                resourceItems.appendChild(item);
-            }
-            
-            // 添加按钮事件
-            document.querySelectorAll('.resource-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const index = parseInt(btn.dataset.index);
-                    const action = btn.dataset.action;
-                    const valueElement = document.getElementById(`resource-value-${index}`);
-                    let value = parseInt(valueElement.textContent);
-                    
-                    if (action === 'increase' && value < resources) {
-                        value++;
-                    } else if (action === 'decrease' && value > 0) {
-                        value--;
-                    }
-                    
-                    valueElement.textContent = value;
-                    updateResourceBar();
+                document.getElementById('resourceItems').appendChild(resourceItem);
+                
+                // 添加事件监听
+                resourceItem.querySelector('.plus').addEventListener('click', () => {
+                    updateResourceCount(index, resource.value, 1);
+                });
+                
+                resourceItem.querySelector('.minus').addEventListener('click', () => {
+                    updateResourceCount(index, resource.value, -1);
                 });
             });
             
-            // 更新资源条
-            function updateResourceBar() {
-                let totalUsed = 0;
-                
-                for (let i = 0; i < targets; i++) {
-                    const valueElement = document.getElementById(`resource-value-${i}`);
-                    totalUsed += parseInt(valueElement.textContent);
-                }
-                
-                const percentage = (totalUsed / resources) * 100;
-                elements.containers.resource.querySelector('#resourceFill').style.width = `${percentage}%`;
-                elements.containers.resource.querySelector('#resourceText').textContent = `${totalUsed}/${resources}`;
-            }
-            
-            updateResourceBar();
+            // 初始化资源进度条
+            updateResourceProgress(0, target);
             
             // 保存游戏数据
             gameState.levelData = {
                 type: 'resource',
+                target: target,
                 resources: resources,
-                targets: targets,
-                shortage: shortage,
-                fluctuation: fluctuation,
-                targetResources: targetResources
+                counts: new Array(resources.length).fill(0),
+                total: 0
             };
         }
 
-        // 初始化路径策略
+        // 更新资源数量
+        function updateResourceCount(index, value, change) {
+            const maxCount = Math.floor(gameState.levelData.target / value);
+            gameState.levelData.counts[index] = Math.max(0, Math.min(maxCount, gameState.levelData.counts[index] + change));
+            
+            // 更新显示
+            document.querySelectorAll('.resource-count')[index].textContent = gameState.levelData.counts[index];
+            
+            // 计算总资源
+            let total = 0;
+            gameState.levelData.counts.forEach((count, i) => {
+                total += count * gameState.levelData.resources[i].value;
+            });
+            
+            gameState.levelData.total = total;
+            
+            // 更新进度条
+            updateResourceProgress(total, gameState.levelData.target);
+        }
+
+        // 更新资源进度条
+        function updateResourceProgress(current, target) {
+            const percentage = Math.min(100, (current / target) * 100);
+            document.getElementById('resourceFill').style.width = `${percentage}%`;
+            document.getElementById('resourceText').textContent = `${current}/${target}`;
+        }
+
+        // 初始化路径策略关卡
         function initPathStrategy(parameters) {
             elements.containers.path.style.display = 'block';
             elements.containers.path.innerHTML = '';
             
-            const obstacles = parameters.obstacles || 3;
-            const multiplePaths = parameters.multiplePaths || false;
-            const dynamic = parameters.dynamic || false;
+            const size = parameters.size || 8;
+            const grid = parameters.grid || createDefaultPathGrid(size);
+            const cellSize = 300 / size;
             
-            // 创建网格
-            const gridSize = 10;
-            const cellSize = 30;
+            // 找到起点和终点
+            let startX, startY, endX, endY;
             
-            for (let y = 0; y < gridSize; y++) {
-                for (let x = 0; x < gridSize; x++) {
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
                     const cell = document.createElement('div');
-                    cell.className = 'path-cell empty';
+                    cell.className = `path-cell ${getCellClass(grid[y][x])}`;
+                    cell.style.width = `${cellSize}px`;
+                    cell.style.height = `${cellSize}px`;
                     cell.style.left = `${x * cellSize}px`;
                     cell.style.top = `${y * cellSize}px`;
                     cell.dataset.x = x;
                     cell.dataset.y = y;
                     
                     elements.containers.path.appendChild(cell);
+                    
+                    // 记录起点和终点位置
+                    if (grid[y][x] === 'start') {
+                        startX = x;
+                        startY = y;
+                    } else if (grid[y][x] === 'end') {
+                        endX = x;
+                        endY = y;
+                    }
                 }
             }
             
-            // 设置起点和终点
-            const startCell = document.querySelector('.path-cell[data-x="0"][data-y="0"]');
-            startCell.className = 'path-cell start';
-            
-            const endCell = document.querySelector('.path-cell[data-x="9"][data-y="9"]');
-            endCell.className = 'path-cell end';
-            
-            // 添加障碍物
-            const obstaclePositions = [];
-            for (let i = 0; i < obstacles; i++) {
-                let x, y;
-                
-                do {
-                    x = Math.floor(Math.random() * gridSize);
-                    y = Math.floor(Math.random() * gridSize);
-                } while (
-                    (x === 0 && y === 0) || 
-                    (x === 9 && y === 9) || 
-                    obstaclePositions.some(pos => pos.x === x && pos.y === y)
-                );
-                
-                obstaclePositions.push({ x, y });
-                
-                const obstacleCell = document.querySelector(`.path-cell[data-x="${x}"][data-y="${y}"]`);
-                obstacleCell.className = 'path-cell wall';
-            }
-            
-            // 添加玩家
+            // 创建玩家
             const player = document.createElement('div');
             player.className = 'path-cell player';
-            player.style.left = '0px';
-            player.style.top = '0px';
-            player.dataset.x = 0;
-            player.dataset.y = 0;
+            player.style.width = `${cellSize * 0.8}px`;
+            player.style.height = `${cellSize * 0.8}px`;
+            player.style.left = `${startX * cellSize + cellSize * 0.1}px`;
+            player.style.top = `${startY * cellSize + cellSize * 0.1}px`;
+            player.dataset.x = startX;
+            player.dataset.y = startY;
             
             elements.containers.path.appendChild(player);
             
             // 添加键盘控制
             document.addEventListener('keydown', handlePathMovement);
             
-            function handlePathMovement(e) {
-                if (!gameState.levelData || gameState.levelData.type !== 'path') return;
+            // 保存游戏数据
+            gameState.levelData = {
+                type: 'path',
+                size: size,
+                grid: grid,
+                playerX: startX,
+                playerY: startY,
+                endX: endX,
+                endY: endY,
+                cellSize: cellSize,
+                playerElement: player
+            };
+        }
+
+        // 创建默认路径网格
+        function createDefaultPathGrid(size) {
+            const grid = Array(size).fill().map(() => Array(size).fill('empty'));
+            
+            // 设置边界为墙
+            for (let i = 0; i < size; i++) {
+                grid[0][i] = 'wall';
+                grid[size-1][i] = 'wall';
+                grid[i][0] = 'wall';
+                grid[i][size-1] = 'wall';
+            }
+            
+            // 设置起点和终点
+            grid[1][1] = 'start';
+            grid[size-2][size-2] = 'end';
+            
+            // 添加一些随机墙
+            for (let i = 0; i < size * size * 0.2; i++) {
+                const x = Math.floor(Math.random() * (size - 2)) + 1;
+                const y = Math.floor(Math.random() * (size - 2)) + 1;
                 
-                const player = document.querySelector('.path-cell.player');
-                let x = parseInt(player.dataset.x);
-                let y = parseInt(player.dataset.y);
-                
-                switch (e.key) {
-                    case 'ArrowUp':
-                        if (y > 0) y--;
-                        break;
-                    case 'ArrowDown':
-                        if (y < gridSize - 1) y++;
-                        break;
-                    case 'ArrowLeft':
-                        if (x > 0) x--;
-                        break;
-                    case 'ArrowRight':
-                        if (x < gridSize - 1) x++;
-                        break;
-                    default:
-                        return;
-                }
-                
-                e.preventDefault();
-                
-                // 检查是否可以移动到新位置
-                const targetCell = document.querySelector(`.path-cell[data-x="${x}"][data-y="${y}"]`);
-                
-                if (targetCell.classList.contains('wall')) {
-                    return;
-                }
-                
-                // 移动玩家
-                player.style.left = `${x * cellSize}px`;
-                player.style.top = `${y * cellSize}px`;
-                player.dataset.x = x;
-                player.dataset.y = y;
-                
-                // 添加路径标记
-                const pathCell = document.querySelector(`.path-cell[data-x="${x}"][data-y="${y}"]:not(.start):not(.end):not(.player)`);
-                if (pathCell) {
-                    pathCell.className = 'path-cell path';
-                }
-                
-                // 检查是否到达终点
-                if (x === 9 && y === 9) {
-                    completeLevel();
+                // 确保不是起点或终点
+                if (grid[y][x] === 'empty') {
+                    grid[y][x] = 'wall';
                 }
             }
             
-            // 如果是动态障碍物，设置定时器
-            if (dynamic) {
-                const dynamicInterval = setInterval(() => {
-                    // 随机移动一个障碍物
-                    if (obstaclePositions.length > 0) {
-                        const index = Math.floor(Math.random() * obstaclePositions.length);
-                        const obstacle = obstaclePositions[index];
-                        
-                        // 移除旧障碍物
-                        const oldCell = document.querySelector(`.path-cell[data-x="${obstacle.x}"][data-y="${obstacle.y}"]`);
-                        oldCell.className = 'path-cell empty';
-                        
-                        // 生成新位置
-                        let newX, newY;
-                        
-                        do {
-                            newX = Math.floor(Math.random() * gridSize);
-                            newY = Math.floor(Math.random() * gridSize);
-                        } while (
-                            (newX === 0 && newY === 0) || 
-                            (newX === 9 && newY === 9) || 
-                            (newX === parseInt(player.dataset.x) && newY === parseInt(player.dataset.y)) ||
-                            obstaclePositions.some((pos, i) => i !== index && pos.x === newX && pos.y === newY)
-                        );
-                        
-                        // 更新障碍物位置
-                        obstacle.x = newX;
-                        obstacle.y = newY;
-                        
-                        // 添加新障碍物
-                        const newCell = document.querySelector(`.path-cell[data-x="${newX}"][data-y="${newY}"]`);
-                        newCell.className = 'path-cell wall';
-                    }
-                }, 3000);
+            return grid;
+        }
+
+        // 获取单元格类别
+        function getCellClass(type) {
+            return type === 'start' ? 'start' : 
+                   type === 'end' ? 'end' : 
+                   type === 'wall' ? 'wall' : 'empty';
+        }
+
+        // 处理路径移动
+        function handlePathMovement(e) {
+            if (!gameState.levelData || gameState.levelData.type !== 'path') {
+                return;
+            }
+            
+            let dx = 0, dy = 0;
+            
+            switch (e.key) {
+                case 'ArrowUp':
+                    dy = -1;
+                    break;
+                case 'ArrowDown':
+                    dy = 1;
+                    break;
+                case 'ArrowLeft':
+                    dx = -1;
+                    break;
+                case 'ArrowRight':
+                    dx = 1;
+                    break;
+                default:
+                    return; // 不是方向键则不处理
+            }
+            
+            e.preventDefault();
+            
+            const newX = gameState.levelData.playerX + dx;
+            const newY = gameState.levelData.playerY + dy;
+            
+            // 检查新位置是否有效（不是墙）
+            if (newX >= 0 && newX < gameState.levelData.size && 
+                newY >= 0 && newY < gameState.levelData.size &&
+                gameState.levelData.grid[newY][newX] !== 'wall') {
                 
-                // 保存定时器ID
-                gameState.levelData = {
-                    type: 'path',
-                    obstacles: obstacles,
-                    multiplePaths: multiplePaths,
-                    dynamic: dynamic,
-                    dynamicInterval: dynamicInterval
-                };
-            } else {
-                gameState.levelData = {
-                    type: 'path',
-                    obstacles: obstacles,
-                    multiplePaths: multiplePaths,
-                    dynamic: dynamic
-                };
+                // 更新玩家位置
+                gameState.levelData.playerX = newX;
+                gameState.levelData.playerY = newY;
+                
+                // 更新显示位置
+                const cellSize = gameState.levelData.cellSize;
+                gameState.levelData.playerElement.style.left = `${newX * cellSize + cellSize * 0.1}px`;
+                gameState.levelData.playerElement.style.top = `${newY * cellSize + cellSize * 0.1}px`;
+                
+                // 标记路径
+                if (gameState.levelData.grid[newY][newX] === 'empty') {
+                    const cell = document.querySelector(`.path-cell[data-x="${newX}"][data-y="${newY}"]`);
+                    if (cell) cell.classList.add('path');
+                }
+                
+                // 检查是否到达终点
+                if (newX === gameState.levelData.endX && newY === gameState.levelData.endY) {
+                    // 移除事件监听
+                    document.removeEventListener('keydown', handlePathMovement);
+                    completeLevel();
+                }
             }
         }
 
-        // 初始化精准动作
+        // 初始化精准动作关卡
         function initPrecisionAction(parameters) {
             elements.containers.action.style.display = 'block';
             elements.containers.action.innerHTML = '';
             
-            const tolerance = parameters.tolerance || 5;
-            const delay = parameters.delay || 0;
-            
-            // 创建目标
-            const target = document.createElement('div');
-            target.className = 'action-target';
-            target.style.width = '40px';
-            target.style.height = '40px';
-            target.style.backgroundColor = '#ef4444';
-            
-            // 随机位置
-            const x = Math.random() * 260;
-            const y = Math.random() * 260;
-            target.style.left = `${x}px`;
-            target.style.top = `${y}px`;
-            
-            elements.containers.action.appendChild(target);
-            
-            // 添加点击事件
-            target.addEventListener('click', (e) => {
-                const rect = target.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                
-                const distance = Math.sqrt(
-                    Math.pow(e.clientX - centerX, 2) + 
-                    Math.pow(e.clientY - centerY, 2)
-                );
-                
-                if (distance <= tolerance) {
-                    target.classList.add('hit');
-                    completeLevel();
-                } else {
-                    target.classList.add('miss');
-                    setTimeout(() => {
-                        target.classList.remove('miss');
-                    }, 500);
-                }
-            });
+            const targets = parameters.targets || 5;
+            const timeLimit = parameters.timeLimit || 30;
             
             // 保存游戏数据
             gameState.levelData = {
                 type: 'precision',
-                tolerance: tolerance,
-                delay: delay
+                targets: targets,
+                timeLimit: timeLimit,
+                hits: 0,
+                misses: 0,
+                currentTarget: null,
+                timer: null
             };
+            
+            // 显示第一个目标
+            spawnNewTarget();
+            
+            // 开始计时
+            startActionTimer();
         }
 
-        // 初始化反应动作
-        function initReactionAction(parameters) {
-            elements.containers.action.style.display = 'block';
-            elements.containers.action.innerHTML = '';
-            
-            const frequency = parameters.frequency || 1;
-            const decoys = parameters.decoys || false;
-            const timeLimit = parameters.time_limit || 3;
-            
-            let targets = [];
-            let score = 0;
-            let missed = 0;
-            let gameActive = true;
-            
-            // 创建目标
-            function createTarget(isDecoy = false) {
-                const target = document.createElement('div');
-                target.className = `action-target ${isDecoy ? 'miss' : ''}`;
-                target.style.width = '40px';
-                target.style.height = '40px';
-                target.style.backgroundColor = isDecoy ? '#ef4444' : '#10b981';
-                
-                // 随机位置
-                const x = Math.random() * 260;
-                const y = Math.random() * 260;
-                target.style.left = `${x}px`;
-                target.style.top = `${y}px`;
-                
-                // 添加点击事件
-                target.addEventListener('click', () => {
-                    if (!gameActive) return;
+        // 生成新目标
+        function spawnNewTarget() {
+            // 移除当前目标
+            if (gameState.levelData.currentTarget) {
+                // 如果超时未点击，算作未命中
+                if (!gameState.levelData.currentTarget.classList.contains('hit')) {
+                    gameState.levelData.currentTarget.classList.add('miss');
+                    gameState.levelData.misses++;
                     
-                    if (isDecoy) {
-                        target.classList.add('hit');
-                        missed++;
-                        
-                        if (missed >= 3) {
-                            gameActive = false;
-                            failLevel('点击了太多假目标！');
-                        }
-                    } else {
-                        target.classList.add('hit');
-                        score++;
-                        
-                        if (score >= 10) {
-                            gameActive = false;
-                            completeLevel();
-                        }
-                    }
-                    
-                    // 移除目标
+                    // 短暂延迟后再移除
                     setTimeout(() => {
-                        target.remove();
-                    }, 300);
-                });
-                
-                elements.containers.action.appendChild(target);
-                targets.push(target);
-                
-                // 自动移除目标
-                setTimeout(() => {
-                    if (target.parentElement && !target.classList.contains('hit')) {
-                        target.remove();
-                        
-                        if (!isDecoy) {
-                            missed++;
-                            
-                            if (missed >= 3) {
-                                gameActive = false;
-                                failLevel('错过了太多目标！');
-                            }
+                        if (gameState.levelData.currentTarget && 
+                            elements.containers.action.contains(gameState.levelData.currentTarget)) {
+                            elements.containers.action.removeChild(gameState.levelData.currentTarget);
                         }
-                    }
-                }, timeLimit * 1000);
+                    }, 500);
+                } else {
+                    elements.containers.action.removeChild(gameState.levelData.currentTarget);
+                }
             }
             
-            // 定期创建目标
-            const targetInterval = setInterval(() => {
-                if (!gameActive) {
-                    clearInterval(targetInterval);
-                    return;
-                }
-                
-                createTarget(false);
-                
-                if (decoys && Math.random() < 0.3) {
-                    setTimeout(() => {
-                        if (gameActive) {
-                            createTarget(true);
-                        }
-                    }, Math.random() * 1000);
-                }
-            }, 1000 / frequency);
+            // 检查是否完成所有目标
+            if (gameState.levelData.hits >= gameState.levelData.targets) {
+                clearTimeout(gameState.levelData.timer);
+                completeLevel();
+                return;
+            }
             
-            // 保存游戏数据
-            gameState.levelData = {
-                type: 'reaction',
-                frequency: frequency,
-                decoys: decoys,
-                timeLimit: timeLimit,
-                targetInterval: targetInterval,
-                score: score,
-                missed: missed,
-                gameActive: gameActive
-            };
+            // 检查是否失败（未命中太多）
+            if (gameState.levelData.misses >= 3) {
+                clearTimeout(gameState.levelData.timer);
+                gameState.levelAttempts++;
+                elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
+                showToast('失败次数过多，重试一次', 'error');
+                initPrecisionAction({
+                    targets: gameState.levelData.targets,
+                    timeLimit: gameState.levelData.timeLimit
+                });
+                return;
+            }
+            
+            // 创建新目标
+            const target = document.createElement('div');
+            target.className = 'action-target';
+            
+            // 随机位置，但确保完全在容器内
+            const containerRect = elements.containers.action.getBoundingClientRect();
+            const maxX = containerRect.width - 40;
+            const maxY = containerRect.height - 40;
+            
+            target.style.left = `${Math.random() * maxX}px`;
+            target.style.top = `${Math.random() * maxY}px`;
+            
+            // 随机大小
+            const size = 20 + Math.random() * 30;
+            target.style.width = `${size}px`;
+            target.style.height = `${size}px`;
+            
+            // 点击目标
+            target.addEventListener('click', () => {
+                target.classList.add('hit');
+                gameState.levelData.hits++;
+                gameState.levelData.currentTarget = target;
+                
+                // 短暂延迟后生成新目标
+                setTimeout(spawnNewTarget, 300);
+            });
+            
+            elements.containers.action.appendChild(target);
+            gameState.levelData.currentTarget = target;
+            
+            // 设置目标超时
+            target.timeout = setTimeout(() => {
+                if (gameState.levelData.currentTarget === target && 
+                    !target.classList.contains('hit')) {
+                    spawnNewTarget();
+                }
+            }, 1500);
         }
 
-        // 初始化信息记忆
+        // 开始动作关卡计时器
+        function startActionTimer() {
+            const startTime = Date.now();
+            
+            gameState.levelData.timer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const remaining = gameState.levelData.timeLimit - elapsed;
+                
+                if (remaining <= 0) {
+                    clearInterval(gameState.levelData.timer);
+                    gameState.levelAttempts++;
+                    elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
+                    showToast('时间到，重试一次', 'error');
+                    initPrecisionAction({
+                        targets: gameState.levelData.targets,
+                        timeLimit: gameState.levelData.timeLimit
+                    });
+                }
+            }, 1000);
+        }
+
+        // 初始化信息记忆关卡
         function initInformationMemory(parameters) {
             elements.containers.memory.style.display = 'block';
             
-            const items = parameters.items || 5;
-            const interference = parameters.interference || false;
-            const displayTime = parameters.displayTime || 10;
+            const size = parameters.size || 3;
+            const duration = parameters.duration || 3000;
+            const values = parameters.values || ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'].slice(0, size * size);
             
-            // 生成记忆项
-            const memoryItems = [];
-            const memoryTypes = ['number', 'shape', 'color'];
+            // 清空容器
+            document.getElementById('memoryDisplay').innerHTML = '';
+            document.getElementById('memoryInput').innerHTML = '';
+            document.getElementById('memoryOptions').innerHTML = '';
             
-            for (let i = 0; i < items; i++) {
-                const type = memoryTypes[i % memoryTypes.length];
-                let value;
+            // 创建记忆显示区
+            for (let i = 0; i < size * size; i++) {
+                const memoryItem = document.createElement('div');
+                memoryItem.className = 'memory-item';
+                memoryItem.textContent = values[i];
+                memoryItem.dataset.index = i;
                 
-                switch (type) {
-                    case 'number':
-                        value = Math.floor(Math.random() * 10);
-                        break;
-                    case 'shape':
-                        const shapes = ['circle', 'square', 'triangle'];
-                        value = shapes[Math.floor(Math.random() * shapes.length)];
-                        break;
-                    case 'color':
-                        const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
-                        value = colors[Math.floor(Math.random() * colors.length)];
-                        break;
-                }
-                
-                memoryItems.push({ type, value });
+                document.getElementById('memoryDisplay').appendChild(memoryItem);
             }
             
-            // 显示记忆项
-            const memoryDisplay = document.getElementById('memoryDisplay');
-            memoryDisplay.innerHTML = '';
-            
-            memoryItems.forEach((item, index) => {
-                const itemElement = document.createElement('div');
-                itemElement.className = 'memory-item';
-                
-                switch (item.type) {
-                    case 'number':
-                        itemElement.textContent = item.value;
-                        break;
-                    case 'shape':
-                        if (item.value === 'circle') {
-                            itemElement.style.borderRadius = '50%';
-                        } else if (item.value === 'triangle') {
-                            itemElement.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
-                        }
-                        break;
-                    case 'color':
-                        itemElement.style.backgroundColor = item.value;
-                        itemElement.textContent = '';
-                        break;
-                }
-                
-                memoryDisplay.appendChild(itemElement);
-            });
-            
-            // 创建输入区域
-            const memoryInput = document.getElementById('memoryInput');
-            memoryInput.innerHTML = '';
-            
-            for (let i = 0; i < items; i++) {
+            // 创建记忆输入区
+            for (let i = 0; i < size * size; i++) {
                 const inputItem = document.createElement('div');
                 inputItem.className = 'memory-input-item';
                 inputItem.dataset.index = i;
-                inputItem.addEventListener('click', () => selectMemoryInput(inputItem));
                 
-                memoryInput.appendChild(inputItem);
+                document.getElementById('memoryInput').appendChild(inputItem);
             }
             
-            // 创建选项区域
-            const memoryOptions = document.getElementById('memoryOptions');
-            memoryOptions.innerHTML = '';
-            
-            // 添加所有可能的选项
-            const allOptions = [];
-            
-            memoryItems.forEach(item => {
-                if (!allOptions.includes(item.value)) {
-                    allOptions.push(item.value);
-                }
-            });
-            
-            // 添加一些干扰项
-            if (interference) {
-                switch (memoryItems[0].type) {
-                    case 'number':
-                        for (let i = 0; i < 3; i++) {
-                            let num;
-                            do {
-                                num = Math.floor(Math.random() * 10);
-                            } while (allOptions.includes(num));
-                            allOptions.push(num);
-                        }
-                        break;
-                    case 'shape':
-                        const allShapes = ['circle', 'square', 'triangle', 'star', 'diamond'];
-                        allShapes.forEach(shape => {
-                            if (!allOptions.includes(shape)) {
-                                allOptions.push(shape);
-                            }
-                        });
-                        break;
-                    case 'color':
-                        const allColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink'];
-                        allColors.forEach(color => {
-                            if (!allOptions.includes(color)) {
-                                allOptions.push(color);
-                            }
-                        });
-                        break;
-                }
-            }
-            
-            // 随机排序选项
-            allOptions.sort(() => Math.random() - 0.5);
-            
-            allOptions.forEach(option => {
-                const optionElement = document.createElement('div');
-                optionElement.className = 'memory-option';
-                optionElement.dataset.value = option;
+            // 创建选项区
+            const shuffledValues = [...values].sort(() => Math.random() - 0.5);
+            shuffledValues.forEach((value, index) => {
+                const option = document.createElement('div');
+                option.className = 'memory-option';
+                option.textContent = value;
+                option.dataset.value = value;
                 
-                switch (typeof option) {
-                    case 'number':
-                        optionElement.textContent = option;
-                        break;
-                    case 'string':
-                        if (['circle', 'square', 'triangle'].includes(option)) {
-                            if (option === 'circle') {
-                                optionElement.style.borderRadius = '50%';
-                            } else if (option === 'triangle') {
-                                optionElement.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
-                            }
-                            optionElement.textContent = '';
-                        } else {
-                            optionElement.style.backgroundColor = option;
-                            optionElement.textContent = '';
-                        }
-                        break;
-                }
-                
-                optionElement.addEventListener('click', () => selectMemoryOption(optionElement));
-                
-                memoryOptions.appendChild(optionElement);
-            });
-            
-            let selectedInputIndex = 0;
-            const inputValues = new Array(items).fill(null);
-            
-            // 选择输入项
-            function selectMemoryInput(inputItem) {
-                document.querySelectorAll('.memory-input-item').forEach(item => {
-                    item.classList.remove('selected');
+                option.addEventListener('click', () => {
+                    selectMemoryOption(value);
                 });
                 
-                inputItem.classList.add('selected');
-                selectedInputIndex = parseInt(inputItem.dataset.index);
-            }
-            
-            // 选择选项
-            function selectMemoryOption(optionElement) {
-                const value = optionElement.dataset.value;
-                const inputItem = document.querySelector(`.memory-input-item[data-index="${selectedInputIndex}"]`);
-                
-                inputValues[selectedInputIndex] = value;
-                
-                // 更新输入项显示
-                switch (typeof value) {
-                    case 'number':
-                        inputItem.textContent = value;
-                        break;
-                    case 'string':
-                        if (['circle', 'square', 'triangle'].includes(value)) {
-                            if (value === 'circle') {
-                                inputItem.style.borderRadius = '50%';
-                            } else if (value === 'triangle') {
-                                inputItem.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
-                            }
-                            inputItem.textContent = '';
-                        } else {
-                            inputItem.style.backgroundColor = value;
-                            inputItem.textContent = '';
-                        }
-                        break;
-                }
-                
-                inputItem.classList.add('filled');
-                
-                // 选择下一个输入项
-                if (selectedInputIndex < items - 1) {
-                    selectedInputIndex++;
-                    const nextInputItem = document.querySelector(`.memory-input-item[data-index="${selectedInputIndex}"]`);
-                    selectMemoryInput(nextInputItem);
-                }
-            }
-            
-            // 默认选择第一个输入项
-            selectMemoryInput(document.querySelector('.memory-input-item'));
-            
-            // 隐藏记忆项，显示输入区域
-            setTimeout(() => {
-                memoryDisplay.style.display = 'none';
-            }, displayTime * 1000);
+                document.getElementById('memoryOptions').appendChild(option);
+            });
             
             // 保存游戏数据
             gameState.levelData = {
                 type: 'information',
-                items: items,
-                interference: interference,
-                displayTime: displayTime,
-                memoryItems: memoryItems,
-                inputValues: inputValues
+                size: size,
+                duration: duration,
+                values: values,
+                input: new Array(size * size).fill(''),
+                currentIndex: 0,
+                completed: false
             };
+            
+            // 显示记忆内容，一段时间后隐藏
+            setTimeout(() => {
+                document.querySelectorAll('.memory-item').forEach(item => {
+                    item.textContent = '';
+                });
+            }, duration);
         }
 
-        // 初始化流程记忆
+        // 选择记忆选项
+        function selectMemoryOption(value) {
+            if (gameState.levelData.completed) return;
+            
+            const currentIndex = gameState.levelData.currentIndex;
+            
+            if (currentIndex < gameState.levelData.size * gameState.levelData.size) {
+                // 更新输入
+                gameState.levelData.input[currentIndex] = value;
+                
+                // 更新显示
+                const inputItems = document.querySelectorAll('.memory-input-item');
+                inputItems[currentIndex].textContent = value;
+                inputItems[currentIndex].classList.add('filled');
+                
+                // 移动到下一个位置
+                gameState.levelData.currentIndex++;
+            }
+        }
+
+        // 初始化流程记忆关卡
         function initProcessMemory(parameters) {
             elements.containers.process.style.display = 'block';
             
-            const steps = parameters.steps || 3;
-            const randomVariables = parameters.randomVariables || false;
+            const steps = parameters.steps || [
+                '步骤 1: 打开盒子',
+                '步骤 2: 取出物品',
+                '步骤 3: 组合零件',
+                '步骤 4: 完成组装'
+            ];
             
-            // 生成流程步骤
-            const processSteps = [];
-            const stepTypes = ['button', 'lever', 'switch', 'dial'];
-            const stepIcons = ['fa-hand-pointer', 'fa-exchange-alt', 'fa-toggle-on', 'fa-sliders-h'];
-            const stepColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+            // 清空容器
+            document.getElementById('processDisplay').innerHTML = '';
+            document.getElementById('processButtons').innerHTML = '';
             
-            for (let i = 0; i < steps; i++) {
-                const typeIndex = i % stepTypes.length;
-                processSteps.push({
-                    type: stepTypes[typeIndex],
-                    icon: stepIcons[typeIndex],
-                    color: stepColors[typeIndex]
-                });
-            }
-            
-            // 显示流程
+            // 创建流程显示区
             const processDisplay = document.getElementById('processDisplay');
-            processDisplay.innerHTML = '<div>请记住以下操作顺序：</div>';
+            processDisplay.textContent = '记住以下步骤顺序，然后按正确顺序点击按钮';
             
-            const stepsContainer = document.createElement('div');
-            stepsContainer.style.display = 'flex';
-            stepsContainer.style.justifyContent = 'center';
-            stepsContainer.style.marginTop = '10px';
+            const stepsList = document.createElement('div');
+            stepsList.style.marginTop = '15px';
             
-            processSteps.forEach((step, index) => {
-                const stepElement = document.createElement('div');
-                stepElement.style.width = '50px';
-                stepElement.style.height = '50px';
-                stepElement.style.borderRadius = '10px';
-                stepElement.style.backgroundColor = step.color;
-                stepElement.style.color = 'white';
-                stepElement.style.display = 'flex';
-                stepElement.style.alignItems = 'center';
-                stepElement.style.justifyContent = 'center';
-                stepElement.style.margin = '0 5px';
-                
-                const icon = document.createElement('i');
-                icon.className = `fas ${step.icon}`;
-                stepElement.appendChild(icon);
-                
-                stepsContainer.appendChild(stepElement);
+            steps.forEach((step, index) => {
+                const stepItem = document.createElement('div');
+                stepItem.style.marginBottom = '5px';
+                stepItem.textContent = step;
+                stepsList.appendChild(stepItem);
             });
             
-            processDisplay.appendChild(stepsContainer);
+            processDisplay.appendChild(stepsList);
             
-            // 创建按钮区域
-            const processButtons = document.getElementById('processButtons');
-            processButtons.innerHTML = '';
+            // 打乱步骤顺序作为按钮
+            const shuffledSteps = [...steps].sort(() => Math.random() - 0.5);
             
-            // 如果有随机变量，打乱按钮顺序
-            const buttonOrder = randomVariables ? 
-                [...Array(steps).keys()].sort(() => Math.random() - 0.5) : 
-                [...Array(steps).keys()];
-            
-            buttonOrder.forEach(originalIndex => {
-                const step = processSteps[originalIndex];
-                
+            shuffledSteps.forEach((step, index) => {
                 const button = document.createElement('button');
                 button.className = 'process-btn';
-                button.dataset.originalIndex = originalIndex;
-                button.dataset.currentIndex = buttonOrder.indexOf(originalIndex);
-                button.style.backgroundColor = step.color;
+                button.textContent = `步骤 ${index + 1}`;
+                button.dataset.step = step;
+                button.dataset.originalIndex = steps.indexOf(step);
                 
-                const icon = document.createElement('i');
-                icon.className = `fas ${step.icon}`;
-                button.appendChild(icon);
+                button.addEventListener('click', () => {
+                    selectProcessStep(button);
+                });
                 
-                button.addEventListener('click', () => selectProcessButton(button));
-                
-                processButtons.appendChild(button);
+                document.getElementById('processButtons').appendChild(button);
             });
-            
-            let currentStep = 0;
-            const selectedSteps = [];
-            
-            // 选择流程按钮
-            function selectProcessButton(button) {
-                const originalIndex = parseInt(button.dataset.originalIndex);
-                
-                // 如果已经选择过这个按钮，忽略
-                if (selectedSteps.includes(originalIndex)) {
-                    return;
-                }
-                
-                // 标记按钮为已选择
-                button.classList.add('active');
-                button.disabled = true;
-                selectedSteps.push(originalIndex);
-                
-                // 检查是否完成
-                if (selectedSteps.length === steps) {
-                    // 检查顺序是否正确
-                    let isCorrect = true;
-                    
-                    for (let i = 0; i < steps; i++) {
-                        if (selectedSteps[i] !== i) {
-                            isCorrect = false;
-                            break;
-                        }
-                    }
-                    
-                    if (isCorrect) {
-                        completeLevel();
-                    } else {
-                        failLevel('顺序不正确！');
-                    }
-                }
-            }
-            
-            // 隐藏流程，显示按钮
-            setTimeout(() => {
-                processDisplay.style.display = 'none';
-            }, 5000);
             
             // 保存游戏数据
             gameState.levelData = {
                 type: 'process',
                 steps: steps,
-                randomVariables: randomVariables,
-                processSteps: processSteps,
-                buttonOrder: buttonOrder,
-                selectedSteps: selectedSteps
+                currentStep: 0,
+                selectedButtons: []
             };
+            
+            // 一段时间后隐藏步骤说明
+            setTimeout(() => {
+                stepsList.style.display = 'none';
+                processDisplay.textContent = '请按正确顺序点击按钮';
+            }, 5000);
         }
 
-        // 开始关卡计时
-        function startLevelTimer() {
-            gameState.levelTimer = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - gameState.levelStartTime) / 1000);
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
+        // 选择流程步骤
+        function selectProcessStep(button) {
+            // 如果已经选择过，不处理
+            if (button.classList.contains('active')) return;
+            
+            // 检查是否是正确的下一步
+            const stepIndex = parseInt(button.dataset.originalIndex);
+            
+            if (stepIndex === gameState.levelData.currentStep) {
+                button.classList.add('active');
+                gameState.levelData.selectedButtons.push(button);
+                gameState.levelData.currentStep++;
                 
-                elements.displays.gameLevelTimer.textContent = 
-                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                // 检查是否完成所有步骤
+                if (gameState.levelData.currentStep === gameState.levelData.steps.length) {
+                    completeLevel();
+                }
+            } else {
+                // 错误的步骤，重置
+                gameState.levelData.selectedButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                gameState.levelData.selectedButtons = [];
+                gameState.levelData.currentStep = 0;
+                
+                gameState.levelAttempts++;
+                elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
+                showToast('顺序错误，请重新尝试', 'error');
+            }
+        }
+
+        // 开始关卡计时器
+        function startLevelTimer() {
+            // 清除之前的计时器
+            if (gameState.levelTimer) {
+                clearInterval(gameState.levelTimer);
+            }
+            
+            const startTime = gameState.levelStartTime;
+            
+            gameState.levelTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                
+                elements.displays.gameLevelTimer.textContent = `${minutes}:${seconds}`;
             }, 1000);
         }
 
@@ -3067,23 +2743,11 @@
                 gameState.levelTimer = null;
             }
             
-            // 停止其他可能的计时器
-            if (gameState.levelData && gameState.levelData.timerInterval) {
-                clearInterval(gameState.levelData.timerInterval);
-            }
-            
-            if (gameState.levelData && gameState.levelData.targetInterval) {
-                clearInterval(gameState.levelData.targetInterval);
-            }
-            
-            if (gameState.levelData && gameState.levelData.dynamicInterval) {
-                clearInterval(gameState.levelData.dynamicInterval);
-            }
-            
-            // 计算完成时间
-            const completionTime = Math.floor((Date.now() - gameState.levelStartTime) / 1000);
+            const timeTaken = Math.floor((Date.now() - gameState.levelStartTime) / 1000);
+            const attempts = gameState.levelAttempts + 1; // 加1是因为当前尝试成功了
             
             try {
+                // 调用API标记关卡完成
                 const response = await fetch(`${API_BASE_URL}/complete-level`, {
                     method: 'POST',
                     headers: {
@@ -3092,8 +2756,8 @@
                     },
                     body: JSON.stringify({
                         levelId: gameState.currentLevel.id,
-                        time: completionTime,
-                        attempts: gameState.levelAttempts + 1
+                        time: timeTaken,
+                        attempts: attempts
                     })
                 });
                 
@@ -3101,611 +2765,33 @@
                 
                 if (data.success) {
                     // 更新用户数据
-                    gameState.user.total_coins = data.new_level ? gameState.user.total_coins + gameState.currentLevel.reward_coins : gameState.user.total_coins;
-                    gameState.user.current_level = data.new_level || gameState.user.current_level;
-                    
-                    // 更新UI
+                    gameState.user.total_coins = data.new_coins || (gameState.user.total_coins + gameState.currentLevel.reward_coins);
+                    localStorage.setItem('gameUser', JSON.stringify(gameState.user));
                     updateUI();
                     
                     // 显示游戏结束页面
-                    showGameOver(true, completionTime);
+                    showPage('gameOver');
+                    
+                    // 更新游戏结束页面信息
+                    const minutes = Math.floor(timeTaken / 60).toString().padStart(2, '0');
+                    const seconds = (timeTaken % 60).toString().padStart(2, '0');
+                    
+                    elements.displays.gameOverTime.textContent = `${minutes}:${seconds}`;
+                    elements.displays.gameOverAttempts.textContent = attempts;
+                    elements.displays.gameOverReward.textContent = `${gameState.currentLevel.reward_coins}个万花币`;
+                    
+                    // 检查是否有下一关
+                    const currentLevelIndex = gameState.levels.findIndex(level => level.id === gameState.currentLevel.id);
+                    const hasNextLevel = currentLevelIndex < gameState.levels.length - 1;
+                    
+                    elements.buttons.nextLevel.disabled = !hasNextLevel;
+                    elements.buttons.nextLevel.style.opacity = hasNextLevel ? 1 : 0.5;
                 } else {
                     showToast(`完成关卡失败: ${data.error}`, 'error');
-                    showPage('levels');
                 }
             } catch (error) {
                 console.error('Complete level error:', error);
                 showToast('完成关卡失败，请稍后再试', 'error');
-                showPage('levels');
-            }
-        }
-
-        // 失败关卡
-        function failLevel(reason) {
-            // 停止计时器
-            if (gameState.levelTimer) {
-                clearInterval(gameState.levelTimer);
-                gameState.levelTimer = null;
-            }
-            
-            // 停止其他可能的计时器
-            if (gameState.levelData && gameState.levelData.timerInterval) {
-                clearInterval(gameState.levelData.timerInterval);
-            }
-            
-            if (gameState.levelData && gameState.levelData.targetInterval) {
-                clearInterval(gameState.levelData.targetInterval);
-            }
-            
-            if (gameState.levelData && gameState.levelData.dynamicInterval) {
-                clearInterval(gameState.levelData.dynamicInterval);
-            }
-            
-            // 增加尝试次数
-            gameState.levelAttempts++;
-            elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
-            
-            // 显示失败原因
-            showToast(reason, 'error');
-            
-            // 检查是否可以使用提示
-            if (gameState.levelAttempts >= 3 && gameState.levelHints < 3) {
-                elements.buttons.gameLevelHint.disabled = false;
-                showToast('可以观看广告获取提示', 'warning');
-            }
-            
-            // 检查是否需要等待
-            let waitTime = 0;
-            
-            if (gameState.levelAttempts >= 3 && gameState.levelAttempts < 5) {
-                waitTime = 10;
-            } else if (gameState.levelAttempts >= 5 && gameState.levelAttempts < 10) {
-                waitTime = 30;
-            } else if (gameState.levelAttempts >= 10) {
-                waitTime = 60;
-            }
-            
-            if (waitTime > 0) {
-                showToast(`请等待 ${waitTime} 秒后再试`, 'warning');
-                
-                // 禁用所有交互
-                if (gameState.levelData) {
-                    switch (gameState.levelData.type) {
-                        case 'password':
-                            elements.inputs.passwordInput.disabled = true;
-                            elements.buttons.passwordSubmit.disabled = true;
-                            break;
-                        case 'resource':
-                            document.querySelectorAll('.resource-btn').forEach(btn => {
-                                btn.disabled = true;
-                            });
-                            elements.buttons.resourceSubmit.disabled = true;
-                            break;
-                        case 'memory':
-                            elements.buttons.memorySubmit.disabled = true;
-                            break;
-                    }
-                }
-                
-                // 倒计时
-                let timeLeft = waitTime;
-                const waitInterval = setInterval(() => {
-                    timeLeft--;
-                    
-                    if (timeLeft <= 0) {
-                        clearInterval(waitInterval);
-                        
-                        // 恢复交互
-                        if (gameState.levelData) {
-                            switch (gameState.levelData.type) {
-                                case 'password':
-                                    elements.inputs.passwordInput.disabled = false;
-                                    elements.buttons.passwordSubmit.disabled = false;
-                                    break;
-                                case 'resource':
-                                    document.querySelectorAll('.resource-btn').forEach(btn => {
-                                        btn.disabled = false;
-                                    });
-                                    elements.buttons.resourceSubmit.disabled = false;
-                                    break;
-                                case 'memory':
-                                    elements.buttons.memorySubmit.disabled = false;
-                                    break;
-                            }
-                        }
-                        
-                        // 重置关卡
-                        resetLevel();
-                    }
-                }, 1000);
-                
-                // 保存计时器ID
-                gameState.waitInterval = waitInterval;
-            } else {
-                // 直接重置关卡
-                resetLevel();
-            }
-        }
-
-        // 重置关卡
-        function resetLevel() {
-            // 清除等待计时器
-            if (gameState.waitInterval) {
-                clearInterval(gameState.waitInterval);
-                gameState.waitInterval = null;
-            }
-            
-            // 重置关卡开始时间
-            gameState.levelStartTime = Date.now();
-            
-            // 重新初始化关卡
-            initGameLevel();
-            
-            // 重新开始计时
-            startLevelTimer();
-        }
-
-        // 显示游戏结束页面
-        function showGameOver(isSuccess, completionTime) {
-            // 更新游戏结束页面信息
-            if (isSuccess) {
-                elements.displays.gameOverTitle.textContent = '关卡完成';
-                elements.displays.gameOverMessage.textContent = '恭喜你完成了关卡！';
-            } else {
-                elements.displays.gameOverTitle.textContent = '关卡失败';
-                elements.displays.gameOverMessage.textContent = '再接再厉，下次一定可以成功！';
-            }
-            
-            // 格式化时间
-            const minutes = Math.floor(completionTime / 60);
-            const seconds = completionTime % 60;
-            elements.displays.gameOverTime.textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            elements.displays.gameOverAttempts.textContent = gameState.levelAttempts + 1;
-            elements.displays.gameOverReward.textContent = 
-                `${gameState.currentLevel.reward_coins} 个万花币`;
-            
-            // 显示游戏结束页面
-            showPage('gameOver');
-        }
-
-        // 显示提示
-        function showHint() {
-            if (gameState.levelHints >= 3) {
-                showToast('已经使用过所有提示', 'warning');
-                return;
-            }
-            
-            // 观看广告获取提示
-            watchAd('hint', () => {
-                gameState.levelHints++;
-                
-                // 根据关卡类型显示提示
-                if (gameState.levelData) {
-                    let hintText = '';
-                    
-                    switch (gameState.levelData.type) {
-                        case 'graphics':
-                            hintText = '尝试将拼图碎片拖到目标位置，当碎片变成绿色时表示位置正确';
-                            break;
-                        case 'password':
-                            hintText = `密码长度是 ${gameState.levelData.length} 位`;
-                            break;
-                        case 'mechanism':
-                            hintText = '按照正确的顺序点击机关';
-                            break;
-                        case 'resource':
-                            hintText = '合理分配资源，确保每个设备都能运行';
-                            break;
-                        case 'path':
-                            hintText = '使用方向键移动，避开障碍物到达终点';
-                            break;
-                        case 'precision':
-                            hintText = `点击目标的中心位置，误差范围是 ${gameState.levelData.tolerance} 像素`;
-                            break;
-                        case 'reaction':
-                            hintText = '快速点击绿色目标，避开红色目标';
-                            break;
-                        case 'information':
-                            hintText = '记住显示的信息，然后在下方按顺序选择';
-                            break;
-                        case 'process':
-                            hintText = '记住按钮的操作顺序，然后按照相同顺序点击';
-                            break;
-                    }
-                    
-                    elements.displays.gameLevelHintText.textContent = hintText;
-                    elements.displays.gameLevelHintText.style.display = 'block';
-                    
-                    showToast('提示已显示', 'success');
-                }
-            });
-        }
-
-        // 观看广告
-        function watchAd(type, callback) {
-            // 在实际应用中，这里应该集成广告SDK
-            // 这里我们模拟观看广告的过程
-            
-            showToast('正在加载广告...', 'info');
-            
-            setTimeout(() => {
-                // 记录广告观看
-                recordAdView(type, () => {
-                    if (callback) callback();
-                });
-            }, 1000);
-        }
-
-        // 记录广告观看
-        async function recordAdView(adType, callback) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/ad-view`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${gameState.token}`
-                    },
-                    body: JSON.stringify({
-                        adType: adType,
-                        rewardType: adType
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 如果有万花币奖励，更新用户数据
-                    if (data.reward_coins > 0) {
-                        gameState.user.total_coins += data.reward_coins;
-                        updateUI();
-                        showToast(`获得 ${data.reward_coins} 个万花币`, 'success');
-                    }
-                    
-                    if (callback) callback();
-                } else {
-                    showToast(`广告观看失败: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                console.error('Record ad view error:', error);
-                showToast('广告观看失败，请稍后再试', 'error');
-            }
-        }
-
-        // 签到
-        async function signIn() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/sign-in`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${gameState.token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 更新用户数据
-                    gameState.user.total_coins += data.reward_coins;
-                    gameState.user.consecutive_sign_in_days = data.consecutive_days;
-                    
-                    // 更新UI
-                    updateUI();
-                    
-                    // 更新签到按钮
-                    elements.buttons.signIn.textContent = '已签到';
-                    elements.buttons.signIn.disabled = true;
-                    
-                    // 显示签到成功消息
-                    let message = `签到成功！获得 ${data.reward_coins} 个万花币`;
-                    
-                    if (data.is_extra_reward) {
-                        message += '\n额外奖励：10 个万花币';
-                    }
-                    
-                    showToast(message, 'success');
-                } else {
-                    showToast(`签到失败: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                console.error('Sign in error:', error);
-                showToast('签到失败，请稍后再试', 'error');
-            }
-        }
-
-        // 加载排行榜
-        async function loadLeaderboard(type = 'monthly') {
-            try {
-                const yearMonth = new Date().toISOString().slice(0, 7);
-                const response = await fetch(`${API_BASE_URL}/leaderboard?type=${type}&yearMonth=${yearMonth}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${gameState.token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    renderLeaderboard(data.leaderboard, data.user_rank);
-                } else {
-                    showToast(`加载排行榜失败: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                console.error('Load leaderboard error:', error);
-                showToast('加载排行榜失败，请稍后再试', 'error');
-            }
-        }
-
-        // 渲染排行榜
-        function renderLeaderboard(leaderboard, userRank) {
-            elements.displays.leaderboardList.innerHTML = '';
-            
-            if (leaderboard.length === 0) {
-                elements.displays.leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px;">暂无排行数据</div>';
-                return;
-            }
-            
-            leaderboard.forEach(entry => {
-                const item = document.createElement('div');
-                item.className = 'leaderboard-item';
-                
-                let rankClass = '';
-                if (entry.rank === 1) rankClass = 'top1';
-                else if (entry.rank === 2) rankClass = 'top2';
-                else if (entry.rank === 3) rankClass = 'top3';
-                
-                item.innerHTML = `
-                    <div class="leaderboard-rank ${rankClass}">${entry.rank}</div>
-                    <div class="leaderboard-info">
-                        <div class="leaderboard-name">${entry.telegram_username || '匿名用户'}</div>
-                        <div class="leaderboard-score">得分: ${entry.score}</div>
-                    </div>
-                    <div class="leaderboard-reward">
-                        ${entry.cash_reward > 0 ? `${entry.cash_reward / 100}元 ` : ''}
-                        ${entry.coins_reward > 0 ? `${entry.coins_reward}币` : ''}
-                    </div>
-                `;
-                
-                elements.displays.leaderboardList.appendChild(item);
-            });
-            
-            // 显示用户排名
-            if (userRank) {
-                const userItem = document.createElement('div');
-                userItem.className = 'leaderboard-item';
-                userItem.style.backgroundColor = '#f3f4f6';
-                userItem.style.fontWeight = 'bold';
-                
-                userItem.innerHTML = `
-                    <div class="leaderboard-rank">${userRank.rank}</div>
-                    <div class="leaderboard-info">
-                        <div class="leaderboard-name">你的排名</div>
-                        <div class="leaderboard-score">得分: ${userRank.score}</div>
-                    </div>
-                `;
-                
-                elements.displays.leaderboardList.appendChild(userItem);
-            }
-        }
-
-        // 加载成就
-        async function loadAchievements() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/achievements`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${gameState.token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    renderAchievements(data.achievements);
-                } else {
-                    showToast(`加载成就失败: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                console.error('Load achievements error:', error);
-                showToast('加载成就失败，请稍后再试', 'error');
-            }
-        }
-
-        // 渲染成就
-        function renderAchievements(achievements) {
-            elements.displays.achievementsList.innerHTML = '';
-            
-            if (achievements.length === 0) {
-                elements.displays.achievementsList.innerHTML = '<div style="text-align: center; padding: 20px;">暂无成就数据</div>';
-                return;
-            }
-            
-            achievements.forEach(achievement => {
-                const item = document.createElement('div');
-                item.className = 'achievement-item';
-                
-                const progressPercentage = (achievement.progress / achievement.target_value) * 100;
-                
-                item.innerHTML = `
-                    <div class="achievement-icon ${achievement.is_completed ? 'completed' : ''}">
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <div class="achievement-info">
-                        <div class="achievement-title">${achievement.name}</div>
-                        <div class="achievement-desc">${achievement.description}</div>
-                        <div class="achievement-progress">
-                            <div class="achievement-progress-bar" style="width: ${progressPercentage}%"></div>
-                        </div>
-                    </div>
-                    <div class="achievement-reward">
-                        <i class="fas fa-coins coins-icon"></i>
-                        ${achievement.reward_coins}
-                    </div>
-                `;
-                
-                elements.displays.achievementsList.appendChild(item);
-            });
-        }
-
-        // 提交提现申请
-        async function submitWithdrawal() {
-            const amount = parseInt(elements.inputs.withdrawAmount.value);
-            const alipayAccount = elements.inputs.alipayAccount.value.trim();
-            const realName = elements.inputs.realName.value.trim();
-            
-            if (!amount || amount < 10) {
-                showToast('提现金额不能少于10元', 'error');
-                return;
-            }
-            
-            if (!alipayAccount) {
-                showToast('请输入支付宝账号', 'error');
-                return;
-            }
-            
-            if (!realName) {
-                showToast('请输入真实姓名', 'error');
-                return;
-            }
-            
-            if (gameState.user.total_coins < amount * 100) {
-                showToast('万花币余额不足', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/withdraw`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${gameState.token}`
-                    },
-                    body: JSON.stringify({
-                        amount,
-                        alipayAccount,
-                        realName
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 更新用户数据
-                    gameState.user.total_coins -= amount * 100;
-                    updateUI();
-                    
-                    // 清空表单
-                    elements.inputs.withdrawAmount.value = '';
-                    elements.inputs.alipayAccount.value = '';
-                    elements.inputs.realName.value = '';
-                    
-                    showToast('提现申请已提交，我们将在3-5个工作日内处理', 'success');
-                    
-                    // 重新加载提现记录
-                    loadWithdrawals();
-                } else {
-                    showToast(`提现失败: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                console.error('Withdraw error:', error);
-                showToast('提现失败，请稍后再试', 'error');
-            }
-        }
-
-        // 加载提现记录
-        async function loadWithdrawals() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/withdrawals`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${gameState.token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    renderWithdrawals(data.withdrawals);
-                } else {
-                    showToast(`加载提现记录失败: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                console.error('Load withdrawals error:', error);
-                showToast('加载提现记录失败，请稍后再试', 'error');
-            }
-        }
-
-        // 渲染提现记录
-        function renderWithdrawals(withdrawals) {
-            elements.displays.withdrawalsList.innerHTML = '';
-            
-            if (withdrawals.length === 0) {
-                elements.displays.withdrawalsList.innerHTML = '<div style="text-align: center; padding: 20px;">暂无提现记录</div>';
-                return;
-            }
-            
-            withdrawals.forEach(withdrawal => {
-                const item = document.createElement('div');
-                item.className = 'withdrawal-item';
-                
-                const statusClass = withdrawal.status;
-                const statusText = {
-                    'pending': '处理中',
-                    'approved': '已到账',
-                    'rejected': '已拒绝'
-                }[withdrawal.status] || withdrawal.status;
-                
-                const date = new Date(withdrawal.created_at);
-                const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-                
-                item.innerHTML = `
-                    <div class="withdrawal-info">
-                        <div class="withdrawal-amount">${withdrawal.amount} 元</div>
-                        <div class="withdrawal-status ${statusClass}">${statusText}</div>
-                        ${withdrawal.rejection_reason ? `<div style="font-size: 0.8rem; color: #ef4444;">${withdrawal.rejection_reason}</div>` : ''}
-                        <div class="withdrawal-date">${dateStr}</div>
-                    </div>
-                `;
-                
-                elements.displays.withdrawalsList.appendChild(item);
-            });
-        }
-
-        // 记录分享
-        async function recordShare(shareType = 'telegram') {
-            try {
-                const response = await fetch(`${API_BASE_URL}/share`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${gameState.token}`
-                    },
-                    body: JSON.stringify({
-                        shareType
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 生成分享链接
-                    const shareLink = `https://t.me/${BOT_USERNAME}?start=verify_share_${data.share_id}`;
-                    
-                    // 复制到剪贴板
-                    navigator.clipboard.writeText(shareLink).then(() => {
-                        showToast('分享链接已复制到剪贴板', 'success');
-                    }).catch(() => {
-                        showModal('分享链接', shareLink);
-                    });
-                } else {
-                    showToast(`分享失败: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                console.error('Share error:', error);
-                showToast('分享失败，请稍后再试', 'error');
             }
         }
 
@@ -3734,199 +2820,286 @@
             elements.modal.modal.classList.remove('active');
         }
 
-        // 显示提示
+        // 显示提示框
         function showToast(message, type = 'info') {
-            elements.toast.textContent = message;
-            elements.toast.className = `toast ${type}`;
-            elements.toast.classList.add('show');
+            const toast = elements.toast;
+            toast.textContent = message;
+            toast.className = 'toast';
+            toast.classList.add(type);
+            toast.classList.add('show');
             
             setTimeout(() => {
-                elements.toast.classList.remove('show');
+                toast.classList.remove('show');
             }, 3000);
+        }
+
+        // 检查两个数组是否相等
+        function arraysEqual(a, b) {
+            if (a.length !== b.length) return false;
+            for (let i = 0; i < a.length; i++) {
+                if (a[i] !== b[i]) return false;
+            }
+            return true;
         }
 
         // 绑定事件
         function bindEvents() {
-            // 导航按钮
-            elements.buttons.levels.addEventListener('click', () => {
+            // 页面导航按钮
+            elements.buttons.levels.addEventListener('click', () => showPage('levels'));
+            elements.buttons.leaderboard.addEventListener('click', () => showPage('leaderboard'));
+            elements.buttons.achievements.addEventListener('click', () => showPage('achievements'));
+            elements.buttons.withdraw.addEventListener('click', () => showPage('withdraw'));
+            
+            // 返回主页按钮
+            elements.buttons.backToHomeFromLevels.addEventListener('click', () => showPage('home'));
+            elements.buttons.backToHomeFromLeaderboard.addEventListener('click', () => showPage('home'));
+            elements.buttons.backToHomeFromAchievements.addEventListener('click', () => showPage('home'));
+            elements.buttons.backToHomeFromWithdraw.addEventListener('click', () => showPage('home'));
+            
+            // 关卡相关按钮
+            elements.buttons.backToLevels.addEventListener('click', () => {
+                if (gameState.levelTimer) {
+                    clearInterval(gameState.levelTimer);
+                    gameState.levelTimer = null;
+                }
                 showPage('levels');
             });
             
-            elements.buttons.leaderboard.addEventListener('click', () => {
-                showPage('leaderboard');
-                loadLeaderboard('monthly');
+            elements.buttons.backToLevelsFromGameOver.addEventListener('click', () => showPage('levels'));
+            
+            elements.buttons.retryLevel.addEventListener('click', () => {
+                if (gameState.currentLevel) {
+                    startLevel(gameState.currentLevel);
+                }
             });
             
-            elements.buttons.achievements.addEventListener('click', () => {
-                showPage('achievements');
-                loadAchievements();
-            });
-            
-            elements.buttons.withdraw.addEventListener('click', () => {
-                showPage('withdraw');
-                loadWithdrawals();
-            });
-            
-            // 返回主页按钮
-            elements.buttons.backToHomeFromLevels.addEventListener('click', () => {
-                showPage('home');
-            });
-            
-            elements.buttons.backToHomeFromLeaderboard.addEventListener('click', () => {
-                showPage('home');
-            });
-            
-            elements.buttons.backToHomeFromAchievements.addEventListener('click', () => {
-                showPage('home');
-            });
-            
-            elements.buttons.backToHomeFromWithdraw.addEventListener('click', () => {
-                showPage('home');
+            elements.buttons.nextLevel.addEventListener('click', () => {
+                const currentIndex = gameState.levels.findIndex(level => level.id === gameState.currentLevel.id);
+                if (currentIndex < gameState.levels.length - 1) {
+                    const nextLevel = gameState.levels[currentIndex + 1];
+                    if (nextLevel.is_unlocked) {
+                        startLevel(nextLevel);
+                    } else {
+                        showToast('下一关尚未解锁', 'warning');
+                    }
+                }
             });
             
             // 签到按钮
-            elements.buttons.signIn.addEventListener('click', signIn);
+            elements.buttons.signIn.addEventListener('click', async () => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/sign-in`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${gameState.token}`
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // 更新用户数据
+                        gameState.user = data.user;
+                        localStorage.setItem('gameUser', JSON.stringify(gameState.user));
+                        updateUI();
+                        
+                        // 更新签到状态
+                        elements.buttons.signIn.textContent = '已签到';
+                        elements.buttons.signIn.disabled = true;
+                        
+                        showToast(`签到成功，获得${data.reward_coins}个万花币`, 'success');
+                    } else {
+                        showToast(`签到失败: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Sign in error:', error);
+                    showToast('签到失败，请稍后再试', 'error');
+                }
+            });
             
-            // 排行榜类型切换
+            // 提示按钮
+            elements.buttons.gameLevelHint.addEventListener('click', async () => {
+                gameState.levelHints++;
+                elements.buttons.gameLevelHint.disabled = gameState.levelHints >= 2; // 限制最多2次提示
+                
+                // 显示提示文本
+                elements.displays.gameLevelHintText.style.display = 'block';
+                
+                // 根据关卡类型显示不同提示
+                let hintText = '';
+                
+                switch (gameState.currentLevel.type) {
+                    case 'puzzle':
+                        switch (gameState.currentLevel.sub_type) {
+                            case 'graphics':
+                                hintText = '尝试将所有碎片放入灰色区域内';
+                                break;
+                            case 'password':
+                                hintText = '密码通常与关卡主题相关';
+                                break;
+                            case 'mechanism':
+                                hintText = `尝试按顺序激活机关: ${gameState.levelData.sequence.map(i => i + 1).join(' → ')}`;
+                                break;
+                        }
+                        break;
+                    case 'strategy':
+                        switch (gameState.currentLevel.sub_type) {
+                            case 'resource':
+                                hintText = `尝试组合资源达到${gameState.levelData.target}点`;
+                                break;
+                            case 'path':
+                                hintText = '找到从绿色到红色的路径，避开黑色墙壁';
+                                break;
+                        }
+                        break;
+                    case 'action':
+                        switch (gameState.currentLevel.sub_type) {
+                            case 'precision':
+                                hintText = '快速点击出现的目标';
+                                break;
+                            case 'reaction':
+                                hintText = '注意观察并及时反应';
+                                break;
+                        }
+                        break;
+                    case 'memory':
+                        switch (gameState.currentLevel.sub_type) {
+                            case 'information':
+                                hintText = '记住最初显示的符号和位置';
+                                break;
+                            case 'process':
+                                hintText = '按正确的步骤顺序点击按钮';
+                                break;
+                        }
+                        break;
+                }
+                
+                elements.displays.gameLevelHintText.textContent = hintText;
+                
+                // 记录广告观看以获取提示（实际应用中应该显示广告）
+                try {
+                    await fetch(`${API_BASE_URL}/ad-view`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${gameState.token}`
+                        },
+                        body: JSON.stringify({
+                            adType: 'interstitial',
+                            rewardType: 'hint'
+                        })
+                    });
+                } catch (error) {
+                    console.error('Record ad view error:', error);
+                }
+            });
+            
+            // 密码提交按钮
+            elements.buttons.passwordSubmit.addEventListener('click', () => {
+                const inputPassword = elements.inputs.passwordInput.value.trim();
+                
+                if (inputPassword === gameState.levelData.correctPassword) {
+                    completeLevel();
+                } else {
+                    gameState.levelAttempts++;
+                    elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
+                    showToast('密码错误，请重试', 'error');
+                }
+            });
+            
+            // 资源提交按钮
+            elements.buttons.resourceSubmit.addEventListener('click', () => {
+                if (gameState.levelData.total === gameState.levelData.target) {
+                    completeLevel();
+                } else {
+                    gameState.levelAttempts++;
+                    elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
+                    showToast(`资源总和需要正好是${gameState.levelData.target}`, 'error');
+                }
+            });
+            
+            // 记忆提交按钮
+            elements.buttons.memorySubmit.addEventListener('click', () => {
+                if (arraysEqual(gameState.levelData.input, gameState.levelData.values)) {
+                    completeLevel();
+                } else {
+                    gameState.levelAttempts++;
+                    elements.displays.gameLevelAttempts.textContent = `尝试次数: ${gameState.levelAttempts}`;
+                    showToast('记忆不正确，请重试', 'error');
+                }
+            });
+            
+            // 提现提交按钮
+            elements.buttons.submitWithdraw.addEventListener('click', async () => {
+                const amount = elements.inputs.withdrawAmount.value;
+                const alipayAccount = elements.inputs.alipayAccount.value.trim();
+                const realName = elements.inputs.realName.value.trim();
+                
+                if (!amount || !alipayAccount || !realName) {
+                    showToast('请填写所有必填字段', 'error');
+                    return;
+                }
+                
+                if (amount < 10) {
+                    showToast('最低提现金额为10元', 'error');
+                    return;
+                }
+                
+                const requiredCoins = amount * 100;
+                
+                if (gameState.user.total_coins < requiredCoins) {
+                    showToast('万花币不足', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/withdraw`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${gameState.token}`
+                        },
+                        body: JSON.stringify({
+                            amount: parseInt(amount),
+                            alipayAccount: alipayAccount,
+                            realName: realName
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // 更新用户数据
+                        gameState.user.total_coins -= requiredCoins;
+                        localStorage.setItem('gameUser', JSON.stringify(gameState.user));
+                        updateUI();
+                        
+                        // 重置表单
+                        elements.inputs.withdrawAmount.value = '';
+                        elements.inputs.alipayAccount.value = '';
+                        elements.inputs.realName.value = '';
+                        
+                        // 重新加载提现记录
+                        loadWithdrawals();
+                        
+                        showToast('提现申请已提交', 'success');
+                    } else {
+                        showToast(`提现失败: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Withdrawal error:', error);
+                    showToast('提现失败，请稍后再试', 'error');
+                }
+            });
+            
+            // 排行榜按钮
             elements.buttons.monthlyLeaderboard.addEventListener('click', () => {
                 loadLeaderboard('monthly');
             });
             
             elements.buttons.friendsLeaderboard.addEventListener('click', () => {
                 loadLeaderboard('friends');
-            });
-            
-            // 提现按钮
-            elements.buttons.submitWithdraw.addEventListener('click', submitWithdrawal);
-            
-            // 返回按钮
-            elements.buttons.backToLevels.addEventListener('click', () => {
-                // 停止计时器
-                if (gameState.levelTimer) {
-                    clearInterval(gameState.levelTimer);
-                    gameState.levelTimer = null;
-                }
-                
-                // 停止其他可能的计时器
-                if (gameState.levelData && gameState.levelData.timerInterval) {
-                    clearInterval(gameState.levelData.timerInterval);
-                }
-                
-                if (gameState.levelData && gameState.levelData.targetInterval) {
-                    clearInterval(gameState.levelData.targetInterval);
-                }
-                
-                if (gameState.levelData && gameState.levelData.dynamicInterval) {
-                    clearInterval(gameState.levelData.dynamicInterval);
-                }
-                
-                if (gameState.waitInterval) {
-                    clearInterval(gameState.waitInterval);
-                    gameState.waitInterval = null;
-                }
-                
-                showPage('levels');
-            });
-            
-            elements.buttons.backToLevelsFromGameOver.addEventListener('click', () => {
-                showPage('levels');
-            });
-            
-            // 游戏结束页面按钮
-            elements.buttons.retryLevel.addEventListener('click', () => {
-                startLevel(gameState.currentLevel);
-            });
-            
-            elements.buttons.nextLevel.addEventListener('click', () => {
-                const nextLevel = gameState.levels.find(level => level.id === gameState.currentLevel.id + 1);
-                
-                if (nextLevel && nextLevel.is_unlocked) {
-                    startLevel(nextLevel);
-                } else {
-                    showPage('levels');
-                }
-            });
-            
-            // 游戏关卡按钮
-            elements.buttons.gameLevelHint.addEventListener('click', showHint);
-            
-            // 密码提交按钮
-            elements.buttons.passwordSubmit.addEventListener('click', () => {
-                const password = elements.inputs.passwordInput.value.trim();
-                
-                if (!password) {
-                    showToast('请输入密码', 'error');
-                    return;
-                }
-                
-                if (password === gameState.levelData.password) {
-                    completeLevel();
-                } else {
-                    showToast('密码错误', 'error');
-                    failLevel('密码错误！');
-                }
-            });
-            
-            // 资源提交按钮
-            elements.buttons.resourceSubmit.addEventListener('click', () => {
-                let totalUsed = 0;
-                const resourceValues = [];
-                
-                for (let i = 0; i < gameState.levelData.targets; i++) {
-                    const valueElement = document.getElementById(`resource-value-${i}`);
-                    const value = parseInt(valueElement.textContent);
-                    resourceValues.push(value);
-                    totalUsed += value;
-                }
-                
-                if (totalUsed > gameState.levelData.resources) {
-                    showToast('资源超出限制', 'error');
-                    return;
-                }
-                
-                // 检查是否满足目标
-                let isCorrect = true;
-                
-                for (let i = 0; i < gameState.levelData.targets; i++) {
-                    if (resourceValues[i] < gameState.levelData.targetResources[i]) {
-                        isCorrect = false;
-                        break;
-                    }
-                }
-                
-                if (isCorrect) {
-                    completeLevel();
-                } else {
-                    showToast('资源分配不正确', 'error');
-                    failLevel('资源分配不正确！');
-                }
-            });
-            
-            // 记忆提交按钮
-            elements.buttons.memorySubmit.addEventListener('click', () => {
-                const inputValues = [];
-                
-                for (let i = 0; i < gameState.levelData.items; i++) {
-                    const inputItem = document.querySelector(`.memory-input-item[data-index="${i}"]`);
-                    inputValues.push(inputItem.dataset.value);
-                }
-                
-                // 检查是否正确
-                let isCorrect = true;
-                
-                for (let i = 0; i < gameState.levelData.items; i++) {
-                    if (inputValues[i] !== gameState.levelData.memoryItems[i].value) {
-                        isCorrect = false;
-                        break;
-                    }
-                }
-                
-                if (isCorrect) {
-                    completeLevel();
-                } else {
-                    showToast('记忆不正确', 'error');
-                    failLevel('记忆不正确！');
-                }
             });
             
             // 模态框关闭按钮
@@ -3938,19 +3111,34 @@
                     hideModal();
                 }
             });
-            
-            // 添加分享功能
-            document.addEventListener('keydown', (e) => {
-                // Ctrl+Shift+S 分享
-                if (e.ctrlKey && e.shiftKey && e.key === 'S') {
-                    e.preventDefault();
-                    recordShare();
-                }
-            });
         }
 
-        // 初始化游戏
-        document.addEventListener('DOMContentLoaded', initGame);
-    </script>
-</body>
-</html>
+        // 加载排行榜
+        async function loadLeaderboard(type = 'monthly') {
+            try {
+                const response = await fetch(`${API_BASE_URL}/leaderboard?type=${type}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${gameState.token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderLeaderboard(data.leaderboard, data.user_rank);
+                } else {
+                    showToast(`加载排行榜失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Load leaderboard error:', error);
+                showToast('加载排行榜失败，请稍后再试', 'error');
+            }
+        }
+
+        // 渲染排行榜
+        function renderLeaderboard(leaderboard, userRank) {
+            elements.displays.leaderboardList.innerHTML = '';
+            
+            if (leaderboard.length === 0) {
+                elements.displays.leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px
