@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>万花楼-《万象谜题》</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -750,15 +751,22 @@
         }
 
         // Telegram登录
-        document.getElementById('telegram-login').addEventListener('click', function() {
+        document.getElementById('telegram-login').addEventListener('click', function () {
             const telegramId = new URLSearchParams(window.location.search).get('telegram_id');
             if (telegramId) {
                 // 如果URL中有telegram_id参数，直接登录
                 loginWithTelegram(telegramId);
-            } else {
-                // 否则在新窗口中打开Telegram Bot而不是在iframe中打开
-                window.open(`https://t.me/${CONFIG.BOT_USERNAME}`, '_blank');
+                return;
             }
+
+            // 在Telegram Web App环境中使用Telegram Web App API
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                Telegram.WebApp.openTelegramLink(`https://t.me/${CONFIG.BOT_USERNAME}`);
+                return;
+            }
+
+            // 回退到新窗口打开
+            window.open(`https://t.me/${CONFIG.BOT_USERNAME}`, '_blank');
         });
 
         // 使用Telegram登录
@@ -1068,7 +1076,21 @@
         });
 
         // 页面加载完成后检查URL参数
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            // 初始化 Telegram Web App
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                Telegram.WebApp.ready();
+                Telegram.WebApp.expand(); // 全屏显示
+
+                // 可选：获取用户信息
+                const user = Telegram.WebApp.initDataUnsafe?.user;
+                if (user && user.id) {
+                    loginWithTelegram(user.id);
+                    return;
+                }
+            }
+
+            // 回退到传统登录方式
             const telegramId = new URLSearchParams(window.location.search).get('telegram_id');
             if (telegramId) {
                 loginWithTelegram(telegramId);
