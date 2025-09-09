@@ -20,14 +20,12 @@
             --border-radius: 12px;
             --transition: all 0.3s ease;
         }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
-
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
@@ -35,7 +33,6 @@
             overflow-x: hidden;
             position: relative;
         }
-
         /* 背景装饰 */
         .bg-decoration {
             position: fixed;
@@ -46,14 +43,12 @@
             z-index: -1;
             overflow: hidden;
         }
-
         .bg-decoration .shape {
             position: absolute;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             animation: float 20s infinite ease-in-out;
         }
-
         .bg-decoration .shape:nth-child(1) {
             width: 80px;
             height: 80px;
@@ -61,7 +56,6 @@
             left: 10%;
             animation-delay: 0s;
         }
-
         .bg-decoration .shape:nth-child(2) {
             width: 120px;
             height: 120px;
@@ -69,7 +63,6 @@
             left: 80%;
             animation-delay: 2s;
         }
-
         .bg-decoration .shape:nth-child(3) {
             width: 150px;
             height: 150px;
@@ -77,7 +70,6 @@
             left: 70%;
             animation-delay: 4s;
         }
-
         .bg-decoration .shape:nth-child(4) {
             width: 100px;
             height: 100px;
@@ -85,7 +77,6 @@
             left: 20%;
             animation-delay: 6s;
         }
-
         @keyframes float {
             0%, 100% {
                 transform: translateY(0) rotate(0deg);
@@ -94,24 +85,20 @@
                 transform: translateY(-20px) rotate(10deg);
             }
         }
-
         /* 容器 */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-
         /* 页面 */
         .page {
             display: none;
             animation: fadeIn 0.5s ease;
         }
-
         .page.active {
             display: block;
         }
-
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -122,7 +109,6 @@
                 transform: translateY(0);
             }
         }
-
         /* 顶部导航 */
         .navbar {
             display: flex;
@@ -135,7 +121,6 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
-
         .navbar .logo {
             display: flex;
             align-items: center;
@@ -143,18 +128,15 @@
             font-weight: bold;
             color: var(--primary-color);
         }
-
         .navbar .logo i {
             margin-right: 10px;
             color: var(--accent-color);
         }
-
         .navbar .user-info {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-
         .navbar .coins {
             display: flex;
             align-items: center;
@@ -165,11 +147,9 @@
             font-weight: bold;
             box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
         }
-
         .navbar .coins i {
             margin-right: 5px;
         }
-
         .navbar .user-avatar {
             width: 40px;
             height: 40px;
@@ -181,7 +161,6 @@
             justify-content: center;
             font-weight: bold;
         }
-
         /* 返回按钮 */
         .back-btn {
             display: inline-flex;
@@ -197,13 +176,11 @@
             transition: var(--transition);
             margin-bottom: 20px;
         }
-
         .back-btn:hover {
             background: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-
         /* 卡片 */
         .card {
             background: rgba(255, 255, 255, 0.9);
@@ -214,12 +191,10 @@
             margin-bottom: 20px;
             transition: var(--transition);
         }
-
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
-
         .card-title {
             font-size: 20px;
             font-weight: bold;
@@ -229,11 +204,9 @@
             align-items: center;
             gap: 10px;
         }
-
         .card-title i {
             color: var(--primary-color);
         }
-
         /* 按钮 */
         .btn {
             display: inline-flex;
@@ -250,85 +223,67 @@
             transition: var(--transition);
             text-decoration: none;
         }
-
         .btn:hover {
             background: var(--secondary-color);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
-
         .btn:active {
             transform: translateY(0);
         }
-
         .btn-secondary {
             background: var(--secondary-color);
         }
-
         .btn-secondary:hover {
             background: #7c3aed;
         }
-
         .btn-accent {
             background: var(--accent-color);
         }
-
         .btn-accent:hover {
             background: #db2777;
         }
-
         .btn-success {
             background: var(--success-color);
         }
-
         .btn-success:hover {
             background: #059669;
         }
-
         .btn-warning {
             background: var(--warning-color);
         }
-
         .btn-warning:hover {
             background: #d97706;
         }
-
         .btn-error {
             background: var(--error-color);
         }
-
         .btn-error:hover {
             background: #dc2626;
         }
-
         .btn-block {
             display: flex;
             width: 100%;
         }
-
         .btn-outline {
             background: transparent;
             border: 2px solid var(--primary-color);
             color: var(--primary-color);
         }
-
         .btn-outline:hover {
             background: var(--primary-color);
             color: white;
         }
-
         /* 输入框 */
         .form-group {
             margin-bottom: 20px;
         }
-
         .form-label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
             color: var(--dark-color);
         }
-
         .form-control {
             width: 100%;
             padding: 12px 15px;
@@ -337,13 +292,11 @@
             font-size: 16px;
             transition: var(--transition);
         }
-
         .form-control:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
-
         /* 主页 */
         .home-banner {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
@@ -354,25 +307,21 @@
             margin-bottom: 30px;
             box-shadow: 0 8px 30px rgba(99, 102, 241, 0.3);
         }
-
         .home-banner h1 {
             font-size: 36px;
             margin-bottom: 15px;
         }
-
         .home-banner p {
             font-size: 18px;
             margin-bottom: 25px;
             opacity: 0.9;
         }
-
         .home-features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-
         .feature-card {
             background: rgba(255, 255, 255, 0.9);
             border-radius: var(--border-radius);
@@ -380,36 +329,30 @@
             text-align: center;
             transition: var(--transition);
         }
-
         .feature-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         }
-
         .feature-card i {
             font-size: 40px;
             color: var(--primary-color);
             margin-bottom: 15px;
         }
-
         .feature-card h3 {
             font-size: 20px;
             margin-bottom: 10px;
             color: var(--dark-color);
         }
-
         .feature-card p {
             color: var(--text-color);
             line-height: 1.6;
         }
-
         .home-actions {
             display: flex;
             justify-content: center;
             gap: 15px;
             flex-wrap: wrap;
         }
-
         /* 关卡页面 */
         .level-categories {
             display: flex;
@@ -417,7 +360,6 @@
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
-
         .category-btn {
             padding: 8px 15px;
             background: rgba(255, 255, 255, 0.7);
@@ -427,19 +369,16 @@
             transition: var(--transition);
             font-weight: bold;
         }
-
         .category-btn.active {
             background: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
         }
-
         .level-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
         }
-
         .level-item {
             aspect-ratio: 1;
             background: rgba(255, 255, 255, 0.9);
@@ -453,36 +392,29 @@
             position: relative;
             overflow: hidden;
         }
-
         .level-item:hover {
             transform: scale(1.05);
         }
-
         .level-item.locked {
             opacity: 0.6;
             cursor: not-allowed;
         }
-
         .level-item.locked:hover {
             transform: none;
         }
-
         .level-item.completed {
             background: linear-gradient(135deg, var(--success-color), #059669);
             color: white;
         }
-
         .level-number {
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 5px;
         }
-
         .level-type {
             font-size: 12px;
             opacity: 0.8;
         }
-
         .level-reward {
             position: absolute;
             top: 5px;
@@ -496,7 +428,6 @@
             align-items: center;
             gap: 3px;
         }
-
         .level-lock {
             position: absolute;
             top: 50%;
@@ -505,7 +436,6 @@
             font-size: 30px;
             color: var(--dark-color);
         }
-
         /* 关卡详情页面 */
         .level-header {
             display: flex;
@@ -513,31 +443,26 @@
             align-items: center;
             margin-bottom: 20px;
         }
-
         .level-info {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
-
         .level-name {
             font-size: 24px;
             font-weight: bold;
             color: var(--dark-color);
         }
-
         .level-meta {
             display: flex;
             gap: 15px;
             color: var(--text-color);
         }
-
         .level-meta-item {
             display: flex;
             align-items: center;
             gap: 5px;
         }
-
         .level-content {
             background: rgba(255, 255, 255, 0.9);
             border-radius: var(--border-radius);
@@ -549,20 +474,17 @@
             align-items: center;
             justify-content: center;
         }
-
         .level-description {
             font-size: 16px;
             line-height: 1.6;
             margin-bottom: 20px;
             text-align: center;
         }
-
         .level-actions {
             display: flex;
             gap: 15px;
             justify-content: center;
         }
-
         /* 签到页面 */
         .check-in-calendar {
             display: grid;
@@ -570,7 +492,6 @@
             gap: 10px;
             margin-bottom: 20px;
         }
-
         .calendar-day {
             aspect-ratio: 1;
             background: rgba(255, 255, 255, 0.7);
@@ -582,59 +503,49 @@
             font-weight: bold;
             transition: var(--transition);
         }
-
         .calendar-day.checked {
             background: var(--success-color);
             color: white;
         }
-
         .calendar-day.today {
             border: 2px solid var(--primary-color);
         }
-
         .calendar-day-number {
             font-size: 18px;
             margin-bottom: 5px;
         }
-
         .calendar-day-reward {
             font-size: 12px;
             display: flex;
             align-items: center;
             gap: 3px;
         }
-
         .check-in-status {
             text-align: center;
             padding: 20px;
             margin-bottom: 20px;
         }
-
         .check-in-status h2 {
             font-size: 24px;
             margin-bottom: 10px;
             color: var(--dark-color);
         }
-
         .check-in-status p {
             font-size: 18px;
             color: var(--text-color);
         }
-
         .check-in-actions {
             display: flex;
             gap: 15px;
             justify-content: center;
             margin-bottom: 20px;
         }
-
         /* 排行榜页面 */
         .leaderboard-tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
         }
-
         .leaderboard-tab {
             flex: 1;
             padding: 12px;
@@ -645,18 +556,15 @@
             font-weight: bold;
             transition: var(--transition);
         }
-
         .leaderboard-tab.active {
             background: var(--primary-color);
             color: white;
         }
-
         .leaderboard-list {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
-
         .leaderboard-item {
             display: flex;
             align-items: center;
@@ -665,11 +573,9 @@
             padding: 15px;
             transition: var(--transition);
         }
-
         .leaderboard-item:hover {
             transform: translateX(5px);
         }
-
         .leaderboard-rank {
             width: 40px;
             height: 40px;
@@ -681,36 +587,29 @@
             font-weight: bold;
             margin-right: 15px;
         }
-
         .leaderboard-rank.top-1 {
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
             color: white;
         }
-
         .leaderboard-rank.top-2 {
             background: linear-gradient(135deg, #d1d5db, #9ca3af);
             color: white;
         }
-
         .leaderboard-rank.top-3 {
             background: linear-gradient(135deg, #f97316, #ea580c);
             color: white;
         }
-
         .leaderboard-info {
             flex: 1;
         }
-
         .leaderboard-name {
             font-weight: bold;
             margin-bottom: 5px;
         }
-
         .leaderboard-score {
             font-size: 14px;
             color: var(--text-color);
         }
-
         /* 提现页面 */
         .withdraw-info {
             background: linear-gradient(135deg, var(--warning-color), #d97706);
@@ -720,36 +619,30 @@
             margin-bottom: 20px;
             text-align: center;
         }
-
         .withdraw-info h2 {
             font-size: 24px;
             margin-bottom: 10px;
         }
-
         .withdraw-info p {
             font-size: 16px;
             opacity: 0.9;
         }
-
         .withdraw-form {
             background: rgba(255, 255, 255, 0.9);
             border-radius: var(--border-radius);
             padding: 20px;
             margin-bottom: 20px;
         }
-
         .withdraw-history {
             background: rgba(255, 255, 255, 0.9);
             border-radius: var(--border-radius);
             padding: 20px;
         }
-
         .withdraw-history-list {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
-
         .withdraw-history-item {
             display: flex;
             justify-content: space-between;
@@ -758,45 +651,37 @@
             background: var(--light-color);
             border-radius: var(--border-radius);
         }
-
         .withdraw-history-info {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
-
         .withdraw-history-amount {
             font-weight: bold;
             font-size: 18px;
         }
-
         .withdraw-history-date {
             font-size: 14px;
             color: var(--text-color);
         }
-
         .withdraw-history-status {
             padding: 5px 10px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: bold;
         }
-
         .withdraw-history-status.pending {
             background: #fef3c7;
             color: #92400e;
         }
-
         .withdraw-history-status.approved {
             background: #d1fae5;
             color: #065f46;
         }
-
         .withdraw-history-status.rejected {
             background: #fee2e2;
             color: #991b1b;
         }
-
         /* 成就页面 */
         .achievement-stats {
             display: grid;
@@ -804,32 +689,27 @@
             gap: 15px;
             margin-bottom: 20px;
         }
-
         .achievement-stat {
             background: rgba(255, 255, 255, 0.9);
             border-radius: var(--border-radius);
             padding: 20px;
             text-align: center;
         }
-
         .achievement-stat-value {
             font-size: 32px;
             font-weight: bold;
             color: var(--primary-color);
             margin-bottom: 5px;
         }
-
         .achievement-stat-label {
             font-size: 14px;
             color: var(--text-color);
         }
-
         .achievement-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 15px;
         }
-
         .achievement-item {
             background: rgba(255, 255, 255, 0.9);
             border-radius: var(--border-radius);
@@ -839,17 +719,14 @@
             gap: 15px;
             transition: var(--transition);
         }
-
         .achievement-item:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         }
-
         .achievement-item.completed {
             background: linear-gradient(135deg, var(--success-color), #059669);
             color: white;
         }
-
         .achievement-icon {
             width: 50px;
             height: 50px;
@@ -860,39 +737,32 @@
             justify-content: center;
             font-size: 24px;
         }
-
         .achievement-item.completed .achievement-icon {
             background: rgba(255, 255, 255, 0.2);
         }
-
         .achievement-info {
             flex: 1;
         }
-
         .achievement-name {
             font-weight: bold;
             margin-bottom: 5px;
         }
-
         .achievement-description {
             font-size: 14px;
             opacity: 0.8;
         }
-
         .achievement-reward {
             display: flex;
             align-items: center;
             gap: 5px;
             font-weight: bold;
         }
-
         /* 设置页面 */
         .settings-list {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
-
         .settings-item {
             display: flex;
             justify-content: space-between;
@@ -901,11 +771,9 @@
             border-radius: var(--border-radius);
             padding: 15px 20px;
         }
-
         .settings-label {
             font-weight: bold;
         }
-
         .toggle-switch {
             position: relative;
             width: 50px;
@@ -915,11 +783,9 @@
             cursor: pointer;
             transition: var(--transition);
         }
-
         .toggle-switch.active {
             background: var(--primary-color);
         }
-
         .toggle-switch-slider {
             position: absolute;
             top: 2.5px;
@@ -930,11 +796,9 @@
             border-radius: 50%;
             transition: var(--transition);
         }
-
         .toggle-switch.active .toggle-switch-slider {
             transform: translateX(25px);
         }
-
         /* 模态框 */
         .modal {
             display: none;
@@ -948,11 +812,9 @@
             align-items: center;
             justify-content: center;
         }
-
         .modal.active {
             display: flex;
         }
-
         .modal-content {
             background: white;
             border-radius: var(--border-radius);
@@ -963,7 +825,6 @@
             overflow-y: auto;
             animation: modalFadeIn 0.3s ease;
         }
-
         @keyframes modalFadeIn {
             from {
                 opacity: 0;
@@ -974,20 +835,17 @@
                 transform: scale(1);
             }
         }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-
         .modal-title {
             font-size: 24px;
             font-weight: bold;
             color: var(--dark-color);
         }
-
         .modal-close {
             background: none;
             border: none;
@@ -995,17 +853,14 @@
             cursor: pointer;
             color: var(--text-color);
         }
-
         .modal-body {
             margin-bottom: 20px;
         }
-
         .modal-footer {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
         }
-
         /* 加载动画 */
         .loader {
             display: inline-block;
@@ -1016,11 +871,9 @@
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
         }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
         /* 提示框 */
         .toast {
             position: fixed;
@@ -1036,23 +889,18 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-
         .toast.show {
             opacity: 1;
         }
-
         .toast.success {
             background: var(--success-color);
         }
-
         .toast.error {
             background: var(--error-color);
         }
-
         .toast.warning {
             background: var(--warning-color);
         }
-
         /* 游戏页面底部标注 */
         .footer-note {
             text-align: center;
@@ -1061,33 +909,27 @@
             font-size: 14px;
             opacity: 0.8;
         }
-
         .footer-note a {
             color: white;
             text-decoration: none;
         }
-
         /* 响应式设计 */
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
                 gap: 15px;
             }
-
             .home-banner h1 {
                 font-size: 28px;
             }
-
             .level-grid {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             }
-
             .level-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 10px;
             }
-
             .achievement-list {
                 grid-template-columns: 1fr;
             }
@@ -1102,7 +944,6 @@
         <div class="shape"></div>
         <div class="shape"></div>
     </div>
-
     <div class="container">
         <!-- 导航栏 -->
         <nav class="navbar">
@@ -1118,7 +959,6 @@
                 <div class="user-avatar" id="userAvatar">?</div>
             </div>
         </nav>
-
         <!-- 主页 -->
         <div class="page active" id="homePage">
             <div class="home-banner">
@@ -1129,7 +969,6 @@
                     开始游戏
                 </button>
             </div>
-
             <div class="home-features">
                 <div class="feature-card">
                     <i class="fas fa-brain"></i>
@@ -1147,7 +986,6 @@
                     <p>参与全服月度排行，前5名可获得现金奖励，最高500元</p>
                 </div>
             </div>
-
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-bullhorn"></i>
@@ -1156,20 +994,17 @@
                 <p>欢迎来到《万象谜题》！新用户登录即可获得20个万花币奖励，完成新手教程后还有额外奖励等着你！</p>
             </div>
         </div>
-
         <!-- 关卡页面 -->
         <div class="page" id="levelsPage">
             <button class="back-btn" id="backToHomeFromLevels">
                 <i class="fas fa-arrow-left"></i>
                 返回主页
             </button>
-
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-puzzle-piece"></i>
                     <span>关卡选择</span>
                 </div>
-
                 <div class="level-categories">
                     <button class="category-btn active" data-category="all">全部</button>
                     <button class="category-btn" data-category="puzzle">解谜</button>
@@ -1177,20 +1012,17 @@
                     <button class="category-btn" data-category="action">动作</button>
                     <button class="category-btn" data-category="memory">记忆</button>
                 </div>
-
                 <div class="level-grid" id="levelGrid">
                     <!-- 关卡将通过JS动态加载 -->
                 </div>
             </div>
         </div>
-
         <!-- 关卡详情页面 -->
         <div class="page" id="levelDetailPage">
             <button class="back-btn" id="backToLevelsFromDetail">
                 <i class="fas fa-arrow-left"></i>
                 返回关卡列表
             </button>
-
             <div class="card">
                 <div class="level-header">
                     <div class="level-info">
@@ -1210,7 +1042,6 @@
                         <!-- 状态将通过JS动态设置 -->
                     </div>
                 </div>
-
                 <div class="level-content" id="levelContent">
                     <div class="level-description" id="levelDescription">
                         关卡描述
@@ -1228,25 +1059,21 @@
                 </div>
             </div>
         </div>
-
         <!-- 签到页面 -->
         <div class="page" id="checkInPage">
             <button class="back-btn" id="backToHomeFromCheckIn">
                 <i class="fas fa-arrow-left"></i>
                 返回主页
             </button>
-
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-calendar-check"></i>
                     <span>每日签到</span>
                 </div>
-
                 <div class="check-in-status" id="checkInStatus">
                     <h2>连续签到 <span id="consecutiveDays">0</span> 天</h2>
                     <p>今日签到可获得 <span id="todayReward">0</span> 万花币</p>
                 </div>
-
                 <div class="check-in-actions">
                     <button class="btn btn-success" id="checkInBtn">
                         <i class="fas fa-gift"></i>
@@ -1257,55 +1084,46 @@
                         补签 (消耗5万花币)
                     </button>
                 </div>
-
                 <div class="check-in-calendar" id="checkInCalendar">
                     <!-- 日历将通过JS动态生成 -->
                 </div>
             </div>
         </div>
-
         <!-- 排行榜页面 -->
         <div class="page" id="leaderboardPage">
             <button class="back-btn" id="backToHomeFromLeaderboard">
                 <i class="fas fa-arrow-left"></i>
                 返回主页
             </button>
-
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-trophy"></i>
                     <span>排行榜</span>
                 </div>
-
                 <div class="leaderboard-tabs">
                     <button class="leaderboard-tab active" data-tab="monthly">月度排行</button>
                     <button class="leaderboard-tab" data-tab="all-time">总排行</button>
                 </div>
-
                 <div class="leaderboard-list" id="leaderboardList">
                     <!-- 排行榜将通过JS动态加载 -->
                 </div>
             </div>
         </div>
-
         <!-- 提现页面 -->
         <div class="page" id="withdrawPage">
             <button class="back-btn" id="backToHomeFromWithdraw">
                 <i class="fas fa-arrow-left"></i>
                 返回主页
             </button>
-
             <div class="withdraw-info">
                 <h2>万花币提现</h2>
                 <p>1000个万花币 = 10元人民币</p>
             </div>
-
             <div class="withdraw-form">
                 <div class="card-title">
                     <i class="fas fa-money-bill-wave"></i>
                     <span>申请提现</span>
                 </div>
-
                 <form id="withdrawForm">
                     <div class="form-group">
                         <label class="form-label">提现金额 (元)</label>
@@ -1316,43 +1134,36 @@
                             <option value="100">100元 (10000万花币)</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label class="form-label">支付宝账号</label>
                         <input type="text" class="form-control" id="alipayAccount" placeholder="请输入支付宝账号" required>
                     </div>
-
                     <div class="form-group">
                         <label class="form-label">真实姓名</label>
                         <input type="text" class="form-control" id="realName" placeholder="请输入真实姓名（与支付宝实名一致）" required>
                     </div>
-
                     <button type="submit" class="btn btn-success btn-block">
                         <i class="fas fa-paper-plane"></i>
                         提交申请
                     </button>
                 </form>
             </div>
-
             <div class="withdraw-history">
                 <div class="card-title">
                     <i class="fas fa-history"></i>
                     <span>提现记录</span>
                 </div>
-
                 <div class="withdraw-history-list" id="withdrawHistoryList">
                     <!-- 提现记录将通过JS动态加载 -->
                 </div>
             </div>
         </div>
-
         <!-- 成就页面 -->
         <div class="page" id="achievementsPage">
             <button class="back-btn" id="backToHomeFromAchievements">
                 <i class="fas fa-arrow-left"></i>
                 返回主页
             </button>
-
             <div class="achievement-stats">
                 <div class="achievement-stat">
                     <div class="achievement-stat-value" id="totalAchievements">0</div>
@@ -1367,32 +1178,27 @@
                     <div class="achievement-stat-label">完成率</div>
                 </div>
             </div>
-
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-medal"></i>
                     <span>成就列表</span>
                 </div>
-
                 <div class="achievement-list" id="achievementList">
                     <!-- 成就将通过JS动态加载 -->
                 </div>
             </div>
         </div>
-
         <!-- 设置页面 -->
         <div class="page" id="settingsPage">
             <button class="back-btn" id="backToHomeFromSettings">
                 <i class="fas fa-arrow-left"></i>
                 返回主页
             </button>
-
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-cog"></i>
                     <span>游戏设置</span>
                 </div>
-
                 <div class="settings-list">
                     <div class="settings-item">
                         <div class="settings-label">音效</div>
@@ -1420,23 +1226,19 @@
                     </div>
                 </div>
             </div>
-
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-info-circle"></i>
                     <span>关于游戏</span>
                 </div>
-
                 <p>《万象谜题》是一款极具挑战性的创意类游戏，拥有上千个难度递增的关卡，涵盖解谜、策略、动作、记忆等多种类型。通过获取"万花币"并积累到一定数量后，可以兑换真实奖励，提现至支付宝。</p>
                 <p style="margin-top: 10px;">版本号：1.0.0</p>
             </div>
-
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-share-alt"></i>
                     <span>分享游戏</span>
                 </div>
-
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <button class="btn btn-outline" id="shareToTelegramBtn">
                         <i class="fab fa-telegram"></i>
@@ -1449,13 +1251,11 @@
                 </div>
             </div>
         </div>
-
         <!-- 游戏页面底部标注 -->
         <div class="footer-note">
             本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发
         </div>
     </div>
-
     <!-- 模态框 -->
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -1471,10 +1271,8 @@
             </div>
         </div>
     </div>
-
     <!-- 提示框 -->
     <div class="toast" id="toast"></div>
-
     <script>
         // 游戏全局变量
         const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev';
@@ -1483,14 +1281,12 @@
         let levels = [];
         let currentLevel = null;
         let activeCategory = 'all';
-
         // 初始化
         document.addEventListener('DOMContentLoaded', async () => {
             // 检查URL参数中是否有token
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             const authStatus = urlParams.get('auth');
-
             if (token) {
                 // 保存token
                 localStorage.setItem('jwt_token', token);
@@ -1498,21 +1294,17 @@
                 // 清除URL参数
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
-
             // 检查认证状态
             if (authStatus === 'failed') {
                 showToast('认证失败，请重试', 'error');
             } else if (authStatus === 'error') {
                 showToast('认证出错，请稍后再试', 'error');
             }
-
             // 初始化页面
             await initApp();
-
             // 绑定事件
             bindEvents();
         });
-
         // 初始化应用
         async function initApp() {
             // 如果有token，验证并获取用户信息
@@ -1532,13 +1324,11 @@
                     userToken = null;
                 }
             }
-
             // 如果没有用户信息，显示登录提示
             if (!currentUser) {
                 showLoginModal();
             }
         }
-
         // 绑定事件
         function bindEvents() {
             // 导航事件
@@ -1550,35 +1340,27 @@
                     showLoginModal();
                 }
             });
-
             document.getElementById('backToHomeFromLevels').addEventListener('click', () => {
                 showPage('homePage');
             });
-
             document.getElementById('backToLevelsFromDetail').addEventListener('click', () => {
                 showPage('levelsPage');
             });
-
             document.getElementById('backToHomeFromCheckIn').addEventListener('click', () => {
                 showPage('homePage');
             });
-
             document.getElementById('backToHomeFromLeaderboard').addEventListener('click', () => {
                 showPage('homePage');
             });
-
             document.getElementById('backToHomeFromWithdraw').addEventListener('click', () => {
                 showPage('homePage');
             });
-
             document.getElementById('backToHomeFromAchievements').addEventListener('click', () => {
                 showPage('homePage');
             });
-
             document.getElementById('backToHomeFromSettings').addEventListener('click', () => {
                 showPage('homePage');
             });
-
             // 关卡分类事件
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1588,26 +1370,22 @@
                     renderLevels();
                 });
             });
-
             // 开始关卡
             document.getElementById('startLevelBtn').addEventListener('click', () => {
                 if (currentLevel) {
                     startLevel(currentLevel.id);
                 }
             });
-
             // 观看广告获取提示
             document.getElementById('watchAdForHintBtn').addEventListener('click', () => {
                 showToast('广告功能开发中，敬请期待', 'warning');
             });
-
             // 签相关事件
             document.getElementById('checkInBtn').addEventListener('click', async () => {
                 if (!currentUser) {
                     showLoginModal();
                     return;
                 }
-
                 try {
                     const result = await checkIn();
                     if (result.success) {
@@ -1623,16 +1401,13 @@
                     showToast('签到失败，请稍后再试', 'error');
                 }
             });
-
             document.getElementById('repairCheckInBtn').addEventListener('click', () => {
                 if (!currentUser) {
                     showLoginModal();
                     return;
                 }
-
                 showRepairCheckInModal();
             });
-
             // 排行榜标签事件
             document.querySelectorAll('.leaderboard-tab').forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -1641,7 +1416,6 @@
                     loadLeaderboard(tab.dataset.tab);
                 });
             });
-
             // 提现表单事件
             document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1650,16 +1424,13 @@
                     showLoginModal();
                     return;
                 }
-
                 const amount = parseInt(document.getElementById('withdrawAmount').value);
                 const alipayAccount = document.getElementById('alipayAccount').value.trim();
                 const realName = document.getElementById('realName').value.trim();
-
                 if (!alipayAccount || !realName) {
                     showToast('请填写完整的提现信息', 'error');
                     return;
                 }
-
                 try {
                     const result = await withdraw(amount, alipayAccount, realName);
                     if (result.success) {
@@ -1676,35 +1447,29 @@
                     showToast('提现失败，请稍后再试', 'error');
                 }
             });
-
             // 设置开关事件
             document.getElementById('soundToggle').addEventListener('click', function() {
                 this.classList.toggle('active');
                 localStorage.setItem('soundEnabled', this.classList.contains('active'));
             });
-
             document.getElementById('musicToggle').addEventListener('click', function() {
                 this.classList.toggle('active');
                 localStorage.setItem('musicEnabled', this.classList.contains('active'));
             });
-
             document.getElementById('vibrationToggle').addEventListener('click', function() {
                 this.classList.toggle('active');
                 localStorage.setItem('vibrationEnabled', this.classList.contains('active'));
             });
-
             document.getElementById('notificationToggle').addEventListener('click', function() {
                 this.classList.toggle('active');
                 localStorage.setItem('notificationEnabled', this.classList.contains('active'));
             });
-
             // 分享事件
             document.getElementById('shareToTelegramBtn').addEventListener('click', async () => {
                 if (!currentUser) {
                     showLoginModal();
                     return;
                 }
-
                 try {
                     const shareText = `我在玩《万象谜题》，一款非常有趣的益智游戏，快来挑战吧！`;
                     const shareUrl = `https://beijingshunyi.github.io/game-web/`;
@@ -1720,7 +1485,6 @@
                     showToast('分享失败，请稍后再试', 'error');
                 }
             });
-
             document.getElementById('copyLinkBtn').addEventListener('click', () => {
                 const shareUrl = `https://beijingshunyi.github.io/game-web/`;
                 navigator.clipboard.writeText(shareUrl).then(() => {
@@ -1729,7 +1493,6 @@
                     showToast('复制失败，请手动复制', 'error');
                 });
             });
-
             // 模态框事件
             document.getElementById('modalClose').addEventListener('click', closeModal);
             document.getElementById('modal').addEventListener('click', (e) => {
@@ -1737,31 +1500,26 @@
                     closeModal();
                 }
             });
-
             // 初始化设置
             initSettings();
         }
-
         // 初始化设置
         function initSettings() {
             const soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
             const musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
             const vibrationEnabled = localStorage.getItem('vibrationEnabled') === 'true';
             const notificationEnabled = localStorage.getItem('notificationEnabled') !== 'false';
-
             document.getElementById('soundToggle').classList.toggle('active', soundEnabled);
             document.getElementById('musicToggle').classList.toggle('active', musicEnabled);
             document.getElementById('vibrationToggle').classList.toggle('active', vibrationEnabled);
             document.getElementById('notificationToggle').classList.toggle('active', notificationEnabled);
         }
-
         // 显示页面
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
             document.getElementById(pageId).classList.add('active');
-
             // 页面切换时的特殊处理
             if (pageId === 'checkInPage' && currentUser) {
                 loadCheckInData();
@@ -1773,7 +1531,6 @@
                 loadAchievements();
             }
         }
-
         // 显示登录模态框
         function showLoginModal() {
             const modalTitle = '登录游戏';
@@ -1788,17 +1545,17 @@
                 </button>
                 <button class="btn btn-outline" id="cancelLoginBtn">取消</button>
             `;
-
             showModal(modalTitle, modalBody, modalFooter);
-
             // 绑定登录按钮事件
             document.getElementById('telegramLoginBtn').addEventListener('click', () => {
                 const botUsername = 'bjxcyouxiBot';
+                const botId = '6203295224'; // 添加机器人ID
                 const origin = 'https://beijingshunyi.github.io';
                 const callbackUrl = `${API_BASE_URL}/api/auth/telegram/callback`;
                 
                 // 构建Telegram OAuth URL
                 const params = new URLSearchParams();
+                params.append('bot_id', botId); // 添加bot_id参数
                 params.append('bot_username', botUsername);
                 params.append('origin', origin);
                 params.append('embed', '0');
@@ -1809,10 +1566,8 @@
                 
                 window.location.href = telegramAuthUrl;
             });
-
             document.getElementById('cancelLoginBtn').addEventListener('click', closeModal);
         }
-
         // 显示补签模态框
         function showRepairCheckInModal() {
             const modalTitle = '补签';
@@ -1827,9 +1582,7 @@
                 <button class="btn btn-primary" id="confirmRepairBtn">确认补签</button>
                 <button class="btn btn-outline" id="cancelRepairBtn">取消</button>
             `;
-
             showModal(modalTitle, modalBody, modalFooter);
-
             // 绑定确认补签按钮事件
             document.getElementById('confirmRepairBtn').addEventListener('click', async () => {
                 const repairDate = document.getElementById('repairDate').value;
@@ -1838,12 +1591,10 @@
                     showToast('请选择补签日期', 'error');
                     return;
                 }
-
                 if (currentUser.flower_coins < 5) {
                     showToast('万花币不足，无法补签', 'error');
                     return;
                 }
-
                 try {
                     const result = await repairCheckIn(repairDate);
                     if (result.success) {
@@ -1860,10 +1611,8 @@
                     showToast('补签失败，请稍后再试', 'error');
                 }
             });
-
             document.getElementById('cancelRepairBtn').addEventListener('click', closeModal);
         }
-
         // 显示模态框
         function showModal(title, body, footer) {
             document.getElementById('modalTitle').textContent = title;
@@ -1871,12 +1620,10 @@
             document.getElementById('modalFooter').innerHTML = footer;
             document.getElementById('modal').classList.add('active');
         }
-
         // 关闭模态框
         function closeModal() {
             document.getElementById('modal').classList.remove('active');
         }
-
         // 显示提示
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');
@@ -1895,7 +1642,6 @@
                 toast.classList.remove('show');
             }, 3000);
         }
-
         // API请求函数
         async function apiRequest(endpoint, options = {}) {
             const url = `${API_BASE_URL}${endpoint}`;
@@ -1903,24 +1649,19 @@
                 'Content-Type': 'application/json',
                 ...options.headers
             };
-
             if (userToken) {
                 headers['Authorization'] = `Bearer ${userToken}`;
             }
-
             const response = await fetch(url, {
                 ...options,
                 headers
             });
-
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || `Request failed with status ${response.status}`);
             }
-
             return await response.json();
         }
-
         // 获取用户信息
         async function fetchUserInfo() {
             try {
@@ -1931,11 +1672,9 @@
                 return null;
             }
         }
-
         // 更新用户信息显示
         function updateUserInfo() {
             if (!currentUser) return;
-
             document.getElementById('userCoins').textContent = currentUser.flower_coins;
             
             // 显示用户头像
@@ -1948,7 +1687,6 @@
                 avatar.textContent = '?';
             }
         }
-
         // 加载关卡列表
         async function loadLevels() {
             try {
@@ -1960,17 +1698,14 @@
                 showToast('加载关卡失败，请稍后再试', 'error');
             }
         }
-
         // 渲染关卡列表
         function renderLevels() {
             const levelGrid = document.getElementById('levelGrid');
             levelGrid.innerHTML = '';
-
             // 过滤关卡
             const filteredLevels = activeCategory === 'all' 
                 ? levels 
                 : levels.filter(level => level.type === activeCategory);
-
             // 渲染关卡
             filteredLevels.forEach(level => {
                 const levelItem = document.createElement('div');
@@ -1983,7 +1718,6 @@
                 if (level.progress && level.progress.completed) {
                     levelItem.classList.add('completed');
                 }
-
                 levelItem.innerHTML = `
                     <div class="level-number">${level.id}</div>
                     <div class="level-type">${getLevelTypeName(level.type)}</div>
@@ -1993,17 +1727,14 @@
                     </div>
                     ${!level.unlocked ? '<div class="level-lock"><i class="fas fa-lock"></i></div>' : ''}
                 `;
-
                 if (level.unlocked) {
                     levelItem.addEventListener('click', () => {
                         showLevelDetail(level);
                     });
                 }
-
                 levelGrid.appendChild(levelItem);
             });
         }
-
         // 获取关卡类型名称
         function getLevelTypeName(type) {
             const typeNames = {
@@ -2014,7 +1745,6 @@
             };
             return typeNames[type] || type;
         }
-
         // 显示关卡详情
         function showLevelDetail(level) {
             currentLevel = level;
@@ -2023,7 +1753,6 @@
             document.getElementById('levelDifficulty').textContent = `难度 ${level.difficulty}`;
             document.getElementById('levelReward').textContent = `${level.reward} 万花币`;
             document.getElementById('levelDescription').textContent = level.description || '暂无描述';
-
             // 更新状态显示
             const statusElement = document.getElementById('levelStatus');
             if (level.progress && level.progress.completed) {
@@ -2040,17 +1769,14 @@
                     </div>
                 `;
             }
-
             showPage('levelDetailPage');
         }
-
         // 格式化时间
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
             const secs = seconds % 60;
             return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
-
         // 开始关卡
         function startLevel(levelId) {
             // 这里应该根据关卡类型和配置加载相应的游戏界面
@@ -2071,7 +1797,6 @@
                     </button>
                 </div>
             `;
-
             // 绑定完成按钮事件
             document.getElementById('completeLevelBtn').addEventListener('click', async () => {
                 try {
@@ -2091,7 +1816,6 @@
                 }
             });
         }
-
         // 完成关卡
         async function completeLevel(levelId, time, attempts) {
             try {
@@ -2105,7 +1829,6 @@
                 throw error;
             }
         }
-
         // 签到
         async function checkIn() {
             try {
@@ -2118,7 +1841,6 @@
                 throw error;
             }
         }
-
         // 补签
         async function repairCheckIn(date) {
             try {
@@ -2132,23 +1854,19 @@
                 throw error;
             }
         }
-
         // 加载签到数据
         async function loadCheckInData() {
             try {
                 const response = await apiRequest('/api/check-ins');
                 const { checkIns, consecutiveDays } = response;
-
                 // 更新连续签到天数
                 document.getElementById('consecutiveDays').textContent = consecutiveDays;
-
                 // 计算今日奖励
                 let todayReward = consecutiveDays;
                 if (consecutiveDays >= 7) {
                     todayReward += 10;
                 }
                 document.getElementById('todayReward').textContent = todayReward;
-
                 // 生成日历
                 generateCheckInCalendar(checkIns);
             } catch (error) {
@@ -2156,19 +1874,16 @@
                 showToast('加载签到数据失败', 'error');
             }
         }
-
         // 生成签到日历
         function generateCheckInCalendar(checkIns) {
             const calendar = document.getElementById('checkInCalendar');
             calendar.innerHTML = '';
-
             // 获取当前月份信息
             const now = new Date();
             const year = now.getFullYear();
             const month = now.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const firstDayOfMonth = new Date(year, month, 1).getDay();
-
             // 添加星期标题
             const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
             weekDays.forEach(day => {
@@ -2177,13 +1892,11 @@
                 dayElement.textContent = day;
                 calendar.appendChild(dayElement);
             });
-
             // 添加空白日期
             for (let i = 0; i < firstDayOfMonth; i++) {
                 const emptyDay = document.createElement('div');
                 calendar.appendChild(emptyDay);
             }
-
             // 添加日期
             const today = now.getDate();
             const checkInMap = {};
@@ -2191,7 +1904,6 @@
                 const date = new Date(checkIn.check_in_date);
                 checkInMap[date.getDate()] = checkIn;
             });
-
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day';
@@ -2208,15 +1920,12 @@
                 } else {
                     dayElement.innerHTML = `<div class="calendar-day-number">${day}</div>`;
                 }
-
                 if (day === today) {
                     dayElement.classList.add('today');
                 }
-
                 calendar.appendChild(dayElement);
             }
         }
-
         // 加载排行榜
         async function loadLeaderboard(type) {
             try {
@@ -2227,33 +1936,27 @@
                 showToast('加载排行榜失败', 'error');
             }
         }
-
         // 渲染排行榜
         function renderLeaderboard(leaderboard, type) {
             const leaderboardList = document.getElementById('leaderboardList');
             leaderboardList.innerHTML = '';
-
             if (leaderboard.length === 0) {
                 leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px;">暂无数据</div>';
                 return;
             }
-
             leaderboard.forEach((item, index) => {
                 const itemElement = document.createElement('div');
                 itemElement.className = 'leaderboard-item';
-
                 let rankClass = '';
                 if (item.rank === 1) rankClass = 'top-1';
                 else if (item.rank === 2) rankClass = 'top-2';
                 else if (item.rank === 3) rankClass = 'top-3';
-
                 let scoreText = '';
                 if (type === 'monthly') {
                     scoreText = `完成关卡: ${item.levelsCompleted} | 积分: ${item.score}`;
                 } else {
                     scoreText = `万花币: ${item.score}`;
                 }
-
                 itemElement.innerHTML = `
                     <div class="leaderboard-rank ${rankClass}">${item.rank}</div>
                     <div class="leaderboard-info">
@@ -2261,11 +1964,9 @@
                         <div class="leaderboard-score">${scoreText}</div>
                     </div>
                 `;
-
                 leaderboardList.appendChild(itemElement);
             });
         }
-
         // 提现
         async function withdraw(amount, alipayAccount, realName) {
             try {
@@ -2279,7 +1980,6 @@
                 throw error;
             }
         }
-
         // 加载提现记录
         async function loadWithdrawHistory() {
             try {
@@ -2290,24 +1990,19 @@
                 showToast('加载提现记录失败', 'error');
             }
         }
-
         // 渲染提现记录
         function renderWithdrawHistory(withdrawals) {
             const historyList = document.getElementById('withdrawHistoryList');
             historyList.innerHTML = '';
-
             if (withdrawals.length === 0) {
                 historyList.innerHTML = '<div style="text-align: center; padding: 20px;">暂无提现记录</div>';
                 return;
             }
-
             withdrawals.forEach(withdrawal => {
                 const itemElement = document.createElement('div');
                 itemElement.className = 'withdraw-history-item';
-
                 const date = new Date(withdrawal.created_at);
                 const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-
                 itemElement.innerHTML = `
                     <div class="withdraw-history-info">
                         <div class="withdraw-history-amount">${withdrawal.amount / 100}元</div>
@@ -2319,11 +2014,9 @@
                           withdrawal.status === 'rejected' ? '已拒绝' : withdrawal.status}
                     </div>
                 `;
-
                 historyList.appendChild(itemElement);
             });
         }
-
         // 加载成就
         async function loadAchievements() {
             try {
@@ -2334,12 +2027,10 @@
                 const totalAchievements = achievements.length;
                 const completedAchievements = achievements.filter(a => a.completed).length;
                 const progress = totalAchievements > 0 ? Math.round((completedAchievements / totalAchievements) * 100) : 0;
-
                 // 更新统计显示
                 document.getElementById('totalAchievements').textContent = totalAchievements;
                 document.getElementById('completedAchievements').textContent = completedAchievements;
                 document.getElementById('achievementProgress').textContent = `${progress}%`;
-
                 // 渲染成就列表
                 renderAchievements(achievements);
             } catch (error) {
@@ -2347,12 +2038,10 @@
                 showToast('加载成就失败', 'error');
             }
         }
-
         // 渲染成就列表
         function renderAchievements(achievements) {
             const achievementList = document.getElementById('achievementList');
             achievementList.innerHTML = '';
-
             achievements.forEach(achievement => {
                 const itemElement = document.createElement('div');
                 itemElement.className = 'achievement-item';
@@ -2360,14 +2049,12 @@
                 if (achievement.completed) {
                     itemElement.classList.add('completed');
                 }
-
                 // 根据成就类型选择图标
                 let icon = 'fa-trophy';
                 if (achievement.type === 'levels') icon = 'fa-puzzle-piece';
                 else if (achievement.type === 'coins') icon = 'fa-coins';
                 else if (achievement.type === 'time') icon = 'fa-clock';
                 else if (achievement.type === 'streak') icon = 'fa-calendar-check';
-
                 itemElement.innerHTML = `
                     <div class="achievement-icon">
                         <i class="fas ${icon}"></i>
@@ -2381,11 +2068,9 @@
                         <span>${achievement.reward}</span>
                     </div>
                 `;
-
                 achievementList.appendChild(itemElement);
             });
         }
-
         // 记录分享
         async function recordShare(shareType, shareData) {
             try {
