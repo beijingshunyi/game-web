@@ -181,10 +181,49 @@ class WanhuaGame {
             });
         });
         
-        // 游戏区域事件监听
+        // 动态事件绑定：游戏区域的按钮点击
         document.getElementById('game-area').addEventListener('click', (e) => {
-            if (this.gameState === 'playing') {
-                this.handleGameClick(e);
+            const target = e.target;
+            
+            // 动作类游戏的目标点击
+            if (target.id === 'action-target' && this.gameState === 'playing') {
+                this.handleActionGameClick(e);
+            }
+
+            // 开始挑战按钮
+            if (target.id === 'start-game-btn') {
+                this.startGame();
+            }
+
+            // 获取提示按钮
+            if (target.id === 'get-hint-btn') {
+                this.getHint();
+            }
+
+            // 提交答案按钮
+            if (target.id === 'submit-answer-btn') {
+                this.submitAnswer();
+            }
+
+            // 放弃挑战按钮
+            if (target.id === 'cancel-game-btn') {
+                this.cancelGame();
+            }
+
+            // 进入下一关按钮
+            if (target.id === 'next-level-btn') {
+                this.nextLevel();
+            }
+
+            // 返回主菜单按钮
+            if (target.id === 'back-to-menu-btn' || target.id === 'back-to-menu-fail-btn') {
+                this.gameState = 'menu';
+                this.updateUI();
+            }
+
+            // 重新挑战按钮
+            if (target.id === 'retry-level-btn') {
+                this.retryLevel();
             }
         });
     }
@@ -215,22 +254,13 @@ class WanhuaGame {
             gameArea.innerHTML = `
                 <div class="level-display" id="level-display">${this.currentLevel}</div>
                 <div class="reward-display">通关奖励：<span id="reward-amount">${this.getLevelReward(this.currentLevel)}</span> 万花币</div>
-                <button class="btn btn-large pulse" id="start-game">
+                <button class="btn btn-large pulse" id="start-game-btn">
                     <i class="fas fa-play"></i> 开始挑战
                 </button>
-                <button class="btn btn-secondary btn-block" id="get-hint">
+                <button class="btn btn-secondary btn-block" id="get-hint-btn">
                     <i class="fas fa-lightbulb"></i> 获取提示 (-3币)
                 </button>
             `;
-            
-            // 重新绑定事件
-            document.getElementById('start-game').addEventListener('click', () => {
-                this.startGame();
-            });
-            
-            document.getElementById('get-hint').addEventListener('click', () => {
-                this.getHint();
-            });
         } else if (this.gameState === 'playing') {
             gameArea.innerHTML = `
                 <h3>游戏副本 ${this.currentLevel}</h3>
@@ -240,22 +270,13 @@ class WanhuaGame {
                 <div id="game-content" style="margin: 20px 0; min-height: 150px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px; text-align: center;">
                     ${this.generateGameContent(levelData)}
                 </div>
-                <button class="btn btn-block btn-success" id="submit-answer">
+                <button class="btn btn-block btn-success" id="submit-answer-btn">
                     <i class="fas fa-check"></i> 提交答案
                 </button>
-                <button class="btn btn-block btn-secondary" id="cancel-game">
+                <button class="btn btn-block btn-secondary" id="cancel-game-btn">
                     <i class="fas fa-times"></i> 放弃挑战
                 </button>
             `;
-            
-            // 绑定新按钮事件
-            document.getElementById('submit-answer').addEventListener('click', () => {
-                this.submitAnswer();
-            });
-            
-            document.getElementById('cancel-game').addEventListener('click', () => {
-                this.cancelGame();
-            });
         } else if (this.gameState === 'completed') {
             gameArea.innerHTML = `
                 <div style="text-align: center; padding: 20px;">
@@ -265,23 +286,14 @@ class WanhuaGame {
                     <h3>恭喜通关！</h3>
                     <p>游戏副本 ${this.currentLevel} 完成</p>
                     <p>获得奖励：${levelData.reward} 万花币</p>
-                    <button class="btn btn-block btn-success" id="next-level">
+                    <button class="btn btn-block btn-success" id="next-level-btn">
                         <i class="fas fa-arrow-right"></i> 进入下一关
                     </button>
-                    <button class="btn btn-block btn-secondary" id="back-to-menu">
+                    <button class="btn btn-block btn-secondary" id="back-to-menu-btn">
                         <i class="fas fa-home"></i> 返回主菜单
                     </button>
                 </div>
             `;
-            
-            document.getElementById('next-level').addEventListener('click', () => {
-                this.nextLevel();
-            });
-            
-            document.getElementById('back-to-menu').addEventListener('click', () => {
-                this.gameState = 'menu';
-                this.updateUI();
-            });
         } else if (this.gameState === 'failed') {
             gameArea.innerHTML = `
                 <div style="text-align: center; padding: 20px;">
@@ -290,23 +302,14 @@ class WanhuaGame {
                     </div>
                     <h3>挑战失败</h3>
                     <p>游戏副本 ${this.currentLevel} 未完成</p>
-                    <button class="btn btn-block btn-warning" id="retry-level">
+                    <button class="btn btn-block btn-warning" id="retry-level-btn">
                         <i class="fas fa-redo"></i> 重新挑战
                     </button>
-                    <button class="btn btn-block btn-secondary" id="back-to-menu-fail">
+                    <button class="btn btn-block btn-secondary" id="back-to-menu-fail-btn">
                         <i class="fas fa-home"></i> 返回主菜单
                     </button>
                 </div>
             `;
-            
-            document.getElementById('retry-level').addEventListener('click', () => {
-                this.retryLevel();
-            });
-            
-            document.getElementById('back-to-menu-fail').addEventListener('click', () => {
-                this.gameState = 'menu';
-                this.updateUI();
-            });
         }
     }
 
@@ -356,30 +359,31 @@ class WanhuaGame {
         }
     }
 
-    // 处理游戏点击事件
-    handleGameClick(e) {
-        // 根据不同类型处理点击事件
-        const levelData = this.levels[this.currentLevel - 1];
+    // 处理动作游戏点击事件（已重命名）
+    handleActionGameClick(e) {
+        if (this.gameState !== 'playing') return;
         
-        if (levelData.type === 'action') {
-            const target = e.target.closest('#action-target');
-            if (target) {
-                // 对于动作类游戏，点击目标增加分数
-                this.actionGameScore = (this.actionGameScore || 0) + 1;
-                target.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
-                
-                // 随机移动目标位置
-                const gameArea = document.getElementById('game-content');
-                const maxX = gameArea.clientWidth - 80;
-                const maxY = gameArea.clientHeight - 80;
-                const newX = Math.floor(Math.random() * maxX);
-                const newY = Math.floor(Math.random() * maxY);
-                
-                target.style.position = 'absolute';
-                target.style.left = `${newX}px`;
-                target.style.top = `${newY}px`;
-            }
-        }
+        const levelData = this.levels[this.currentLevel - 1];
+        if (levelData.type !== 'action') return;
+        
+        // 增加得分
+        this.actionGameScore = (this.actionGameScore || 0) + 1;
+        document.getElementById('score').textContent = this.actionGameScore;
+        
+        // 改变目标颜色
+        const target = e.target;
+        target.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
+        
+        // 随机移动目标位置
+        const gameContent = document.getElementById('game-content');
+        const maxX = gameContent.clientWidth - 80;
+        const maxY = gameContent.clientHeight - 80;
+        const newX = Math.floor(Math.random() * maxX);
+        const newY = Math.floor(Math.random() * maxY);
+        
+        target.style.position = 'absolute';
+        target.style.left = `${newX}px`;
+        target.style.top = `${newY}px`;
     }
 
     // 获取关卡奖励
