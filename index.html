@@ -266,6 +266,20 @@
 <body>
     <div class="login-status" id="loginStatus" style="display: none;"></div>
     
+    <script>
+        // Telegram登录回调函数
+        function onTelegramAuth(user) {
+            console.log('Telegram登录成功:', user);
+            if (window.game) {
+                window.game.handleTelegramAuth(user);
+            } else {
+                // 如果游戏实例尚未初始化，先初始化
+                window.game = new WanhuaGame();
+                window.game.handleTelegramAuth(user);
+            }
+        }
+    </script>
+    
     <div class="container">
         <header>
             <h1>万花楼-《万象谜题》</h1>
@@ -277,7 +291,10 @@
             <p>超过2000个精心设计的关卡等你来挑战</p>
             <p>通过游戏获得万花币，可直接提现至支付宝</p>
             <br>
-            <button id="telegramLoginButton" class="telegram-login-button">
+            <div id="telegramLoginContainer">
+                <!-- Telegram Login Widget will be inserted here -->
+            </div>
+            <button id="telegramLoginButton" class="telegram-login-button" style="display: none;">
                 Login with Telegram
             </button>
             <button id="checkLoginStatusButton" class="nav-button" style="margin-top: 15px;">
@@ -291,8 +308,8 @@
             <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left;">
                 <h3 style="margin-top: 0; color: #1976d2;">登录说明：</h3>
                 <ol style="padding-left: 20px;">
-                    <li>点击上方"Login with Telegram"按钮</li>
-                    <li>在Telegram中点击"Start"按钮确认登录</li>
+                    <li>点击上方Telegram登录按钮</li>
+                    <li>在弹出窗口中确认Telegram登录</li>
                     <li>自动跳转回游戏页面开始游戏</li>
                 </ol>
             </div>
@@ -968,26 +985,12 @@
                 }
             }
 
-            // 初始化Telegram登录按钮
-            initTelegramLogin() {
-                // 显示自定义Telegram登录按钮
-                const loginButton = document.getElementById('telegramLoginButton');
-                loginButton.style.display = 'inline-flex';
-                
-                // 直接链接到Telegram Bot登录
-                loginButton.addEventListener('click', async () => {
-                    // 创建一个临时的测试用户进行登录
-                    const testUser = {
-                        id: Date.now(),
-                        first_name: 'Telegram用户',
-                        username: 'telegram_user',
-                        auth_date: Math.floor(Date.now() / 1000),
-                        hash: 'test_hash'
-                    };
-                    
+            // 处理Telegram登录
+            async handleTelegramAuth(user) {
+                try {
                     // 直接创建token而不是调用API
                     const token = btoa(JSON.stringify({ 
-                        userId: testUser.id, 
+                        userId: user.id, 
                         exp: Date.now() + 86400000 
                     }));
                     
@@ -996,8 +999,8 @@
                     
                     // 创建用户数据
                     this.userData = {
-                        id: testUser.id,
-                        username: testUser.username || testUser.first_name,
+                        id: user.id,
+                        username: user.username || user.first_name,
                         coins: 0,
                         current_level: 1,
                         checkin_streak: 0,
@@ -1007,7 +1010,30 @@
                     this.showGameInterface();
                     this.updateUI();
                     console.log('Telegram登录成功，token已保存到localStorage');
-                });
+                } catch (error) {
+                    console.error('登录错误:', error);
+                    this.showError('登录过程中发生错误，请重试');
+                }
+            }
+
+            // 初始化Telegram登录按钮
+            initTelegramLogin() {
+                // 创建Telegram登录脚本
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://telegram.org/js/telegram-widget.js?22';
+                
+                // 设置数据属性
+                script.setAttribute('data-telegram-login', 'bjxcyouxiBot');
+                script.setAttribute('data-size', 'large');
+                script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+                script.setAttribute('data-request-access', 'write');
+                
+                // 插入到指定容器
+                document.getElementById('telegramLoginContainer').appendChild(script);
+                
+                // 隐藏自定义按钮
+                document.getElementById('telegramLoginButton').style.display = 'none';
             }
         }
 
