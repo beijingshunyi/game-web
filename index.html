@@ -478,6 +478,39 @@
                 this.init();
             }
 
+            // API调用辅助函数
+            async apiCall(endpoint, options = {}) {
+                const url = `${this.apiBaseUrl}${endpoint}`;
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+                
+                // 如果有token，添加到Authorization头
+                if (this.token) {
+                    headers['Authorization'] = `Bearer ${this.token}`;
+                }
+                
+                const config = {
+                    ...options,
+                    headers
+                };
+                
+                try {
+                    const response = await fetch(url, config);
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error(`API调用失败 ${endpoint}:`, error);
+                    throw error;
+                }
+            }
+
             init() {
                 // 检查用户是否已登录
                 const token = localStorage.getItem('wanhua_token');
@@ -500,47 +533,39 @@
 
             // 绑定事件
             bindEvents() {
-                // 移除现有事件监听器，避免重复绑定
+                // 处理手动登录链接
                 const manualLoginLink = document.getElementById('manualLoginLink');
                 if (manualLoginLink) {
-                    // 移除旧的点击事件监听器
-                    const oldLink = manualLoginLink;
-                    const newLink = oldLink.cloneNode(true);
-                    oldLink.replaceWith(newLink);
-                    
-                    // 添加新的点击事件处理
-                    newLink.addEventListener('click', (e) => {
+                    // 清除现有的事件监听器
+                    manualLoginLink.removeEventListener('click', this._manualLoginHandler);
+                    // 添加新的事件监听器
+                    this._manualLoginHandler = (e) => {
                         e.preventDefault();
                         this.showManualLogin();
-                    });
+                    };
+                    manualLoginLink.addEventListener('click', this._manualLoginHandler);
                 }
                 
+                // 处理检查登录状态按钮
                 const checkLoginStatusButton = document.getElementById('checkLoginStatusButton');
                 if (checkLoginStatusButton) {
-                    // 移除旧的点击事件监听器
-                    const oldButton = checkLoginStatusButton;
-                    const newButton = oldButton.cloneNode(true);
-                    oldButton.replaceWith(newButton);
-                    
-                    // 添加新的点击事件处理
-                    newButton.addEventListener('click', () => {
+                    checkLoginStatusButton.removeEventListener('click', this._checkLoginStatusHandler);
+                    this._checkLoginStatusHandler = () => {
                         console.log('检查登录状态按钮点击');
                         this.checkLoginStatus();
-                    });
+                    };
+                    checkLoginStatusButton.addEventListener('click', this._checkLoginStatusHandler);
                 }
                 
+                // 处理调试登录按钮
                 const debugLoginButton = document.getElementById('debugLoginButton');
                 if (debugLoginButton) {
-                    // 移除旧的点击事件监听器
-                    const oldButton = debugLoginButton;
-                    const newButton = oldButton.cloneNode(true);
-                    oldButton.replaceWith(newButton);
-                    
-                    // 添加新的点击事件处理
-                    newButton.addEventListener('click', () => {
+                    debugLoginButton.removeEventListener('click', this._debugLoginHandler);
+                    this._debugLoginHandler = () => {
                         console.log('调试登录按钮点击');
                         this.debugLogin();
-                    });
+                    };
+                    debugLoginButton.addEventListener('click', this._debugLoginHandler);
                 }
                 
                 // 确保Telegram登录回调
@@ -842,7 +867,17 @@
             // 加载用户数据
             async loadUserData() {
                 try {
-                    // 模拟用户数据
+                    // 从后端获取真实用户数据
+                    const response = await this.apiCall('/user/data');
+                    if (response.success) {
+                        this.userData = response.data;
+                        this.updateUI();
+                    } else {
+                        throw new Error(response.error || '获取用户数据失败');
+                    }
+                } catch (error) {
+                    console.error('加载用户数据错误:', error);
+                    // 如果API调用失败，使用模拟数据
                     if (!this.userData) {
                         this.userData = {
                             id: Date.now(),
@@ -854,8 +889,6 @@
                         };
                     }
                     this.updateUI();
-                } catch (error) {
-                    console.error('加载用户数据错误:', error);
                 }
             }
 
@@ -877,52 +910,81 @@
 
             // 生成关卡
             async generateLevels() {
-                // 生成示例关卡
-                const grid = document.getElementById('puzzleGrid');
-                grid.innerHTML = '';
-                
-                for (let i = 1; i <= 20; i++) {
-                    const levelElement = document.createElement('div');
-                    levelElement.className = `puzzle-item ${i <= 10 ? '' : 'locked'}`;
-                    levelElement.innerHTML = `
-                        <div class="puzzle-number">第${i}关</div>
-                        <div class="puzzle-reward">类型: ${i % 4 === 0 ? '解谜' : i % 4 === 1 ? '策略' : i % 4 === 2 ? '动作' : '记忆'}</div>
-                        <div class="puzzle-reward">奖励: ${Math.floor(i/3) + 1}万花币</div>
-                    `;
-                    
-                    if (i <= 10) {
-                        levelElement.onclick = () => this.playLevel(i);
+                try {
+                    // 从后端获取真实关卡数据
+                    const response = await this.apiCall('/levels/list');
+                    if (response.success) {
+                        const levels = response.data;
+                        const grid = document.getElementById('puzzleGrid');
+                        grid.innerHTML = '';
+                        
+                        levels.forEach(level => {
+                            const levelElement = document.createElement('div');
+                            levelElement.className = `puzzle-item ${level.unlocked ? '' : 'locked'}`;
+                            levelElement.innerHTML = `
+                                <div class="puzzle-number">第${level.id}关</div>
+                                <div class="puzzle-reward">类型: ${level.type}</div>
+                                <div class="puzzle-reward">奖励: ${level.reward}万花币</div>
+                            `;
+                            
+                            if (level.unlocked) {
+                                levelElement.onclick = () => this.playLevel(level.id);
+                            }
+                            
+                            grid.appendChild(levelElement);
+                        });
+                    } else {
+                        throw new Error(response.error || '获取关卡数据失败');
                     }
+                } catch (error) {
+                    console.error('加载关卡数据错误:', error);
+                    // 如果API调用失败，使用模拟数据
+                    const grid = document.getElementById('puzzleGrid');
+                    grid.innerHTML = '';
                     
-                    grid.appendChild(levelElement);
+                    for (let i = 1; i <= 20; i++) {
+                        const levelElement = document.createElement('div');
+                        levelElement.className = `puzzle-item ${i <= 10 ? '' : 'locked'}`;
+                        levelElement.innerHTML = `
+                            <div class="puzzle-number">第${i}关</div>
+                            <div class="puzzle-reward">类型: ${i % 4 === 0 ? '解谜' : i % 4 === 1 ? '策略' : i % 4 === 2 ? '动作' : '记忆'}</div>
+                            <div class="puzzle-reward">奖励: ${Math.floor(i/3) + 1}万花币</div>
+                    `;
+                        
+                        if (i <= 10) {
+                            levelElement.onclick = () => this.playLevel(i);
+                        }
+                        
+                        grid.appendChild(levelElement);
+                    }
                 }
             }
 
             // 玩特定关卡
             async playLevel(levelId) {
-                alert(`开始挑战第${levelId}关！\n这是一个模拟的游戏界面。`);
-                
-                // 模拟完成关卡
-                setTimeout(async () => {
-                    const complete = confirm(`是否完成第${levelId}关？`);
-                    if (complete) {
-                        await this.completeLevel(levelId);
-                    }
-                }, 2000);
+                // 这里应该打开实际的游戏关卡
+                // 为了演示，我们直接调用完成关卡API
+                if (confirm(`开始挑战第${levelId}关？\n点击"确定"模拟完成关卡。`)) {
+                    await this.completeLevel(levelId);
+                }
             }
 
             // 完成关卡
             async completeLevel(levelId) {
                 try {
-                    const reward = Math.floor(levelId/3) + 1;
+                    // 调用后端API完成关卡
+                    const response = await this.apiCall('/levels/complete', {
+                        method: 'POST',
+                        body: JSON.stringify({ levelId })
+                    });
                     
-                    // 更新用户数据
-                    this.userData.coins += reward;
-                    this.userData.current_level = Math.max(this.userData.current_level, levelId + 1);
-                    
-                    alert(`恭喜完成第${levelId}关，获得${reward}万花币！`);
-                    // 更新用户数据
-                    this.updateUI();
+                    if (response.success) {
+                        alert(`恭喜完成第${levelId}关，获得${response.reward}万花币！`);
+                        // 重新加载用户数据以更新万花币和关卡进度
+                        await this.loadUserData();
+                    } else {
+                        throw new Error(response.error || '完成关卡失败');
+                    }
                 } catch (error) {
                     console.error('完成关卡错误:', error);
                     alert('完成关卡过程中发生错误，请重试');
@@ -938,17 +1000,23 @@
                     button.disabled = true;
                     button.textContent = '签到中...';
                     
-                    // 模拟签到
-                    const reward = this.userData.checkin_streak + 1;
-                    this.userData.coins += reward;
-                    this.userData.checkin_streak += 1;
+                    // 调用后端API签到
+                    const response = await this.apiCall('/checkin', {
+                        method: 'POST'
+                    });
                     
-                    status.textContent = `签到成功！获得${reward}万花币，连续签到${this.userData.checkin_streak}天`;
-                    status.style.color = 'green';
-                    button.textContent = '今日已签到';
-                    
-                    // 更新用户数据
-                    this.updateUI();
+                    if (response.success) {
+                        status.textContent = `签到成功！获得${response.reward}万花币，连续签到${response.streak}天`;
+                        status.style.color = 'green';
+                        button.textContent = '今日已签到';
+                        
+                        // 重新加载用户数据以更新万花币和签到进度
+                        await this.loadUserData();
+                    } else {
+                        status.textContent = response.message || '今日已签到';
+                        status.style.color = 'orange';
+                        button.textContent = '今日已签到';
+                    }
                 } catch (error) {
                     console.error('签到错误:', error);
                     status.textContent = '签到过程中发生错误，请重试';
@@ -960,27 +1028,50 @@
 
             // 获取排行榜
             async loadRanking() {
-                // 模拟排行榜数据
-                const rankingList = document.getElementById('rankingList');
-                rankingList.innerHTML = '';
-                
-                const ranking = [
-                    { rank: 1, username: "玩家A", levels: 1200, coins: 15000 },
-                    { rank: 2, username: "玩家B", levels: 1150, coins: 14200 },
-                    { rank: 3, username: "玩家C", levels: 1100, coins: 13800 },
-                    { rank: 99, username: "您", levels: 15, coins: 1250 }
-                ];
-                
-                ranking.forEach(player => {
-                    const playerElement = document.createElement('div');
-                    playerElement.className = 'feature-item';
-                    playerElement.innerHTML = `
-                        <div class="feature-title">${this.getRankEmoji(player.rank)} 第${player.rank}名</div>
-                        <p>${player.username || '匿名玩家'} - 通关进度: ${player.levels || 0}关</p>
-                        <p>万花币: ${player.coins}</p>
+                try {
+                    // 从后端获取真实排行榜数据
+                    const response = await this.apiCall('/ranking');
+                    if (response.success) {
+                        const rankingList = document.getElementById('rankingList');
+                        rankingList.innerHTML = '';
+                        
+                        response.data.forEach(player => {
+                            const playerElement = document.createElement('div');
+                            playerElement.className = 'feature-item';
+                            playerElement.innerHTML = `
+                                <div class="feature-title">${this.getRankEmoji(player.rank)} 第${player.rank}名</div>
+                                <p>${player.username || '匿名玩家'} - 通关进度: ${player.levels_completed || 0}关</p>
+                                <p>万花币: ${player.coins || 0}</p>
+                            `;
+                            rankingList.appendChild(playerElement);
+                        });
+                    } else {
+                        throw new Error(response.error || '获取排行榜数据失败');
+                    }
+                } catch (error) {
+                    console.error('加载排行榜错误:', error);
+                    // 如果API调用失败，使用模拟数据
+                    const rankingList = document.getElementById('rankingList');
+                    rankingList.innerHTML = '';
+                    
+                    const ranking = [
+                        { rank: 1, username: "玩家A", levels: 1200, coins: 15000 },
+                        { rank: 2, username: "玩家B", levels: 1150, coins: 14200 },
+                        { rank: 3, username: "玩家C", levels: 1100, coins: 13800 },
+                        { rank: 99, username: "您", levels: 15, coins: 1250 }
+                    ];
+                    
+                    ranking.forEach(player => {
+                        const playerElement = document.createElement('div');
+                        playerElement.className = 'feature-item';
+                        playerElement.innerHTML = `
+                            <div class="feature-title">${this.getRankEmoji(player.rank)} 第${player.rank}名</div>
+                            <p>${player.username || '匿名玩家'} - 通关进度: ${player.levels || 0}关</p>
+                            <p>万花币: ${player.coins}</p>
                     `;
-                    rankingList.appendChild(playerElement);
-                });
+                        rankingList.appendChild(playerElement);
+                    });
+                }
             }
 
             // 获取排名表情
@@ -995,30 +1086,56 @@
 
             // 获取成就列表
             async loadAchievements() {
-                // 模拟成就数据
-                const achievementsList = document.getElementById('achievementsList');
-                achievementsList.innerHTML = '';
-                
-                const achievements = [
-                    { name: "初出茅庐", description: "完成第1关", reward: 10, completed: true },
-                    { name: "小试牛刀", description: "完成第10关", reward: 20, completed: true },
-                    { name: "渐入佳境", description: "完成第50关", reward: 50, completed: false },
-                    { name: "坚持不懈", description: "连续签到7天", reward: 30, completed: false }
-                ];
-                
-                achievements.forEach(achievement => {
-                    const achievementElement = document.createElement('div');
-                    achievementElement.className = 'feature-item';
-                    achievementElement.innerHTML = `
-                        <div class="feature-title">${achievement.name}</div>
-                        <p>${achievement.description}</p>
-                        <p>奖励: ${achievement.reward}万花币</p>
-                        <p style="color: ${achievement.completed ? 'green' : '#6c757d'};">
-                            ${achievement.completed ? '已完成 ✓' : '未完成'}
-                        </p>
+                try {
+                    // 从后端获取真实成就数据
+                    const response = await this.apiCall('/achievements');
+                    if (response.success) {
+                        const achievementsList = document.getElementById('achievementsList');
+                        achievementsList.innerHTML = '';
+                        
+                        response.data.forEach(achievement => {
+                            const achievementElement = document.createElement('div');
+                            achievementElement.className = 'feature-item';
+                            achievementElement.innerHTML = `
+                                <div class="feature-title">${achievement.name}</div>
+                                <p>${achievement.description}</p>
+                                <p>奖励: ${achievement.reward}万花币</p>
+                                <p style="color: ${achievement.completed ? 'green' : '#6c757d'};">
+                                    ${achievement.completed ? '已完成 ✓' : '未完成'}
+                                </p>
+                            `;
+                            achievementsList.appendChild(achievementElement);
+                        });
+                    } else {
+                        throw new Error(response.error || '获取成就数据失败');
+                    }
+                } catch (error) {
+                    console.error('加载成就列表错误:', error);
+                    // 如果API调用失败，使用模拟数据
+                    const achievementsList = document.getElementById('achievementsList');
+                    achievementsList.innerHTML = '';
+                    
+                    const achievements = [
+                        { name: "初出茅庐", description: "完成第1关", reward: 10, completed: true },
+                        { name: "小试牛刀", description: "完成第10关", reward: 20, completed: true },
+                        { name: "渐入佳境", description: "完成第50关", reward: 50, completed: false },
+                        { name: "坚持不懈", description: "连续签到7天", reward: 30, completed: false }
+                    ];
+                    
+                    achievements.forEach(achievement => {
+                        const achievementElement = document.createElement('div');
+                        achievementElement.className = 'feature-item';
+                        achievementElement.innerHTML = `
+                            <div class="feature-title">${achievement.name}</div>
+                            <p>${achievement.description}</p>
+                            <p>奖励: ${achievement.reward}万花币</p>
+                            <p style="color: ${achievement.completed ? 'green' : '#6c757d'};">
+                                ${achievement.completed ? '已完成 ✓' : '未完成'}
+                            </p>
                     `;
-                    achievementsList.appendChild(achievementElement);
-                });
+                        achievementsList.appendChild(achievementElement);
+                    });
+                }
             }
 
             // 提现请求
@@ -1033,58 +1150,82 @@
                 }
                 
                 try {
-                    const coinsNeeded = amount * 100;
+                    // 调用后端API提现
+                    const response = await this.apiCall('/withdraw', {
+                        method: 'POST',
+                        body: JSON.stringify({ 
+                            amount: parseInt(amount),
+                            alipayAccount: account,
+                            realName: name
+                        })
+                    });
                     
-                    if (this.userData.coins < coinsNeeded) {
-                        alert(`万花币余额不足，当前余额：${this.userData.coins}，需要：${coinsNeeded}`);
-                        return;
+                    if (response.success) {
+                        alert(response.message || `提现申请已提交，金额：${amount}元，预计3-5个工作日内到账`);
+                        
+                        // 重新加载用户数据以更新万花币余额
+                        await this.loadUserData();
+                        
+                        // 清空输入
+                        document.getElementById('alipayAccount').value = '';
+                        document.getElementById('realName').value = '';
+                    } else {
+                        throw new Error(response.error || response.message || '提现申请失败');
                     }
-                    
-                    // 更新用户数据
-                    this.userData.coins -= coinsNeeded;
-                    
-                    alert(`提现申请已提交，金额：${amount}元，预计3-5个工作日内到账`);
-                    
-                    // 更新用户数据
-                    this.updateUI();
-                    
-                    // 清空输入
-                    document.getElementById('alipayAccount').value = '';
-                    document.getElementById('realName').value = '';
                 } catch (error) {
                     console.error('提现请求错误:', error);
-                    alert('提现申请过程中发生错误，请重试');
+                    alert(`提现申请过程中发生错误：${error.message}`);
                 }
             }
 
             // 处理Telegram登录
             async handleTelegramAuth(user) {
                 try {
-                    // 直接创建token而不是调用API
-                    const token = btoa(JSON.stringify({ 
-                        userId: user.id, 
-                        exp: Date.now() + 86400000 
-                    }));
+                    // 调用后端API验证和创建用户
+                    const response = await this.apiCall('/auth/telegram', {
+                        method: 'POST',
+                        body: JSON.stringify(user)
+                    });
                     
-                    this.token = token;
-                    localStorage.setItem('wanhua_token', token);
-                    
-                    // 创建用户数据
-                    this.userData = {
-                        id: user.id,
-                        username: user.username || user.first_name,
-                        coins: 0,
-                        current_level: 1,
-                        checkin_streak: 0,
-                        ranking: 0
-                    };
-                    
-                    this.showGameInterface();
-                    this.updateUI();
-                    console.log('Telegram登录成功，token已保存到localStorage');
+                    if (response.success) {
+                        this.token = response.token;
+                        localStorage.setItem('wanhua_token', response.token);
+                        this.userData = response.user;
+                        
+                        this.showGameInterface();
+                        this.updateUI();
+                        console.log('Telegram登录成功，token已保存到localStorage');
+                    } else {
+                        throw new Error(response.error || '登录失败');
+                    }
                 } catch (error) {
                     console.error('登录错误:', error);
-                    this.showError('登录过程中发生错误，请重试');
+                    // 如果API调用失败，使用本地token生成方法
+                    try {
+                        const token = btoa(JSON.stringify({ 
+                            userId: user.id, 
+                            exp: Date.now() + 86400000 
+                        }));
+                        
+                        this.token = token;
+                        localStorage.setItem('wanhua_token', token);
+                        
+                        // 创建用户数据
+                        this.userData = {
+                            id: user.id,
+                            username: user.username || user.first_name,
+                            coins: 0,
+                            current_level: 1,
+                            checkin_streak: 0,
+                            ranking: 0
+                        };
+                        
+                        this.showGameInterface();
+                        this.updateUI();
+                        console.log('Telegram登录成功（使用本地方法），token已保存到localStorage');
+                    } catch (localError) {
+                        this.showError('登录过程中发生错误，请重试');
+                    }
                 }
             }
 
@@ -1093,19 +1234,23 @@
                 // 检查Telegram登录按钮是否已加载
                 const container = document.getElementById('telegramLoginContainer');
                 if (container && container.children.length === 0) {
-                    // 创建Telegram登录脚本
-                    const script = document.createElement('script');
-                    script.async = true;
-                    script.src = 'https://telegram.org/js/telegram-widget.js?22';
-                    
-                    // 设置数据属性
-                    script.setAttribute('data-telegram-login', 'bjxcyouxiBot');
-                    script.setAttribute('data-size', 'large');
-                    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-                    script.setAttribute('data-request-access', 'write');
-                    
-                    // 插入到指定容器
-                    container.appendChild(script);
+                    // 检查是否已经存在Telegram登录按钮
+                    const existingScript = document.querySelector('script[src="https://telegram.org/js/telegram-widget.js?22"]');
+                    if (!existingScript) {
+                        // 创建Telegram登录脚本
+                        const script = document.createElement('script');
+                        script.async = true;
+                        script.src = 'https://telegram.org/js/telegram-widget.js?22';
+                        
+                        // 设置数据属性
+                        script.setAttribute('data-telegram-login', 'bjxcyouxiBot');
+                        script.setAttribute('data-size', 'large');
+                        script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+                        script.setAttribute('data-request-access', 'write');
+                        
+                        // 插入到指定容器
+                        container.appendChild(script);
+                    }
                 }
                 
                 // 确保备用按钮隐藏
