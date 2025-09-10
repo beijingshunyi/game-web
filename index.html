@@ -291,6 +291,34 @@
             background: #1a93c1;
             transform: translateY(-2px);
         }
+        
+        /* Telegram登录按钮样式 */
+        .telegram-login-button {
+            background-color: #0088cc;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .telegram-login-button:hover {
+            background-color: #0077b3;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .telegram-login-button::before {
+            content: "✈️ ";
+            font-size: 1.5em;
+        }
 
         @media (max-width: 768px) {
             .container {
@@ -309,9 +337,34 @@
                 min-width: 100%;
             }
         }
+        
+        /* 登录状态指示器 */
+        .login-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            z-index: 1000;
+        }
+        
+        /* 错误消息 */
+        .error-message {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <div class="login-status" id="loginStatus" style="display: none;"></div>
+    
     <div class="container">
         <header>
             <h1>万花楼-《万象谜题》</h1>
@@ -323,10 +376,19 @@
             <p>超过2000个精心设计的关卡等你来挑战</p>
             <p>通过游戏获得万花币，可直接提现至支付宝</p>
             <br>
-            <script async src="https://telegram.org/js/telegram-widget.js?22" data-telegram-login="bjxcyouxiBot" data-size="large" data-onauth="onTelegramAuth(user)" data-request-access="write"></script>
+            <div id="telegramLoginContainer">
+                <!-- Telegram Login Widget will be inserted here -->
+            </div>
+            <button id="telegramLoginButton" class="telegram-login-button">
+                Login with Telegram
+            </button>
+            <div class="error-message" id="errorMessage"></div>
             <p>请使用Telegram登录以开始游戏</p>
-            <br>
-            <p>在Telegram中搜索 <strong>@bjxcyouxiBot</strong> 并发送"游戏"二字获取游戏链接</p>
+            <p style="font-size: 0.9em; color: #666; margin-top: 20px;">
+                <a href="#" id="manualLoginLink" style="color: #666; text-decoration: underline;">
+                    无法使用Telegram登录？点击这里
+                </a>
+            </p>
         </div>
 
         <div class="game-stats" id="gameStats" style="display: none;">
@@ -442,8 +504,505 @@
         </footer>
     </div>
 
-    <script src="game.js"></script>
     <script>
+        // 游戏逻辑JavaScript
+        class WanhuaGame {
+            constructor() {
+                this.apiBaseUrl = 'https://wanhua-game.bingkuijing.workers.dev';
+                this.token = localStorage.getItem('wanhua_token');
+                this.userData = null;
+                this.init();
+            }
+
+            init() {
+                // 检查用户是否已登录
+                if (this.token) {
+                    this.showGameInterface();
+                    this.loadUserData();
+                } else {
+                    this.showAuthInterface();
+                }
+                
+                // 绑定事件
+                this.bindEvents();
+                
+                // 初始化Telegram登录按钮
+                this.initTelegramLogin();
+            }
+
+            // 绑定事件
+            bindEvents() {
+                // Telegram登录回调
+                window.onTelegramAuth = (user) => this.handleTelegramAuth(user);
+                
+                // 手动登录链接
+                document.getElementById('manualLoginLink').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showManualLogin();
+                });
+            }
+
+            // 显示手动登录表单
+            showManualLogin() {
+                const authSection = document.getElementById('authSection');
+                authSection.innerHTML = `
+                    <h2>手动登录</h2>
+                    <p>请输入您的Telegram用户ID进行登录</p>
+                    <div style="max-width: 400px; margin: 20px auto; text-align: left;">
+                        <div style="margin-bottom: 15px;">
+                            <label for="userId">Telegram用户ID:</label>
+                            <input type="text" id="userId" placeholder="请输入您的Telegram用户ID" 
+                                style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label for="username">用户名 (可选):</label>
+                            <input type="text" id="username" placeholder="请输入您的用户名" 
+                                style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc;">
+                        </div>
+                        <button id="manualLoginButton" class="nav-button" style="width: 100%;">登录</button>
+                        <div class="error-message" id="manualLoginError" style="margin-top: 15px;"></div>
+                        <p style="margin-top: 20px; font-size: 0.9em;">
+                            <a href="#" id="backToTelegramLogin" style="color: #666; text-decoration: underline;">
+                                ← 返回Telegram登录
+                            </a>
+                        </p>
+                    </div>
+                `;
+                
+                // 绑定返回链接事件
+                document.getElementById('backToTelegramLogin').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showAuthInterface();
+                });
+                
+                // 绑定手动登录按钮事件
+                document.getElementById('manualLoginButton').addEventListener('click', () => {
+                    this.handleManualLogin();
+                });
+            }
+
+            // 处理手动登录
+            async handleManualLogin() {
+                const userId = document.getElementById('userId').value;
+                const username = document.getElementById('username').value;
+                
+                if (!userId) {
+                    this.showManualLoginError('请输入Telegram用户ID');
+                    return;
+                }
+                
+                // 创建模拟的Telegram用户数据
+                const user = {
+                    id: parseInt(userId),
+                    first_name: username || '玩家',
+                    username: username || null,
+                    auth_date: Math.floor(Date.now() / 1000),
+                    hash: 'manual_login_hash'
+                };
+                
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/auth/telegram`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(user)
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.token = data.token;
+                        localStorage.setItem('wanhua_token', this.token);
+                        this.userData = data.user;
+                        this.showGameInterface();
+                    } else {
+                        console.error('登录失败:', data.error);
+                        this.showManualLoginError('登录失败，请重试');
+                    }
+                } catch (error) {
+                    console.error('登录错误:', error);
+                    this.showManualLoginError('登录过程中发生错误，请重试');
+                }
+            }
+
+            // 显示手动登录错误
+            showManualLoginError(message) {
+                const errorElement = document.getElementById('manualLoginError');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                
+                // 3秒后隐藏错误消息
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 3000);
+            }
+
+            // 显示认证界面
+            showAuthInterface() {
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('gameStats').style.display = 'none';
+                document.getElementById('mainNavigation').style.display = 'none';
+                document.getElementById('loginStatus').style.display = 'none';
+            }
+
+            // 显示游戏界面
+            showGameInterface() {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('gameStats').style.display = 'flex';
+                document.getElementById('mainNavigation').style.display = 'flex';
+                document.getElementById('loginStatus').style.display = 'block';
+                document.getElementById('loginStatus').textContent = '已登录';
+                this.updateUI();
+            }
+
+            // 处理Telegram登录
+            async handleTelegramAuth(user) {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/auth/telegram`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(user)
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.token = data.token;
+                        localStorage.setItem('wanhua_token', this.token);
+                        this.userData = data.user;
+                        this.showGameInterface();
+                    } else {
+                        console.error('登录失败:', data.error);
+                        this.showError('登录失败，请重试');
+                    }
+                } catch (error) {
+                    console.error('登录错误:', error);
+                    this.showError('登录过程中发生错误，请重试');
+                }
+            }
+
+            // 加载用户数据
+            async loadUserData() {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/user/data`, {
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.userData = data.data;
+                        this.updateUI();
+                    } else {
+                        // 令牌无效，清除本地存储
+                        localStorage.removeItem('wanhua_token');
+                        this.token = null;
+                        this.showAuthInterface();
+                    }
+                } catch (error) {
+                    console.error('加载用户数据错误:', error);
+                }
+            }
+
+            // 更新UI
+            updateUI() {
+                if (!this.userData) return;
+                
+                document.getElementById('coinsCount').textContent = this.userData.coins;
+                document.getElementById('currentLevel').textContent = this.userData.current_level;
+                document.getElementById('checkInDays').textContent = this.userData.checkin_streak;
+                document.getElementById('ranking').textContent = this.userData.ranking || '-';
+                document.getElementById('checkInStreak').textContent = this.userData.checkin_streak;
+                document.getElementById('todayReward').textContent = this.userData.checkin_streak ? this.userData.checkin_streak + 1 : 1;
+                document.getElementById('withdrawCoins').textContent = this.userData.coins;
+                
+                // 生成关卡
+                this.generateLevels();
+            }
+
+            // 生成关卡
+            async generateLevels() {
+                if (!this.token) return;
+                
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/levels/list`, {
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const grid = document.getElementById('puzzleGrid');
+                        grid.innerHTML = '';
+                        
+                        data.data.forEach(level => {
+                            const levelElement = document.createElement('div');
+                            levelElement.className = `puzzle-item ${level.unlocked ? '' : 'locked'}`;
+                            levelElement.innerHTML = `
+                                <div class="puzzle-number">${level.name}</div>
+                                <div class="puzzle-reward">类型: ${level.type}</div>
+                                <div class="puzzle-reward">奖励: ${level.reward}万花币</div>
+                            `;
+                            
+                            if (level.unlocked) {
+                                levelElement.onclick = () => this.playLevel(level.id);
+                            }
+                            
+                            grid.appendChild(levelElement);
+                        });
+                    }
+                } catch (error) {
+                    console.error('加载关卡数据错误:', error);
+                }
+            }
+
+            // 玩特定关卡
+            async playLevel(levelId) {
+                alert(`开始挑战第${levelId}关！\n这是一个模拟的游戏界面。`);
+                
+                // 模拟完成关卡
+                setTimeout(async () => {
+                    const complete = confirm(`是否完成第${levelId}关？`);
+                    if (complete) {
+                        await this.completeLevel(levelId);
+                    }
+                }, 2000);
+            }
+
+            // 完成关卡
+            async completeLevel(levelId) {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/levels/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.token}`
+                        },
+                        body: JSON.stringify({ levelId })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert(data.message);
+                        // 更新用户数据
+                        await this.loadUserData();
+                    } else {
+                        alert('关卡完成失败，请重试');
+                    }
+                } catch (error) {
+                    console.error('完成关卡错误:', error);
+                    alert('完成关卡过程中发生错误，请重试');
+                }
+            }
+
+            // 签到
+            async checkIn() {
+                if (!this.token) return;
+                
+                const button = document.getElementById('checkInButton');
+                const status = document.getElementById('checkInStatus');
+                
+                try {
+                    button.disabled = true;
+                    button.textContent = '签到中...';
+                    
+                    const response = await fetch(`${this.apiBaseUrl}/checkin`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.token}`
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        status.textContent = data.message;
+                        status.style.color = 'green';
+                        button.textContent = '今日已签到';
+                        // 更新用户数据
+                        await this.loadUserData();
+                    } else {
+                        status.textContent = data.message || '签到失败，请重试';
+                        status.style.color = 'red';
+                        button.disabled = false;
+                        button.textContent = '立即签到';
+                    }
+                } catch (error) {
+                    console.error('签到错误:', error);
+                    status.textContent = '签到过程中发生错误，请重试';
+                    status.style.color = 'red';
+                    button.disabled = false;
+                    button.textContent = '立即签到';
+                }
+            }
+
+            // 获取排行榜
+            async loadRanking() {
+                if (!this.token) return;
+                
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/ranking`, {
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const rankingList = document.getElementById('rankingList');
+                        rankingList.innerHTML = '';
+                        
+                        data.data.forEach(player => {
+                            const playerElement = document.createElement('div');
+                            playerElement.className = 'feature-item';
+                            playerElement.innerHTML = `
+                                <div class="feature-title">${this.getRankEmoji(player.rank)} 第${player.rank}명</div>
+                                <p>${player.username || '匿名玩家'} - 通关进度: ${player.completed_levels || 0}关</p>
+                                <p>万花币: ${player.coins}</p>
+                            `;
+                            rankingList.appendChild(playerElement);
+                        });
+                    }
+                } catch (error) {
+                    console.error('加载排行榜错误:', error);
+                }
+            }
+
+            // 获取排名表情
+            getRankEmoji(rank) {
+                switch (rank) {
+                    case 1: return '🥇';
+                    case 2: return '🥈';
+                    case 3: return '🥉';
+                    default: return '';
+                }
+            }
+
+            // 获取成就列表
+            async loadAchievements() {
+                if (!this.token) return;
+                
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/achievements`, {
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const achievementsList = document.getElementById('achievementsList');
+                        achievementsList.innerHTML = '';
+                        
+                        data.data.forEach(achievement => {
+                            const achievementElement = document.createElement('div');
+                            achievementElement.className = 'feature-item';
+                            achievementElement.innerHTML = `
+                                <div class="feature-title">${achievement.name}</div>
+                                <p>${achievement.description}</p>
+                                <p>奖励: ${achievement.reward}万花币</p>
+                                <p style="color: ${achievement.completed ? 'green' : '#6c757d'};">
+                                    ${achievement.completed ? '已完成 ✓' : '未完成'}
+                                </p>
+                            `;
+                            achievementsList.appendChild(achievementElement);
+                        });
+                    }
+                } catch (error) {
+                    console.error('加载成就列表错误:', error);
+                }
+            }
+
+            // 提现请求
+            async requestWithdraw() {
+                if (!this.token) return;
+                
+                const amount = document.getElementById('withdrawAmount').value;
+                const account = document.getElementById('alipayAccount').value;
+                const name = document.getElementById('realName').value;
+                
+                if (!account || !name) {
+                    alert('请填写完整的支付宝账号和真实姓名');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/withdraw`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.token}`
+                        },
+                        body: JSON.stringify({ amount: parseInt(amount), alipayAccount: account, realName: name })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert(data.message);
+                        // 更新用户数据
+                        await this.loadUserData();
+                        // 清空输入
+                        document.getElementById('alipayAccount').value = '';
+                        document.getElementById('realName').value = '';
+                    } else {
+                        alert('提现申请失败：' + (data.message || data.error));
+                    }
+                } catch (error) {
+                    console.error('提现请求错误:', error);
+                    alert('提现申请过程中发生错误，请重试');
+                }
+            }
+
+            // 初始化Telegram登录按钮
+            initTelegramLogin() {
+                // 显示自定义Telegram登录按钮
+                const loginButton = document.getElementById('telegramLoginButton');
+                loginButton.style.display = 'inline-flex';
+                loginButton.addEventListener('click', () => {
+                    // 创建Telegram登录脚本
+                    const script = document.createElement('script');
+                    script.async = true;
+                    script.src = 'https://telegram.org/js/telegram-widget.js?22';
+                    
+                    // 设置数据属性
+                    script.setAttribute('data-telegram-login', 'bjxcyouxiBot');
+                    script.setAttribute('data-size', 'large');
+                    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+                    script.setAttribute('data-request-access', 'write');
+                    
+                    // 添加加载事件监听器
+                    script.onload = function() {
+                        console.log('Telegram widget loaded successfully');
+                    };
+                    
+                    script.onerror = function() {
+                        console.error('Failed to load Telegram widget');
+                        loginButton.style.display = 'inline-flex';
+                        document.getElementById('telegramLoginContainer').innerHTML = '';
+                        alert('无法加载Telegram登录组件，请检查网络连接后重试');
+                    };
+                    
+                    // 插入到指定容器
+                    document.getElementById('telegramLoginContainer').appendChild(script);
+                    
+                    // 隐藏自定义按钮
+                    loginButton.style.display = 'none';
+                });
+            }
+        }
+
         // 显示特定部分
         function showSection(section) {
             // 隐藏所有部分
@@ -455,6 +1014,13 @@
             
             // 显示选中的部分
             document.getElementById(section + 'Section').style.display = 'block';
+            
+            // 如果是排行榜或成就页面，加载数据
+            if (section === 'ranking') {
+                window.game.loadRanking();
+            } else if (section === 'achievements') {
+                window.game.loadAchievements();
+            }
         }
         
         // 显示主界面
@@ -465,34 +1031,15 @@
             document.getElementById('rankingSection').style.display = 'none';
             document.getElementById('withdrawSection').style.display = 'none';
             document.getElementById('achievementsSection').style.display = 'none';
+            
+            // 显示主界面元素
+            document.getElementById('gameStats').style.display = 'flex';
+            document.getElementById('mainNavigation').style.display = 'flex';
         }
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 模拟一些成就数据
-            const achievementsList = document.getElementById('achievementsList');
-            achievementsList.innerHTML = `
-                <div class="feature-item">
-                    <div class="feature-title">初出茅庐</div>
-                    <p>完成第1关</p>
-                    <p style="color: green;">已完成 ✓</p>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-title">小试牛刀</div>
-                    <p>完成第10关</p>
-                    <p style="color: green;">已完成 ✓</p>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-title">渐入佳境</div>
-                    <p>完成第50关</p>
-                    <p style="color: #6c757d;">未完成</p>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-title">坚持不懈</div>
-                    <p>连续签到7天</p>
-                    <p style="color: #6c757d;">未完成</p>
-                </div>
-            `;
+            window.game = new WanhuaGame();
         });
     </script>
 </body>
