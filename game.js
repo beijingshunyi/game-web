@@ -1,4 +1,4 @@
-// 万花楼-万象谜题游戏逻辑
+// 万花楼-万花消消乐游戏逻辑
 
 class WanhuaGame {
     constructor() {
@@ -28,7 +28,7 @@ class WanhuaGame {
             { id: 'memory', name: '记忆类' }
         ];
         
-        // 生成2000个关卡的数据
+        // 生成6000个关卡的数据
         this.levels = [];
         for (let i = 1; i <= 2000; i++) {
             const levelType = this.levelTypes[Math.floor(Math.random() * this.levelTypes.length)];
