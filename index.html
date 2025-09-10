@@ -335,6 +335,10 @@
         .glow {
             box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
         }
+        
+        #game-content {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -368,7 +372,7 @@
                     <i class="fas fa-gamepad"></i>
                     <h2>游戏副本</h2>
                 </div>
-                <div class="game-area">
+                <div class="game-area" id="game-area">
                     <div class="level-display" id="level-display">1</div>
                     <div class="reward-display">通关奖励：<span id="reward-amount">3</span> 万花币</div>
                     <button class="btn btn-large pulse" id="start-game">
@@ -498,138 +502,6 @@
         </div>
     </div>
 
-    <script>
-        // 模拟用户数据
-        const userData = {
-            id: 8392100400,
-            currentLevel: 5,
-            coins: 125,
-            consecutiveSignins: 3
-        };
-
-        // 初始化页面数据
-        document.getElementById('user-id').textContent = userData.id;
-        document.getElementById('current-level').textContent = userData.currentLevel;
-        document.getElementById('level-display').textContent = userData.currentLevel;
-        document.getElementById('coins').textContent = userData.coins;
-        document.getElementById('signin-days').textContent = userData.consecutiveSignins;
-        document.getElementById('reward-amount').textContent = getLevelReward(userData.currentLevel);
-
-        // 获取关卡奖励
-        function getLevelReward(level) {
-            if (level <= 50) return 3;
-            if (level <= 100) return 5;
-            if (level <= 150) return 8;
-            if (level <= 200) return 12;
-            if (level <= 300) return 10;
-            if (level <= 400) return 15;
-            if (level <= 500) return 18;
-            if (level <= 600) return 22;
-            if (level <= 700) return 16;
-            if (level <= 750) return 20;
-            if (level <= 850) return 18;
-            if (level <= 900) return 23;
-            if (level <= 1000) return 20;
-            if (level <= 1050) return 25;
-            if (level <= 1100) return 22;
-            if (level <= 1150) return 28;
-            if (level <= 1200) return 24;
-            if (level <= 1250) return 30;
-            if (level <= 1300) return 32;
-            return Math.min(35 + Math.floor((level - 1300) / 100) * 5, 100);
-        }
-
-        // 开始游戏按钮
-        document.getElementById('start-game').addEventListener('click', function() {
-            alert(`开始挑战第 ${userData.currentLevel} 关！\n\n关卡类型：解谜类\n关卡描述：请将以下图形碎片拼接成完整图形\n\n限时：60秒`);
-        });
-
-        // 获取提示按钮
-        document.getElementById('get-hint').addEventListener('click', function() {
-            if (userData.coins >= 3) {
-                alert('提示：注意观察碎片的边缘形状，寻找匹配的连接点');
-            } else {
-                alert('万花币不足，无法获取提示！');
-            }
-        });
-
-        // 提现按钮
-        document.getElementById('withdraw-btn').addEventListener('click', function() {
-            document.getElementById('withdraw-modal').style.display = 'flex';
-        });
-
-        // 签到按钮
-        document.getElementById('signin-btn').addEventListener('click', function() {
-            document.getElementById('signin-modal').style.display = 'flex';
-        });
-
-        // 关闭模态框
-        document.querySelectorAll('.close-modal').forEach(button => {
-            button.addEventListener('click', function() {
-                this.closest('.modal').style.display = 'none';
-            });
-        });
-
-        // 点击模态框外部关闭
-        window.addEventListener('click', function(event) {
-            document.querySelectorAll('.modal').forEach(modal => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-        });
-
-        // 确认提现
-        document.getElementById('confirm-withdraw').addEventListener('click', function() {
-            const alipay = document.getElementById('alipay-account').value;
-            const name = document.getElementById('real-name').value;
-            
-            if (!alipay || !name) {
-                alert('请填写完整的支付宝信息');
-                return;
-            }
-            
-            alert(`提现申请已提交！\n支付宝账号：${alipay}\n真实姓名：${name}\n\n请等待3-5个工作日到账`);
-            document.getElementById('withdraw-modal').style.display = 'none';
-        });
-
-        // 确认签到
-        document.getElementById('confirm-signin').addEventListener('click', function() {
-            alert('签到成功！获得3万花币');
-            document.getElementById('signin-modal').style.display = 'none';
-        });
-
-        // 分享按钮
-        document.getElementById('share-btn').addEventListener('click', function() {
-            if (navigator.share) {
-                navigator.share({
-                    title: '万象谜题',
-                    text: '快来挑战《万象谜题》，解锁智力极限！',
-                    url: window.location.href
-                });
-            } else {
-                alert('您的浏览器不支持分享功能，请手动复制链接分享');
-            }
-        });
-
-        // 刷新排行榜
-        document.getElementById('refresh-leaderboard').addEventListener('click', function() {
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 刷新中...';
-            setTimeout(() => {
-                this.innerHTML = '<i class="fas fa-sync-alt"></i> 刷新排行榜';
-                alert('排行榜已刷新');
-            }, 1000);
-        });
-
-        // 成就按钮
-        document.getElementById('achievements-btn').addEventListener('click', function() {
-            alert('您已完成以下成就：\n1. 初入江湖 - 完成第1关\n2. 坚持不懈 - 连续签到7天');
-        });
-
-        // 资产明细按钮
-        document.getElementById('assets-btn').addEventListener('click', function() {
-            alert(`资产明细：\n\n总收入：200 万花币\n总支出：75 万花币\n余额：125 万花币\n\n最近交易记录：\n+3 万花币 - 第5关奖励\n-3 万花币 - 购买提示\n+5 万花币 - 第4关奖励\n+10 万花币 - 连续签到奖励`);
-        });
-    </script>
+    <script src="game.js"></script>
 </body>
 </html>
