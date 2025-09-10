@@ -391,9 +391,8 @@
                 <h3 style="margin-top: 0; color: #1976d2;">登录说明：</h3>
                 <ol style="padding-left: 20px;">
                     <li>点击上方"Login with Telegram"按钮</li>
-                    <li>在打开的Telegram中与<b>@bjxcyouxiBot</b>进行交互</li>
-                    <li>发送任意消息给Bot完成身份验证</li>
-                    <li>点击"检查登录状态"按钮或刷新页面</li>
+                    <li>在Telegram中点击"Start"按钮确认登录</li>
+                    <li>自动跳转回游戏页面开始游戏</li>
                 </ol>
             </div>
             <p style="font-size: 0.9em; color: #666; margin-top: 20px;">
@@ -527,6 +526,9 @@
             }
 
             init() {
+                // 检查URL中是否有临时token
+                this.checkUrlToken();
+                
                 // 检查用户是否已登录
                 if (this.token) {
                     this.showGameInterface();
@@ -540,6 +542,48 @@
                 
                 // 初始化Telegram登录按钮
                 this.initTelegramLogin();
+            }
+
+            // 检查URL中的临时token
+            checkUrlToken() {
+                const hash = window.location.hash;
+                if (hash && hash.includes('#token=')) {
+                    const tempToken = hash.split('#token=')[1];
+                    // 使用临时token换取正式token
+                    this.exchangeTempToken(tempToken);
+                    // 清除URL中的token
+                    history.replaceState(null, null, ' ');
+                }
+            }
+
+            // 用临时token换取正式token
+            async exchangeTempToken(tempToken) {
+                try {
+                    // 调用后端API验证临时token并获取正式token
+                    const response = await fetch(`${this.apiBaseUrl}/auth/exchange-token`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ tempToken })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.token = data.token;
+                        localStorage.setItem('wanhua_token', data.token);
+                        this.userData = data.user;
+                        this.showGameInterface();
+                        this.loadUserData();
+                    } else {
+                        console.error('Token交换失败:', data.error);
+                        this.showError('登录失败，请重试');
+                    }
+                } catch (error) {
+                    console.error('Token交换错误:', error);
+                    this.showError('登录过程中发生错误，请重试');
+                }
             }
 
             // 绑定事件
@@ -1006,19 +1050,16 @@
                 const loginButton = document.getElementById('telegramLoginButton');
                 loginButton.style.display = 'inline-flex';
                 
-                // 直接链接到Telegram Bot，避免域名验证问题
-                loginButton.addEventListener('click', () => {
+                // 直接链接到Telegram Bot登录
+                loginButton.addEventListener('click', async () => {
                     // 构建Telegram Bot链接
-                    const botLink = `https://t.me/bjxcyouxiBot`;
+                    const botLink = `https://t.me/bjxcyouxiBot?start=login_${Date.now()}`;
                     
                     // 在新窗口中打开Telegram Bot
                     window.open(botLink, '_blank');
                     
-                    // 显示检查登录状态按钮
-                    document.getElementById('checkLoginStatusButton').style.display = 'inline-block';
-                    
-                    // 提示用户操作
-                    alert('请在打开的Telegram窗口中与Bot交互，完成登录后请点击"检查登录状态"按钮');
+                    // 提示用户
+                    alert('请在打开的Telegram窗口中点击"Start"按钮完成登录，完成后请关闭Telegram窗口并返回此页面开始游戏');
                 });
             }
         }
