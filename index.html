@@ -298,6 +298,25 @@
                         window.game.handleTelegramAuth(user);
                     }
                 }
+                
+                // 在Telegram中隐藏某些元素
+                if (webApp.platform !== 'unknown') {
+                    // 隐藏Telegram登录按钮，因为我们已经在Telegram中了
+                    document.getElementById('telegramLoginContainer').style.display = 'none';
+                    
+                    // 显示提示信息
+                    const telegramInfo = document.createElement('div');
+                    telegramInfo.innerHTML = `
+                        <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin: 20px 0; text-align: left;">
+                            <h3 style="margin-top: 0; color: #2e7d32;">已在Telegram中运行</h3>
+                            <p>您正在Telegram内置浏览器中使用游戏，无需额外登录。</p>
+                            <p>点击下方按钮开始游戏！</p>
+                        </div>
+                    `;
+                    
+                    const authSection = document.getElementById('authSection');
+                    authSection.insertBefore(telegramInfo, authSection.firstChild);
+                }
             }
         }
     </script>
@@ -331,9 +350,13 @@
                 <h3 style="margin-top: 0; color: #1976d2;">登录说明：</h3>
                 <ol style="padding-left: 20px;">
                     <li>点击上方Telegram登录按钮</li>
-                    <li>在弹出窗口中确认Telegram登录</li>
+                    <li>在弹出窗口中确认Telegram登录（这是Telegram官方安全验证页面）</li>
                     <li>自动跳转回游戏页面开始游戏</li>
                 </ol>
+            </div>
+            <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left;">
+                <h3 style="margin-top: 0; color: #2e7d32;">推荐方式：</h3>
+                <p>您可以直接在Telegram中与 <a href="https://t.me/bjxcyouxiBot" target="_blank">@bjxcyouxiBot</a> 机器人对话，通过点击机器人发送的"🎮 在Telegram中玩游戏"按钮直接开始游戏，无需额外登录！</p>
             </div>
             <div style="background: #fff3e0; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left;">
                 <h3 style="margin-top: 0; color: #e65100;">遇到问题？</h3>
@@ -343,6 +366,7 @@
                     <li>点击"调试登录"按钮进行测试登录</li>
                     <li>使用"手动登录"功能</li>
                 </ul>
+                <p><strong>注意：</strong>登录时出现的Telegram页面是官方安全验证页面，不会获取您的密码，请放心登录。</p>
             </div>
             <div id="debugInfo" style="background: #fff3e0; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; display: none;">
                 <h3 style="margin-top: 0; color: #e65100;">调试信息：</h3>
