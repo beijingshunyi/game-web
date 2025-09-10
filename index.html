@@ -10,7 +10,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            touch-action: none;
         }
 
         body {
@@ -35,14 +34,14 @@
 
         /* 首页样式 */
         .home-page {
-            padding: 30px 20px;
+            padding: 20px 15px;
             text-align: center;
         }
 
         .game-logo {
-            font-size: 42px;
+            font-size: 36px;
             font-weight: 800;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             background: linear-gradient(to right, #6a11cb, #2575fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -53,9 +52,9 @@
             display: flex;
             justify-content: space-around;
             background: rgba(106, 17, 203, 0.1);
-            padding: 15px;
+            padding: 12px;
             border-radius: 15px;
-            margin: 20px 0;
+            margin: 15px 0;
         }
 
         .info-item {
@@ -63,13 +62,13 @@
         }
 
         .info-value {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             color: #6a11cb;
         }
 
         .info-label {
-            font-size: 14px;
+            font-size: 12px;
             color: #666;
         }
 
@@ -77,14 +76,16 @@
             background: linear-gradient(to right, #6a11cb, #2575fc);
             color: white;
             border: none;
-            padding: 15px 40px;
+            padding: 15px 30px;
             font-size: 18px;
             font-weight: 600;
             border-radius: 30px;
-            margin: 20px 0;
+            margin: 15px 0;
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
             transition: all 0.3s ease;
+            width: 80%;
+            max-width: 300px;
         }
 
         .start-button:hover {
@@ -95,14 +96,14 @@
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 30px;
+            gap: 12px;
+            margin: 20px 0;
         }
 
         .feature-card {
             background: white;
             border-radius: 15px;
-            padding: 15px;
+            padding: 15px 10px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             cursor: pointer;
@@ -114,28 +115,29 @@
         }
 
         .feature-icon {
-            font-size: 28px;
-            margin-bottom: 10px;
+            font-size: 24px;
+            margin-bottom: 8px;
         }
 
         .feature-title {
             font-weight: 600;
             margin-bottom: 5px;
+            font-size: 14px;
         }
 
         .feature-desc {
-            font-size: 12px;
+            font-size: 11px;
             color: #666;
         }
 
         /* 底部信息 */
         .footer-info {
             text-align: center;
-            padding: 20px;
-            font-size: 12px;
+            padding: 15px 10px;
+            font-size: 11px;
             color: #666;
             border-top: 1px solid #eee;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .footer-info a {
@@ -151,9 +153,9 @@
         .welcome-section {
             background: linear-gradient(135deg, #6a11cb, #2575fc);
             color: white;
-            padding: 30px 20px;
+            padding: 20px 15px;
             border-radius: 15px;
-            margin: 20px;
+            margin: 15px 0;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             position: relative;
@@ -161,36 +163,36 @@
         }
 
         .welcome-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .welcome-subtitle {
-            font-size: 16px;
-            margin-bottom: 20px;
+            font-size: 14px;
+            margin-bottom: 15px;
             opacity: 0.9;
         }
 
         .decoration {
             position: absolute;
-            font-size: 24px;
+            font-size: 20px;
             opacity: 0.2;
         }
 
-        .dec-1 { top: 10px; left: 10px; }
-        .dec-2 { top: 10px; right: 10px; }
-        .dec-3 { bottom: 10px; left: 10px; }
-        .dec-4 { bottom: 10px; right: 10px; }
+        .dec-1 { top: 8px; left: 8px; }
+        .dec-2 { top: 8px; right: 8px; }
+        .dec-3 { bottom: 8px; left: 8px; }
+        .dec-4 { bottom: 8px; right: 8px; }
 
         .game-stats {
             display: flex;
             justify-content: space-around;
             background: rgba(255, 255, 255, 0.2);
-            padding: 15px;
+            padding: 12px;
             border-radius: 15px;
-            margin: 20px;
+            margin: 15px 0;
         }
 
         .stat-item {
@@ -198,12 +200,12 @@
         }
 
         .stat-value {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: 11px;
             opacity: 0.8;
         }
 
@@ -216,7 +218,7 @@
         .header {
             background: linear-gradient(to right, #6a11cb, #2575fc);
             color: white;
-            padding: 15px;
+            padding: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -226,12 +228,12 @@
         .user-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .avatar {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: linear-gradient(45deg, #ff9a9e, #fad0c4);
             display: flex;
@@ -240,6 +242,7 @@
             font-weight: bold;
             color: #6a11cb;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
         }
 
         .coins {
@@ -247,31 +250,31 @@
             align-items: center;
             gap: 5px;
             background: rgba(255, 255, 255, 0.2);
-            padding: 5px 12px;
+            padding: 5px 10px;
             border-radius: 20px;
         }
 
         .coin-icon {
             color: gold;
-            font-size: 18px;
+            font-size: 16px;
         }
 
         .coin-count {
             font-weight: 600;
-            font-size: 16px;
+            font-size: 14px;
         }
 
         .nav-buttons {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         .nav-button {
             background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -280,6 +283,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             position: relative;
+            font-size: 14px;
         }
 
         .nav-button:hover {
@@ -289,14 +293,14 @@
 
         .nav-button .button-label {
             position: absolute;
-            bottom: -20px;
-            font-size: 10px;
+            bottom: -18px;
+            font-size: 8px;
             white-space: nowrap;
         }
 
         /* 游戏区域 */
         .game-area {
-            padding: 15px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -307,13 +311,13 @@
             justify-content: space-between;
             width: 100%;
             max-width: 400px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             font-weight: 600;
             color: #6a11cb;
-            font-size: 16px;
+            font-size: 14px;
             background: rgba(106, 17, 203, 0.1);
-            padding: 10px 15px;
-            border-radius: 15px;
+            padding: 8px 12px;
+            border-radius: 12px;
         }
 
         .move-timer {
@@ -327,7 +331,7 @@
             height: 10px;
             background: #e0e0e0;
             border-radius: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             overflow: hidden;
         }
 
@@ -341,24 +345,25 @@
         .game-board {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
-            gap: 3px;
+            gap: 2px;
             background: rgba(106, 17, 203, 0.1);
-            border: 3px solid #6a11cb;
-            border-radius: 10px;
-            padding: 5px;
-            max-width: 400px;
+            border: 2px solid #6a11cb;
+            border-radius: 8px;
+            padding: 4px;
+            max-width: 100%;
+            width: 100%;
             margin: 0 auto;
-            touch-action: none;
+            touch-action: manipulation;
             position: relative;
         }
 
         .game-cell {
             aspect-ratio: 1;
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
             transition: all 0.2s ease;
             background: white;
@@ -413,7 +418,7 @@
             justify-content: space-around;
             width: 100%;
             max-width: 400px;
-            margin: 15px 0;
+            margin: 12px 0;
             background: rgba(106, 17, 203, 0.1);
             padding: 10px;
             border-radius: 15px;
@@ -427,14 +432,14 @@
         }
 
         .tool-icon {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
             margin-bottom: 5px;
             position: relative;
@@ -446,9 +451,9 @@
             right: -5px;
             background: #ff4757;
             color: white;
-            font-size: 12px;
-            width: 20px;
-            height: 20px;
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -456,31 +461,31 @@
         }
 
         .tool-name {
-            font-size: 12px;
+            font-size: 11px;
             color: #666;
         }
 
         /* 底部功能区 */
         .footer {
-            padding: 15px;
+            padding: 12px;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
         .action-button {
-            padding: 12px 20px;
+            padding: 10px 15px;
             border: none;
-            border-radius: 30px;
+            border-radius: 25px;
             background: linear-gradient(to right, #6a11cb, #2575fc);
             color: white;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
-            font-size: 14px;
-            min-width: 100px;
+            font-size: 13px;
+            min-width: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -521,9 +526,10 @@
         .modal-content {
             background: white;
             border-radius: 20px;
-            padding: 25px;
-            max-width: 400px;
+            padding: 20px;
+            max-width: 90%;
             width: 90%;
+            max-width: 400px;
             text-align: center;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             animation: modalAppear 0.3s ease;
@@ -535,11 +541,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .modal-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             color: #6a11cb;
         }
@@ -553,20 +559,21 @@
         }
 
         .modal-buttons {
-            margin-top: 20px;
+            margin-top: 15px;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
         .modal-button {
-            padding: 10px 20px;
+            padding: 10px 15px;
             border: none;
             border-radius: 25px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
+            font-size: 14px;
         }
 
         .primary-button {
@@ -584,38 +591,40 @@
         .tools-shop {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 12px;
             margin-top: 15px;
         }
 
         .tool-shop-item {
             background: #f5f5f5;
             border-radius: 15px;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
         }
 
         .tool-shop-icon {
-            font-size: 36px;
-            margin-bottom: 10px;
+            font-size: 30px;
+            margin-bottom: 8px;
         }
 
         .tool-shop-name {
             font-weight: 600;
             margin-bottom: 5px;
+            font-size: 14px;
         }
 
         .tool-shop-price {
             color: gold;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
 
         /* 成就系统 */
         .achievements-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
+            gap: 12px;
             margin-top: 15px;
         }
 
@@ -632,12 +641,12 @@
         }
 
         .achievement-icon {
-            font-size: 24px;
+            font-size: 20px;
             margin-bottom: 5px;
         }
 
         .achievement-name {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
         }
 
@@ -645,8 +654,8 @@
         .ranking-item {
             display: flex;
             align-items: center;
-            padding: 12px;
-            margin-bottom: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
             background: #f5f5f5;
             border-radius: 10px;
             transition: all 0.3s ease;
@@ -659,19 +668,20 @@
 
         .ranking-position {
             font-weight: 700;
-            width: 30px;
+            width: 25px;
         }
 
         .ranking-avatar {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: linear-gradient(45deg, #ff9a9e, #fad0c4);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            margin: 0 10px;
+            margin: 0 8px;
+            font-size: 12px;
         }
 
         .ranking-info {
@@ -681,6 +691,7 @@
 
         .ranking-name {
             font-weight: 600;
+            font-size: 14px;
         }
 
         .ranking-coins {
@@ -691,22 +702,34 @@
         /* 响应式设计 */
         @media (max-width: 500px) {
             .header {
-                padding: 12px;
+                padding: 10px;
             }
             
             .game-board {
-                max-width: 320px;
+                max-width: 100%;
             }
             
             .footer {
-                padding: 12px;
-                gap: 10px;
+                padding: 10px;
+                gap: 8px;
             }
             
             .action-button {
-                padding: 10px 15px;
+                padding: 8px 12px;
+                font-size: 12px;
+                min-width: 70px;
+            }
+            
+            .game-logo {
+                font-size: 32px;
+            }
+            
+            .welcome-title {
+                font-size: 18px;
+            }
+            
+            .welcome-subtitle {
                 font-size: 13px;
-                min-width: 85px;
             }
         }
 
@@ -780,7 +803,8 @@
             color: white;
             font-weight: 600;
             border-radius: 10px;
-            margin: 10px 20px;
+            margin: 10px 0;
+            font-size: 14px;
         }
 
     </style>
@@ -1023,7 +1047,6 @@
         </div>
     </div>
 
-    <!-- 签到弹窗 -->
     <!-- 签到弹窗 -->
     <div class="modal" id="checkin-modal">
         <div class="modal-content">
