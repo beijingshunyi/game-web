@@ -382,8 +382,20 @@
             <button id="telegramLoginButton" class="telegram-login-button">
                 Login with Telegram
             </button>
+            <button id="checkLoginStatusButton" class="nav-button" style="margin-top: 15px; display: none;">
+                检查登录状态
+            </button>
             <div class="error-message" id="errorMessage"></div>
             <p>请使用Telegram登录以开始游戏</p>
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left;">
+                <h3 style="margin-top: 0; color: #1976d2;">登录说明：</h3>
+                <ol style="padding-left: 20px;">
+                    <li>点击上方"Login with Telegram"按钮</li>
+                    <li>在打开的Telegram中与<b>@bjxcyouxiBot</b>进行交互</li>
+                    <li>发送任意消息给Bot完成身份验证</li>
+                    <li>点击"检查登录状态"按钮或刷新页面</li>
+                </ol>
+            </div>
             <p style="font-size: 0.9em; color: #666; margin-top: 20px;">
                 <a href="#" id="manualLoginLink" style="color: #666; text-decoration: underline;">
                     无法使用Telegram登录？点击这里
@@ -540,6 +552,29 @@
                     e.preventDefault();
                     this.showManualLogin();
                 });
+                
+                // 检查登录状态按钮
+                document.getElementById('checkLoginStatusButton').addEventListener('click', () => {
+                    this.checkLoginStatus();
+                });
+            }
+
+            // 检查登录状态
+            checkLoginStatus() {
+                if (this.token) {
+                    this.loadUserData();
+                    this.showGameInterface();
+                } else {
+                    // 尝试从localStorage获取token
+                    const token = localStorage.getItem('wanhua_token');
+                    if (token) {
+                        this.token = token;
+                        this.loadUserData();
+                        this.showGameInterface();
+                    } else {
+                        this.showError('尚未检测到登录信息，请确保已在Telegram中完成登录');
+                    }
+                }
             }
 
             // 显示手动登录表单
@@ -970,35 +1005,20 @@
                 // 显示自定义Telegram登录按钮
                 const loginButton = document.getElementById('telegramLoginButton');
                 loginButton.style.display = 'inline-flex';
+                
+                // 直接链接到Telegram Bot，避免域名验证问题
                 loginButton.addEventListener('click', () => {
-                    // 创建Telegram登录脚本
-                    const script = document.createElement('script');
-                    script.async = true;
-                    script.src = 'https://telegram.org/js/telegram-widget.js?22';
+                    // 构建Telegram Bot链接
+                    const botLink = `https://t.me/bjxcyouxiBot`;
                     
-                    // 设置数据属性
-                    script.setAttribute('data-telegram-login', 'bjxcyouxiBot');
-                    script.setAttribute('data-size', 'large');
-                    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-                    script.setAttribute('data-request-access', 'write');
+                    // 在新窗口中打开Telegram Bot
+                    window.open(botLink, '_blank');
                     
-                    // 添加加载事件监听器
-                    script.onload = function() {
-                        console.log('Telegram widget loaded successfully');
-                    };
+                    // 显示检查登录状态按钮
+                    document.getElementById('checkLoginStatusButton').style.display = 'inline-block';
                     
-                    script.onerror = function() {
-                        console.error('Failed to load Telegram widget');
-                        loginButton.style.display = 'inline-flex';
-                        document.getElementById('telegramLoginContainer').innerHTML = '';
-                        alert('无法加载Telegram登录组件，请检查网络连接后重试');
-                    };
-                    
-                    // 插入到指定容器
-                    document.getElementById('telegramLoginContainer').appendChild(script);
-                    
-                    // 隐藏自定义按钮
-                    loginButton.style.display = 'none';
+                    // 提示用户操作
+                    alert('请在打开的Telegram窗口中与Bot交互，完成登录后请点击"检查登录状态"按钮');
                 });
             }
         }
