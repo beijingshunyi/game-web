@@ -313,6 +313,15 @@
                     <li>自动跳转回游戏页面开始游戏</li>
                 </ol>
             </div>
+            <div style="background: #fff3e0; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left;">
+                <h3 style="margin-top: 0; color: #e65100;">遇到问题？</h3>
+                <p>如果您遇到"Bot domain invalid"或其他登录问题，请尝试以下解决方案：</p>
+                <ul style="padding-left: 20px;">
+                    <li>刷新页面重试</li>
+                    <li>点击"调试登录"按钮进行测试登录</li>
+                    <li>使用"手动登录"功能</li>
+                </ul>
+            </div>
             <div id="debugInfo" style="background: #fff3e0; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; display: none;">
                 <h3 style="margin-top: 0; color: #e65100;">调试信息：</h3>
                 <pre id="debugOutput" style="white-space: pre-wrap; word-break: break-word;"></pre>
@@ -469,20 +478,61 @@
 
             // 绑定事件
             bindEvents() {
-                // 手动登录链接
-                document.getElementById('manualLoginLink').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.showManualLogin();
-                });
+                // 移除现有事件监听器，避免重复绑定
+                const manualLoginLink = document.getElementById('manualLoginLink');
+                if (manualLoginLink) {
+                    // 移除旧的点击事件监听器
+                    const oldLink = manualLoginLink;
+                    const newLink = oldLink.cloneNode(true);
+                    oldLink.replaceWith(newLink);
+                    
+                    // 添加新的点击事件处理
+                    newLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.showManualLogin();
+                    });
+                }
                 
-                // 检查登录状态按钮
-                document.getElementById('checkLoginStatusButton').addEventListener('click', () => {
-                    this.checkLoginStatus();
-                });
+                const checkLoginStatusButton = document.getElementById('checkLoginStatusButton');
+                if (checkLoginStatusButton) {
+                    // 移除旧的点击事件监听器
+                    const oldButton = checkLoginStatusButton;
+                    const newButton = oldButton.cloneNode(true);
+                    oldButton.replaceWith(newButton);
+                    
+                    // 添加新的点击事件处理
+                    newButton.addEventListener('click', () => {
+                        console.log('检查登录状态按钮点击');
+                        this.checkLoginStatus();
+                    });
+                }
                 
-                // 调试登录按钮
-                document.getElementById('debugLoginButton').addEventListener('click', () => {
-                    this.debugLogin();
+                const debugLoginButton = document.getElementById('debugLoginButton');
+                if (debugLoginButton) {
+                    // 移除旧的点击事件监听器
+                    const oldButton = debugLoginButton;
+                    const newButton = oldButton.cloneNode(true);
+                    oldButton.replaceWith(newButton);
+                    
+                    // 添加新的点击事件处理
+                    newButton.addEventListener('click', () => {
+                        console.log('调试登录按钮点击');
+                        this.debugLogin();
+                    });
+                }
+                
+                // 确保Telegram登录回调
+                window.onTelegramAuth = (user) => {
+                    console.log('Telegram登录成功:', user);
+                    this.handleTelegramAuth(user);
+                };
+                
+                // 添加窗口消息事件监听器作为备用
+                window.addEventListener('message', (event) => {
+                    if (event.data && event.data.authUser) {
+                        console.log('通过message事件接收到Telegram登录数据:', event.data.authUser);
+                        window.onTelegramAuth(event.data.authUser);
+                    }
                 });
             }
 
@@ -583,7 +633,7 @@
                 };
                 
                 debugInfo.appendChild(testLoginButton);
-            },
+            }
             
             // 测试登录功能
             testLogin() {
@@ -1018,22 +1068,53 @@
 
             // 初始化Telegram登录按钮
             initTelegramLogin() {
-                // 创建Telegram登录脚本
-                const script = document.createElement('script');
-                script.async = true;
-                script.src = 'https://telegram.org/js/telegram-widget.js?22';
+                // 检查Telegram登录按钮是否已加载
+                const container = document.getElementById('telegramLoginContainer');
+                if (container && container.children.length === 0) {
+                    // 创建Telegram登录脚本
+                    const script = document.createElement('script');
+                    script.async = true;
+                    script.src = 'https://telegram.org/js/telegram-widget.js?22';
+                    
+                    // 设置数据属性
+                    script.setAttribute('data-telegram-login', 'bjxcyouxiBot');
+                    script.setAttribute('data-size', 'large');
+                    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+                    script.setAttribute('data-request-access', 'write');
+                    
+                    // 插入到指定容器
+                    container.appendChild(script);
+                }
                 
-                // 设置数据属性
-                script.setAttribute('data-telegram-login', 'bjxcyouxiBot');
-                script.setAttribute('data-size', 'large');
-                script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-                script.setAttribute('data-request-access', 'write');
+                // 确保备用按钮隐藏
+                const button = document.getElementById('telegramLoginButton');
+                if (button) {
+                    button.style.display = 'none';
+                }
+            }
+            
+            // 显示备用Telegram登录按钮（当小部件加载失败时）
+            showTelegramLoginButton() {
+                const button = document.getElementById('telegramLoginButton');
+                const container = document.getElementById('telegramLoginContainer');
                 
-                // 插入到指定容器
-                document.getElementById('telegramLoginContainer').appendChild(script);
+                if (container) {
+                    container.style.display = 'none';
+                }
                 
-                // 隐藏自定义按钮
-                document.getElementById('telegramLoginButton').style.display = 'none';
+                if (button) {
+                    button.style.display = 'inline-block';
+                    
+                    // 移除旧的点击事件监听器并添加新的
+                    const newButton = button.cloneNode(true);
+                    button.replaceWith(newButton);
+                    
+                    // 添加点击事件处理
+                    newButton.addEventListener('click', () => {
+                        console.log('备用登录按钮点击');
+                        this.showTelegramLoginButton();
+                    });
+                }
             }
         }
 
@@ -1080,6 +1161,11 @@
             } else {
                 console.log('游戏实例已存在');
             }
+            
+            // 确保事件绑定
+            if (window.game) {
+                window.game.bindEvents();
+            }
         });
         
         // 添加一个全局函数用于手动初始化游戏（如果DOMContentLoaded未触发）
@@ -1087,6 +1173,11 @@
             if (!window.game) {
                 window.game = new WanhuaGame();
                 console.log('游戏实例已手动创建');
+                
+                // 确保事件绑定
+                if (window.game) {
+                    window.game.bindEvents();
+                }
             }
         };
         
@@ -1171,6 +1262,7 @@
         console.log('使用 window.debugGame.init() 初始化游戏实例');
         console.log('使用 window.debugGame.login() 模拟登录');
         console.log('使用 window.debugGame.reset() 重置所有用户数据');
+        console.log('使用 window.initGame() 手动初始化游戏');
     </script>
 </body>
 </html>
