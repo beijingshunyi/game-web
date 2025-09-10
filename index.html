@@ -1162,7 +1162,7 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDc0MjMsImV4cCI6MjA3MTY4MzQyM30.czuQwYoFd7Ew9f-PBaojhsWJkXrBEtkqTRdhfX-DWFk';
         
         // 初始化Supabase客户端
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabase = null;
         
         // 重试机制配置
         const MAX_RETRIES = 3;
@@ -1196,45 +1196,13 @@
             userId: null            // 用户ID
         };
 
-        // 障碍物类型
-        const obstacleTypes = {
-            ICE: 'ice',           // 冰块 - 需要多次消除才能破坏
-            LOCK: 'lock',         // 锁链 - 锁定相邻方块
-            STONE: 'stone',       // 石头 - 无法移动，需要特殊道具破坏
-            BOMB: 'time-bomb'     // 定时炸弹 - 步数减少时会倒计时
-        };
-
-        // 成就系统
-        const achievements = [
-            { id: 1, name: "初出茅庐", description: "完成第1关", icon: "👶", unlocked: true },
-            { id: 2, name: "小试牛刀", description: "完成第10关", icon: "新人玩家", unlocked: false },
-            { id: 3, name: "渐入佳境", description: "完成第50关", icon: "🚀", unlocked: false },
-            { id: 4, name: "炉火纯青", description: "完成第100关", icon: "🔥", unlocked: false },
-            { id: 5, name: "登峰造极", description: "完成第500关", icon: "🏔️", unlocked: false },
-            { id: 6, name: "无敌寂寞", description: "完成第1000关", icon: "😎", unlocked: false },
-            { id: 7, name: "消除大师", description: "单次消除10个方块", icon: "🎯", unlocked: false },
-            { id: 8, name: "连击高手", description: "一次操作引发3次连锁消除", icon: "⚡", unlocked: false },
-            { id: 9, name: "完美通关", description: "以满步数完成关卡", icon: "💯", unlocked: false },
-            { id: 10, name: "财源滚滚", description: "累计获得10000万花币", icon: "💰", unlocked: false },
-            { id: 11, name: "坚持不懈", description: "连续签到7天", icon: "📅", unlocked: false },
-            { id: 12, name: "社交达人", description: "分享游戏10次", icon: "📱", unlocked: false }
-        ];
-
-        // 为6000个关卡预设成就
-        for (let i = 1; i <= 60; i++) {
-            const levelRange = (i - 1) * 100 + 1;
-            const levelRangeEnd = i * 100;
-            achievements.push({
-                id: 12 + i,
-                name: `关卡征服者 ${levelRange}-${levelRangeEnd}`,
-                description: `完成第${levelRange}到${levelRangeEnd}关`,
-                icon: "🏅",
-                unlocked: false
-            });
-        }
-
         // 初始化游戏
         async function initGame() {
+            // 初始化Supabase客户端
+            if (typeof supabase === 'undefined' || supabase === null) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            }
+            
             // 获取用户ID
             const urlParams = new URLSearchParams(window.location.search);
             gameState.userId = urlParams.get('user_id');
@@ -1242,6 +1210,14 @@
             // 如果没有用户ID，提示错误
             if (!gameState.userId) {
                 alert('缺少用户信息，请通过Telegram重新进入游戏');
+                // 显示错误信息在页面上
+                document.getElementById('home-page').innerHTML = `
+                    <div style="padding: 20px; text-align: center;">
+                        <h2 style="color: #ff4757;">游戏初始化失败</h2>
+                        <p>缺少用户信息，请通过Telegram重新进入游戏</p>
+                        <p>请访问我们的Telegram机器人: @bjxcyouxiBot</p>
+                    </div>
+                `;
                 return;
             }
             
@@ -1259,7 +1235,6 @@
             document.getElementById('ranking-btn').addEventListener('click', () => openModal('ranking-modal'));
             document.getElementById('achievements-btn').addEventListener('click', showAchievements);
             document.getElementById('withdraw-btn').addEventListener('click', () => openModal('withdraw-modal'));
-            document.getElementById('checkin-now-btn').addEventListener('click', checkin);
             document.getElementById('withdraw-form').addEventListener('submit', submitWithdraw);
             document.getElementById('watch-ad-btn').addEventListener('click', watchAd);
             document.getElementById('share-group-btn').addEventListener('click', shareToGroup);
