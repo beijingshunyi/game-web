@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>万花楼-《万象谜题》</title>
+    <!-- Telegram Web App脚本 -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -276,6 +278,26 @@
                 // 如果游戏实例尚未初始化，先初始化
                 window.game = new WanhuaGame();
                 window.game.handleTelegramAuth(user);
+            }
+        }
+        
+        // Telegram Web App初始化
+        function initTelegramWebApp() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const webApp = window.Telegram.WebApp;
+                webApp.ready();
+                webApp.expand();
+                
+                // 如果在Telegram Web App中运行，直接使用用户信息
+                if (webApp.initDataUnsafe && webApp.initDataUnsafe.user) {
+                    const user = webApp.initDataUnsafe.user;
+                    console.log('Telegram Web App用户信息:', user);
+                    
+                    // 自动登录
+                    if (window.game) {
+                        window.game.handleTelegramAuth(user);
+                    }
+                }
             }
         }
     </script>
@@ -1154,6 +1176,9 @@
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 初始化Telegram Web App
+            initTelegramWebApp();
+            
             // 确保只有一个游戏实例
             if (!window.game) {
                 window.game = new WanhuaGame();
