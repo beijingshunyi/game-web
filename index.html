@@ -1342,53 +1342,6 @@
             }
         }
 
-        // 初始化游戏
-        async function initGame() {
-            // 获取用户ID
-            const urlParams = new URLSearchParams(window.location.search);
-            gameState.userId = urlParams.get('user_id');
-            
-            // 如果没有用户ID，提示错误
-            if (!gameState.userId) {
-                alert('缺少用户信息，请通过Telegram重新进入游戏');
-                // 显示错误信息在页面上
-                document.getElementById('home-page').innerHTML = `
-                    <div style="padding: 20px; text-align: center;">
-                        <h2 style="color: #ff4757;">游戏初始化失败</h2>
-                        <p>缺少用户信息，请通过Telegram重新进入游戏</p>
-                        <p>请访问我们的Telegram机器人: @bjxcyouxiBot</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // 从数据库加载用户数据
-            await loadUserData();
-            
-            // 绑定首页事件
-            document.getElementById('start-game').addEventListener('click', showGamePage);
-            
-            // 绑定游戏页面事件
-            document.getElementById('restart-btn').addEventListener('click', resetGame);
-            document.getElementById('shop-btn').addEventListener('click', () => openModal('shop-modal'));
-            document.getElementById('home-btn').addEventListener('click', showHomePage);
-            document.getElementById('checkin-btn').addEventListener('click', () => openModal('checkin-modal'));
-            document.getElementById('ranking-btn').addEventListener('click', () => openModal('ranking-modal'));
-            document.getElementById('achievements-btn').addEventListener('click', showAchievements);
-            document.getElementById('withdraw-btn').addEventListener('click', () => openModal('withdraw-modal'));
-            document.getElementById('withdraw-form').addEventListener('submit', submitWithdraw);
-            document.getElementById('watch-ad-btn').addEventListener('click', watchAd);
-            document.getElementById('share-group-btn').addEventListener('click', shareToGroup);
-            
-            // 绑定道具事件
-            document.getElementById('hammer-tool').addEventListener('click', () => useTool('hammer'));
-            document.getElementById('bomb-tool').addEventListener('click', () => useTool('bomb'));
-            document.getElementById('shuffle-tool').addEventListener('click', () => useTool('shuffle'));
-            document.getElementById('magic-tool').addEventListener('click', () => useTool('magic'));
-            
-            updateUI();
-        }
-
         // 保存用户数据到数据库
         async function saveUserData() {
             for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
