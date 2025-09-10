@@ -1047,8 +1047,104 @@
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            window.game = new WanhuaGame();
+            // 确保只有一个游戏实例
+            if (!window.game) {
+                window.game = new WanhuaGame();
+                console.log('游戏实例已创建');
+            } else {
+                console.log('游戏实例已存在');
+            }
         });
+        
+        // 添加一个全局函数用于手动初始化游戏（如果DOMContentLoaded未触发）
+        window.initGame = function() {
+            if (!window.game) {
+                window.game = new WanhuaGame();
+                console.log('游戏实例已手动创建');
+            }
+        };
+        
+        // 添加控制台调试脚本
+        window.debugGame = {
+            init: function() {
+                // 创建游戏实例
+                if (!window.game) {
+                    window.game = new WanhuaGame();
+                    console.log('游戏实例已通过调试工具创建');
+                }
+                return window.game;
+            },
+            
+            login: function(userData) {
+                // 创建默认测试用户数据（如果未提供）
+                const defaultUser = {
+                    id: Date.now(),
+                    first_name: '测试用户',
+                    username: 'test_user',
+                    auth_date: Math.floor(Date.now() / 1000),
+                    hash: 'test_hash'
+                };
+                
+                const user = userData || defaultUser;
+                
+                // 创建token
+                const token = btoa(JSON.stringify({ 
+                    userId: user.id, 
+                    exp: Date.now() + 86400000 
+                }));
+                
+                localStorage.setItem('wanhua_token', token);
+                
+                // 初始化游戏实例
+                const game = this.init();
+                
+                // 设置用户数据
+                game.userData = {
+                    id: user.id,
+                    username: user.username || user.first_name,
+                    coins: 1000,
+                    current_level: 5,
+                    checkin_streak: 3,
+                    ranking: 99
+                };
+                
+                game.showGameInterface();
+                game.updateUI();
+                console.log('已通过调试工具登录，token已保存到localStorage');
+                
+                return game;
+            },
+            
+            reset: function() {
+                // 清除所有用户数据
+                localStorage.removeItem('wanhua_token');
+                sessionStorage.clear();
+                document.cookie.split(";").forEach(cookie => {
+                    document.cookie = cookie
+                        .replace(/^ +/, "")
+                        .replace(/=.*/, "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/");
+                });
+                
+                if (window.game) {
+                    window.game.showAuthInterface();
+                }
+                console.log('调试工具已重置所有用户数据');
+            }
+        };
+        
+        // 如果页面已经加载完成，立即初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', window.initGame);
+        } else {
+            // 页面已经加载完成
+            window.initGame();
+        }
+        
+        // 控制台欢迎信息
+        console.log('%c万花楼-《万象谜题》调试控制台就绪', 'font-weight: bold; font-size: 16px; color: #667eea;');
+        console.log('使用 window.debugGame.init() 初始化游戏实例');
+        console.log('使用 window.debugGame.login() 模拟登录');
+        console.log('使用 window.debugGame.reset() 重置所有用户数据');
     </script>
 </body>
 </html>
