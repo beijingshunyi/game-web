@@ -82,16 +82,47 @@ class WanhuaGame {
         return typeDesc[Math.floor(Math.random() * typeDesc.length)];
     }
 
+    // 保存用户数据到本地存储
+    saveUserData() {
+        try {
+            localStorage.setItem('wanhuaGameUserData', JSON.stringify(this.currentUser));
+        } catch (e) {
+            console.error('保存用户数据时出错:', e);
+            // 可以添加用户友好的错误提示
+            // alert('保存数据时出现问题，请检查存储空间');
+        }
+    }
+
     // 模拟加载用户数据
     loadUserData() {
-        // 检查本地存储中是否有用户数据
-        const savedData = localStorage.getItem('wanhuaGameUserData');
-        if (savedData) {
-            this.currentUser = JSON.parse(savedData);
-        } else {
-            // 创建新用户
+        try {
+            // 检查本地存储中是否有用户数据
+            const savedData = localStorage.getItem('wanhuaGameUserData');
+            if (savedData) {
+                this.currentUser = JSON.parse(savedData);
+            } else {
+                // 创建新用户
+                this.currentUser = {
+                    id: Date.now(), // 简单的用户ID生成
+                    name: "玩家",
+                    coins: 0,
+                    currentLevel: 1,
+                    consecutiveSignins: 0,
+                    totalSignins: 0,
+                    completedLevels: [],
+                    achievements: []
+                };
+                this.saveUserData();
+            }
+
+            this.coins = this.currentUser.coins;
+            this.currentLevel = this.currentUser.currentLevel;
+            this.consecutiveSignins = this.currentUser.consecutiveSignins;
+        } catch (e) {
+            console.error('加载用户数据时出错:', e);
+            // 使用默认值初始化
             this.currentUser = {
-                id: Date.now(), // 简单的用户ID生成
+                id: Date.now(),
                 name: "玩家",
                 coins: 0,
                 currentLevel: 1,
@@ -100,17 +131,10 @@ class WanhuaGame {
                 completedLevels: [],
                 achievements: []
             };
-            this.saveUserData();
+            this.coins = 0;
+            this.currentLevel = 1;
+            this.consecutiveSignins = 0;
         }
-
-        this.coins = this.currentUser.coins;
-        this.currentLevel = this.currentUser.currentLevel;
-        this.consecutiveSignins = this.currentUser.consecutiveSignins;
-    }
-
-    // 保存用户数据到本地存储
-    saveUserData() {
-        localStorage.setItem('wanhuaGameUserData', JSON.stringify(this.currentUser));
     }
 
     // 设置事件监听器
@@ -368,7 +392,6 @@ class WanhuaGame {
         
         // 增加得分
         this.actionGameScore = (this.actionGameScore || 0) + 1;
-        document.getElementById('score').textContent = this.actionGameScore;
         
         // 改变目标颜色
         const target = e.target;
@@ -388,26 +411,20 @@ class WanhuaGame {
 
     // 获取关卡奖励
     getLevelReward(level) {
+        // 设计更平滑的奖励增长曲线
         if (level <= 50) return 3;
         if (level <= 100) return 5;
-        if (level <= 150) return 8;
-        if (level <= 200) return 12;
+        if (level <= 200) return 8;
         if (level <= 300) return 10;
-        if (level <= 400) return 15;
-        if (level <= 500) return 18;
-        if (level <= 600) return 22;
-        if (level <= 700) return 16;
-        if (level <= 750) return 20;
-        if (level <= 850) return 18;
-        if (level <= 900) return 23;
+        if (level <= 400) return 12;
+        if (level <= 500) return 15;
+        if (level <= 750) return 18;
         if (level <= 1000) return 20;
-        if (level <= 1050) return 25;
-        if (level <= 1100) return 22;
-        if (level <= 1150) return 28;
-        if (level <= 1200) return 24;
-        if (level <= 1250) return 30;
-        if (level <= 1300) return 32;
-        return Math.min(35 + Math.floor((level - 1300) / 100) * 5, 100);
+        if (level <= 1250) return 25;
+        if (level <= 1500) return 30;
+        if (level <= 1750) return 35;
+        if (level <= 2000) return 40;
+        return 50; // 2000关之后的奖励
     }
 
     // 获取签到奖励
@@ -541,10 +558,21 @@ class WanhuaGame {
             ];
             
             const hint = hints[Math.floor(Math.random() * hints.length)];
-            alert(`💡 提示：\n${hint}`);
+            try {
+                alert(`💡 提示：\n${hint}`);
+            } catch (e) {
+                console.error('显示提示时出错:', e);
+                // 降级处理：在控制台输出提示
+                console.log(`💡 提示：${hint}`);
+            }
             this.updateUI();
         } else {
-            alert('万花币不足，无法获取提示！');
+            try {
+                alert('万花币不足，无法获取提示！');
+            } catch (e) {
+                console.error('显示提示时出错:', e);
+                console.log('万花币不足，无法获取提示！');
+            }
         }
     }
 
@@ -556,40 +584,6 @@ class WanhuaGame {
     // 打开签到模态框
     openSigninModal() {
         document.getElementById('signin-modal').style.display = 'flex';
-    }
-
-    // 确认提现
-    confirmWithdraw() {
-        const alipay = document.getElementById('alipay-account').value;
-        const name = document.getElementById('real-name').value;
-        const amount = document.getElementById('withdraw-amount').value;
-        
-        if (!alipay || !name) {
-            alert('请填写完整的支付宝信息');
-            return;
-        }
-        
-        const coinsNeeded = amount * 100;
-        if (this.coins < coinsNeeded) {
-            alert(`万花币不足！需要 ${coinsNeeded} 万花币`);
-            return;
-        }
-        
-        this.coins -= coinsNeeded;
-        this.currentUser.coins = this.coins;
-        this.saveUserData();
-        
-        alert(`提现申请已提交！\n支付宝账号：${alipay}\n真实姓名：${name}\n金额：${amount}元\n\n请等待3-5个工作日到账`);
-        
-        // 关闭模态框
-        document.getElementById('withdraw-modal').style.display = 'none';
-        
-        // 重置表单
-        document.getElementById('alipay-account').value = '';
-        document.getElementById('real-name').value = '';
-        
-        // 更新UI
-        this.updateUI();
     }
 
     // 确认签到
@@ -628,54 +622,96 @@ class WanhuaGame {
 
     // 检查成就
     checkAchievements() {
-        // 这里可以实现成就检查逻辑
-        // 为简化示例，我们只在特定条件下解锁成就
-        if (this.currentUser.completedLevels.length >= 1 && !this.currentUser.achievements.includes('初入江湖')) {
-            this.currentUser.achievements.push('初入江湖');
-            alert('🏆 成就解锁：初入江湖\n完成第1关');
+        try {
+            // 这里可以实现成就检查逻辑
+            // 为简化示例，我们只在特定条件下解锁成就
+            if (this.currentUser.completedLevels.length >= 1 && !this.currentUser.achievements.includes('初入江湖')) {
+                this.currentUser.achievements.push('初入江湖');
+                try {
+                    alert('🏆 成就解锁：初入江湖\n完成第1关');
+                } catch (e) {
+                    console.log('🏆 成就解锁：初入江湖\n完成第1关');
+                }
+            }
+            
+            if (this.currentUser.completedLevels.length >= 10 && !this.currentUser.achievements.includes('初窥门径')) {
+                this.currentUser.achievements.push('初窥门径');
+                try {
+                    alert('🏆 成就解锁：初窥门径\n完成10关');
+                } catch (e) {
+                    console.log('🏆 成就解锁：初窥门径\n完成10关');
+                }
+            }
+            
+            this.saveUserData();
+        } catch (e) {
+            console.error('检查成就时出错:', e);
         }
-        
-        if (this.currentUser.completedLevels.length >= 10 && !this.currentUser.achievements.includes('初窥门径')) {
-            this.currentUser.achievements.push('初窥门径');
-            alert('🏆 成就解锁：初窥门径\n完成10关');
-        }
-        
-        this.saveUserData();
     }
 
     // 显示成就
     showAchievements() {
-        if (this.currentUser.achievements.length === 0) {
-            alert('您还没有解锁任何成就，继续游戏来解锁成就吧！');
-            return;
+        try {
+            if (this.currentUser.achievements.length === 0) {
+                try {
+                    alert('您还没有解锁任何成就，继续游戏来解锁成就吧！');
+                } catch (e) {
+                    console.log('您还没有解锁任何成就，继续游戏来解锁成就吧！');
+                }
+                return;
+            }
+            
+            let achievementText = '您已完成以下成就：\n\n';
+            this.currentUser.achievements.forEach((achievement, index) => {
+                achievementText += `${index + 1}. ${achievement}\n`;
+            });
+            
+            try {
+                alert(achievementText);
+            } catch (e) {
+                console.log(achievementText);
+            }
+        } catch (e) {
+            console.error('显示成就时出错:', e);
+            try {
+                alert('显示成就时出现问题');
+            } catch (e2) {
+                console.log('显示成就时出现问题');
+            }
         }
-        
-        let achievementText = '您已完成以下成就：\n\n';
-        this.currentUser.achievements.forEach((achievement, index) => {
-            achievementText += `${index + 1}. ${achievement}\n`;
-        });
-        
-        alert(achievementText);
     }
 
     // 显示资产明细
     showAssets() {
-        let assetsText = `资产明细：\n\n`;
-        assetsText += `万花币余额：${this.coins}\n`;
-        assetsText += `已完成关卡：${this.currentUser.completedLevels.length}\n`;
-        assetsText += `连续签到：${this.consecutiveSignins} 天\n`;
-        assetsText += `总签到：${this.currentUser.totalSignins || 0} 天\n`;
-        assetsText += `解锁成就：${this.currentUser.achievements.length} 个\n\n`;
-        
-        if (this.currentUser.completedLevels.length > 0) {
-            assetsText += `最近完成的关卡：\n`;
-            const recentLevels = this.currentUser.completedLevels.slice(-5).reverse();
-            recentLevels.forEach(level => {
-                assetsText += `游戏副本 ${level} (奖励${this.getLevelReward(level)}币)\n`;
-            });
+        try {
+            let assetsText = `资产明细：\n\n`;
+            assetsText += `万花币余额：${this.coins}\n`;
+            assetsText += `已完成关卡：${this.currentUser.completedLevels.length}\n`;
+            assetsText += `连续签到：${this.consecutiveSignins} 天\n`;
+            assetsText += `总签到：${this.currentUser.totalSignins || 0} 天\n`;
+            assetsText += `解锁成就：${this.currentUser.achievements.length} 个\n\n`;
+            
+            if (this.currentUser.completedLevels.length > 0) {
+                assetsText += `最近完成的关卡：\n`;
+                const recentLevels = this.currentUser.completedLevels.slice(-5).reverse();
+                recentLevels.forEach(level => {
+                    assetsText += `游戏副本 ${level} (奖励${this.getLevelReward(level)}币)\n`;
+                });
+            }
+            
+            try {
+                alert(assetsText);
+            } catch (e) {
+                console.log(assetsText);
+            }
+        } catch (e) {
+            console.error('显示资产明细时出错:', e);
+            try {
+                alert('显示资产明细时出现问题');
+            } catch (e2) {
+                console.log('显示资产明细时出现问题');
+            }
         }
-        
-        alert(assetsText);
     }
 
     // 分享游戏
