@@ -1,5 +1,4 @@
 // 万花楼-万花消消乐游戏逻辑
-
 class WanhuaGame {
     constructor() {
         // 游戏状态
@@ -53,7 +52,6 @@ class WanhuaGame {
             { id: 11, name: "坚持不懈", description: "连续签到7天", icon: "📅", unlocked: false },
             { id: 12, name: "社交达人", description: "分享游戏10次", icon: "📱", unlocked: false }
         ];
-
         // 为关卡预设成就
         for (let i = 1; i <= 60; i++) {
             const levelRange = (i - 1) * 100 + 1;
@@ -69,7 +67,7 @@ class WanhuaGame {
         
         this.init();
     }
-
+    
     init() {
         // 获取用户ID
         const urlParams = new URLSearchParams(window.location.search);
@@ -90,7 +88,7 @@ class WanhuaGame {
         // 更新UI
         this.updateUI();
     }
-
+    
     // 显示错误信息
     showError(message) {
         const homePage = document.getElementById('home-page');
@@ -105,14 +103,67 @@ class WanhuaGame {
         }
         alert(message);
     }
-
+    
     // 从数据库加载用户数据
     async loadUserData() {
-        // 在实际实现中，这里会从Supabase加载用户数据
-        // 目前使用默认值
-        console.log('加载用户数据，用户ID:', this.gameState.userId);
+        try {
+            const { data, error } = await supabase
+                .from('user_game_data')
+                .select('*')
+                .eq('user_id', this.gameState.userId)
+                .single();
+                
+            if (error && error.code !== 'PGRST116') {
+                console.error('加载用户数据出错:', error);
+                throw error;
+            }
+            
+            if (data) {
+                this.gameState.level = data.current_level || 1;
+                this.gameState.coins = data.total_coins || 20;
+                this.gameState.tools = {
+                    hammer: data.hammer || 2,
+                    bomb: data.bomb || 1,
+                    shuffle: data.shuffle || 3,
+                    magic: data.magic || 0
+                };
+            } else {
+                // 新用户初始化
+                this.gameState.coins = 20;
+                this.saveUserData();
+            }
+        } catch (error) {
+            console.error('加载用户数据失败:', error);
+            throw error;
+        }
     }
-
+    
+    // 保存用户数据到数据库
+    async saveUserData() {
+        try {
+            const { error } = await supabase
+                .from('user_game_data')
+                .upsert({
+                    user_id: this.gameState.userId,
+                    current_level: this.gameState.level,
+                    total_coins: this.gameState.coins,
+                    hammer: this.gameState.tools.hammer,
+                    bomb: this.gameState.tools.bomb,
+                    shuffle: this.gameState.tools.shuffle,
+                    magic: this.gameState.tools.magic
+                }, {
+                    onConflict: 'user_id'
+                });
+                
+            if (error) {
+                console.error('保存用户数据出错:', error);
+                throw error;
+            }
+        } catch (error) {
+            console.error('保存用户数据失败:', error);
+        }
+    }
+    
     // 设置事件监听器
     setupEventListeners() {
         // 首页事件
@@ -178,7 +229,7 @@ class WanhuaGame {
             magicTool.addEventListener('click', () => this.useTool('magic'));
         }
     }
-
+    
     // 显示游戏页面
     showGamePage() {
         const homePage = document.getElementById('home-page');
@@ -192,7 +243,7 @@ class WanhuaGame {
         this.setupTouchEvents();
         this.resetMoveTimer();
     }
-
+    
     // 显示首页
     showHomePage() {
         const homePage = document.getElementById('home-page');
@@ -209,7 +260,7 @@ class WanhuaGame {
         
         this.updateHomeUI();
     }
-
+    
     // 更新首页UI
     updateHomeUI() {
         const homeCoins = document.getElementById('home-coins');
@@ -220,7 +271,7 @@ class WanhuaGame {
         if (homeLevel) homeLevel.textContent = this.gameState.level;
         if (homeAchievements) homeAchievements.textContent = this.achievements.filter(a => a.unlocked).length;
     }
-
+    
     // 创建游戏板
     createBoard() {
         this.gameState.board = [];
@@ -228,7 +279,7 @@ class WanhuaGame {
             this.gameState.board[i] = [];
             for (let j = 0; j < this.BOARD_SIZE; j++) {
                 // 根据关卡确定是否生成障碍物
-                const obstacleChance = Math.min(0.4, this.gameState.level * 0.008);
+                const obstacleChance = Math.min(0.3, this.gameState.level * 0.005);
                 
                 if (Math.random() < obstacleChance && !(i === 0 && j === 0) && !(i === this.BOARD_SIZE-1 && j === this.BOARD_SIZE-1)) {
                     // 生成障碍物
@@ -266,7 +317,6 @@ class WanhuaGame {
         }
         
         // 根据关卡调整步数，使步数与目标分数更匹配
-        // 调整步数和目标分数的平衡性
         if (this.gameState.level <= 10) {
             this.gameState.moves = 25; // 前10关25步
         } else if (this.gameState.level <= 30) {
@@ -288,14 +338,13 @@ class WanhuaGame {
         }
         
         // 调整目标分数计算方式，使其与步数更匹配
-        // 使用更合理的公式来平衡步数和目标分数
         this.gameState.targetScore = 300 + Math.floor(this.gameState.level * 25 * (1 + this.gameState.level * 0.05));
         
         // 设置每步时间
-        this.gameState.baseMoveTime = Math.max(5, 12 - Math.floor(this.gameState.level / 12)); // 增加基本时间
+        this.gameState.baseMoveTime = Math.max(5, 12 - Math.floor(this.gameState.level / 12));
         this.gameState.moveTimeLeft = this.gameState.baseMoveTime;
     }
-
+    
     // 渲染游戏板
     renderBoard() {
         const boardElement = document.getElementById('game-board');
@@ -370,12 +419,12 @@ class WanhuaGame {
             boardElement.appendChild(fragment);
         }
     }
-
+    
     // 获取随机表情符号
     getRandomEmoji() {
         return this.emojis[Math.floor(Math.random() * this.emojis.length)];
     }
-
+    
     // 检查是否有匹配
     hasMatches() {
         // 检查水平匹配
@@ -404,12 +453,12 @@ class WanhuaGame {
         
         return false;
     }
-
+    
     // 检查是否为障碍物
     isObstacle(type) {
         return [this.obstacleTypes.ICE, this.obstacleTypes.LOCK, this.obstacleTypes.STONE, this.obstacleTypes.BOMB].includes(type);
     }
-
+    
     // 随机打乱游戏板内部
     shuffleBoardInternal() {
         for (let i = 0; i < this.BOARD_SIZE; i++) {
@@ -425,7 +474,7 @@ class WanhuaGame {
             }
         }
     }
-
+    
     // 设置触摸事件
     setupTouchEvents() {
         const board = document.getElementById('game-board');
@@ -451,7 +500,7 @@ class WanhuaGame {
         board.addEventListener('mouseup', this.handleMouseUp.bind(this));
         board.addEventListener('mouseleave', this.handleMouseUp.bind(this));
     }
-
+    
     handleTouchStart(e) {
         e.preventDefault();
         const touch = e.touches[0];
@@ -467,12 +516,12 @@ class WanhuaGame {
             cell.classList.add('selected');
         }
     }
-
+    
     handleTouchMove(e) {
         if (!this.gameState.isDragging) return;
         e.preventDefault();
     }
-
+    
     handleTouchEnd(e) {
         if (!this.gameState.isDragging) return;
         e.preventDefault();
@@ -505,7 +554,7 @@ class WanhuaGame {
             }
         }
     }
-
+    
     handleMouseDown(e) {
         const cell = e.target;
         if (cell && cell.classList.contains('game-cell')) {
@@ -518,12 +567,12 @@ class WanhuaGame {
             e.preventDefault();
         }
     }
-
+    
     handleMouseMove(e) {
         if (!this.gameState.isDragging) return;
         e.preventDefault();
     }
-
+    
     handleMouseUp(e) {
         if (!this.gameState.isDragging) return;
         e.preventDefault();
@@ -548,7 +597,7 @@ class WanhuaGame {
         this.gameState.dragStart = null;
         this.gameState.dragEnd = null;
     }
-
+    
     // 检查两个单元格是否相邻且可交换
     isAdjacent(row1, col1, row2, col2) {
         const rowDiff = Math.abs(row1 - row2);
@@ -565,7 +614,7 @@ class WanhuaGame {
         
         return adjacent && cell1Movable && cell2Movable;
     }
-
+    
     // 交换并处理游戏逻辑
     swapAndProcess(row1, col1, row2, col2) {
         // 重置步数计时器
@@ -593,71 +642,71 @@ class WanhuaGame {
             }, 50);
         }
     }
-
+    
     // 交换两个单元格
     swapCells(row1, col1, row2, col2) {
         const temp = this.gameState.board[row1][col1];
         this.gameState.board[row1][col1] = this.gameState.board[row2][col2];
         this.gameState.board[row2][col2] = temp;
     }
-
+    
     // 处理匹配
-    processMatches() {
-        // 查找所有匹配
-        const matches = this.findMatches();
+    async processMatches() {
+        let hasMatch = true;
+        let matchCount = 0;
+        const maxMatchCount = 10; // 防止无限循环
         
-        if (matches.length > 0) {
-            // 标记匹配的方块
-            this.markMatches(matches);
+        while (hasMatch && matchCount < maxMatchCount) {
+            matchCount++;
+            // 查找所有匹配
+            const matches = this.findMatches();
             
-            // 计算得分 - 调整万花币获取
-            let scoreIncrease = 0;
-            const obstaclePositions = []; // 存储需要消除的障碍物位置
-            
-            // 先处理普通方块的消除
-            matches.forEach(match => {
-                match.forEach(pos => {
-                    const cell = this.gameState.board[pos.row][pos.col];
-                    
-                    // 只处理普通方块的消除
-                    if (!this.isObstacle(cell.type) && cell.durability === 1) {
-                        cell.type = '';
-                        cell.special = null;
-                        scoreIncrease += 1; // 普通方块得分
-                    }
-                });
-            });
-            
-            // 然后处理障碍物的耐久度减少
-            matches.forEach(match => {
-                match.forEach(pos => {
-                    const cell = this.gameState.board[pos.row][pos.col];
-                    
-                    // 处理障碍物
-                    if (this.isObstacle(cell.type)) {
-                        // 记录障碍物位置，用于后续处理
-                        obstaclePositions.push(pos);
+            if (matches.length > 0) {
+                // 标记匹配的方块
+                this.markMatches(matches);
+                
+                // 计算得分
+                let scoreIncrease = 0;
+                
+                // 处理匹配
+                matches.forEach(match => {
+                    match.forEach(pos => {
+                        const cell = this.gameState.board[pos.row][pos.col];
                         
-                        cell.durability--;
-                        // 如果耐久度为0，消除障碍物
-                        if (cell.durability <= 0) {
-                            cell.type = this.getRandomEmoji();
-                            cell.durability = 1;
-                            scoreIncrease += 5; // 障碍物消除奖励
+                        if (!this.isObstacle(cell.type)) {
+                            // 处理普通方块
+                            cell.type = '';
+                            cell.special = null;
+                            scoreIncrease += 1;
+                        } else if (cell.type === this.obstacleTypes.ICE) {
+                            // 处理冰块
+                            cell.durability--;
+                            if (cell.durability <= 0) {
+                                cell.type = this.getRandomEmoji();
+                                cell.durability = 1;
+                                scoreIncrease += 5;
+                            }
+                        } else if (cell.type === this.obstacleTypes.BOMB) {
+                            // 处理炸弹
+                            this.explodeBomb(pos.row, pos.col);
+                            scoreIncrease += 15;
                         }
-                    }
+                    });
                 });
-            });
-            
-            this.gameState.score += scoreIncrease;
-            // 万花币获取：10分等于1万花币
-            this.gameState.coins += Math.floor(scoreIncrease / 10);
-            
-            // 显示动画效果
-            this.animateMatches(matches);
-            
-            // 延迟更新界面 - 减少延迟时间以提高响应速度
-            setTimeout(() => {
+                
+                this.gameState.score += scoreIncrease;
+                // 调整万花币获取比例 - 5分等于1万花币（原为10分=1万花币）
+                this.gameState.coins += Math.floor(scoreIncrease * 2);
+                
+                // 保存数据
+                this.saveUserData();
+                
+                // 显示动画效果
+                this.animateMatches(matches);
+                
+                // 延迟更新界面
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
                 // 填充空位
                 this.fillEmptyCells();
                 
@@ -667,25 +716,29 @@ class WanhuaGame {
                 // 更新UI
                 this.updateUI();
                 
-                // 重新绑定触摸事件，确保游戏可以继续
+                // 重新绑定触摸事件
                 this.setupTouchEvents();
-                
-                // 检查是否还有自动匹配 - 减少延迟时间以提高响应速度
-                setTimeout(() => {
-                    if (this.hasMatches()) {
-                        this.processMatches(); // 递归处理自动匹配
-                    } else {
-                        // 检查游戏是否结束
-                        this.checkGameEnd();
-                    }
-                }, 150); // 从300ms减少到150ms
-            }, 150); // 从300ms减少到150ms
-        } else {
-            // 检查游戏是否结束
-            this.checkGameEnd();
+            } else {
+                hasMatch = false;
+            }
+        }
+        
+        // 检查游戏是否结束
+        this.checkGameEnd();
+    }
+    
+    // 炸弹爆炸效果
+    explodeBomb(row, col) {
+        for (let i = Math.max(0, row - 1); i <= Math.min(this.BOARD_SIZE - 1, row + 1); i++) {
+            for (let j = Math.max(0, col - 1); j <= Math.min(this.BOARD_SIZE - 1, col + 1); j++) {
+                if (i !== row || j !== col) {
+                    this.gameState.board[i][j].type = '';
+                    this.gameState.board[i][j].special = null;
+                }
+            }
         }
     }
-
+    
     // 查找所有匹配
     findMatches() {
         const matches = [];
@@ -704,6 +757,17 @@ class WanhuaGame {
                 } else {
                     if (count >= 3) {
                         matches.push([...match]);
+                        
+                        // 4连或5连特殊方块
+                        if (count === 4) {
+                            // 4连生成炸弹
+                            const bombPos = match[Math.floor(match.length / 2)];
+                            this.gameState.board[bombPos.row][bombPos.col].special = 'bomb';
+                        } else if (count >= 5) {
+                            // 5连生成彩虹方块
+                            const rainbowPos = match[Math.floor(match.length / 2)];
+                            this.gameState.board[rainbowPos.row][rainbowPos.col].special = 'rainbow';
+                        }
                     }
                     count = 1;
                     currentType = this.gameState.board[i][j].type;
@@ -713,6 +777,15 @@ class WanhuaGame {
             
             if (count >= 3) {
                 matches.push([...match]);
+                
+                // 4连或5连特殊方块
+                if (count === 4) {
+                    const bombPos = match[Math.floor(match.length / 2)];
+                    this.gameState.board[bombPos.row][bombPos.col].special = 'bomb';
+                } else if (count >= 5) {
+                    const rainbowPos = match[Math.floor(match.length / 2)];
+                    this.gameState.board[rainbowPos.row][rainbowPos.col].special = 'rainbow';
+                }
             }
         }
         
@@ -730,6 +803,15 @@ class WanhuaGame {
                 } else {
                     if (count >= 3) {
                         matches.push([...match]);
+                        
+                        // 4连或5连特殊方块
+                        if (count === 4) {
+                            const bombPos = match[Math.floor(match.length / 2)];
+                            this.gameState.board[bombPos.row][bombPos.col].special = 'bomb';
+                        } else if (count >= 5) {
+                            const rainbowPos = match[Math.floor(match.length / 2)];
+                            this.gameState.board[rainbowPos.row][rainbowPos.col].special = 'rainbow';
+                        }
                     }
                     count = 1;
                     currentType = this.gameState.board[i][j].type;
@@ -739,12 +821,21 @@ class WanhuaGame {
             
             if (count >= 3) {
                 matches.push([...match]);
+                
+                // 4连或5连特殊方块
+                if (count === 4) {
+                    const bombPos = match[Math.floor(match.length / 2)];
+                    this.gameState.board[bombPos.row][bombPos.col].special = 'bomb';
+                } else if (count >= 5) {
+                    const rainbowPos = match[Math.floor(match.length / 2)];
+                    this.gameState.board[rainbowPos.row][rainbowPos.col].special = 'rainbow';
+                }
             }
         }
         
         return matches;
     }
-
+    
     // 标记匹配
     markMatches(matches) {
         matches.forEach(match => {
@@ -756,20 +847,19 @@ class WanhuaGame {
             });
         });
     }
-
+    
     // 动画匹配效果
     animateMatches(matches) {
         matches.forEach(match => {
             match.forEach(pos => {
                 const cell = document.querySelector(`.game-cell[data-row="${pos.row}"][data-col="${pos.col}"]`);
                 if (cell) {
-                    // 使用CSS类而不是直接修改样式来提高性能
                     cell.classList.add('matched');
                 }
             });
         });
     }
-
+    
     // 填充空位 - 优化此函数以提高性能
     fillEmptyCells() {
         for (let j = 0; j < this.BOARD_SIZE; j++) {
@@ -798,7 +888,7 @@ class WanhuaGame {
             }
         }
     }
-
+    
     // 使用道具
     useTool(toolName) {
         if (this.gameState.tools[toolName] > 0) {
@@ -827,7 +917,7 @@ class WanhuaGame {
             this.showFloatingText(`没有${this.getToolName(toolName)}道具了，请先购买`, "#ff4757");
         }
     }
-
+    
     // 启用目标选择模式
     enableTargetSelectionMode(toolName) {
         const board = document.getElementById('game-board');
@@ -869,7 +959,7 @@ class WanhuaGame {
         
         board.addEventListener('click', handler);
     }
-
+    
     // 执行魔法移动
     performMagicMove() {
         // 寻找最佳消除位置
@@ -927,7 +1017,7 @@ class WanhuaGame {
         
         this.showFloatingText("未找到有效移动", "#ff4757");
     }
-
+    
     // 洗牌功能
     shuffleBoard() {
         // 收集所有可移动的方块
@@ -962,7 +1052,7 @@ class WanhuaGame {
         this.renderBoard();
         this.showFloatingText("棋盘已重新排列", "#2575fc");
     }
-
+    
     // 获取道具名称
     getToolName(toolName) {
         const names = {
@@ -973,7 +1063,7 @@ class WanhuaGame {
         };
         return names[toolName] || toolName;
     }
-
+    
     // 重置游戏
     resetGame() {
         // 清除当前计时器
@@ -984,7 +1074,6 @@ class WanhuaGame {
         
         this.gameState.score = 0;
         // 根据关卡调整步数，使步数与目标分数更匹配
-        // 调整步数和目标分数的平衡性
         if (this.gameState.level <= 10) {
             this.gameState.moves = 25; // 前10关25步
         } else if (this.gameState.level <= 30) {
@@ -1013,7 +1102,7 @@ class WanhuaGame {
         this.resetMoveTimer();
         this.showFloatingText("游戏已重置", "#6a11cb");
     }
-
+    
     // 重置步数计时器
     resetMoveTimer() {
         // 清除之前的计时器
@@ -1037,20 +1126,20 @@ class WanhuaGame {
                 this.gameState.moveTimer = null;
                 // 减少步数而不是直接结束游戏
                 this.gameState.moves--;
-                showFloatingText("时间到！步数-1", "#ff4757");
-                updateUI();
+                this.showFloatingText("时间到！步数-1", "#ff4757");
+                this.updateUI();
                 
                 // 检查游戏是否结束
-                checkGameEnd();
+                this.checkGameEnd();
                 
                 // 如果游戏未结束，重新启动计时器
                 if (this.gameState.moves > 0 && this.gameState.score < this.gameState.targetScore) {
-                    resetMoveTimer();
+                    this.resetMoveTimer();
                 }
             }
         }, 1000);
     }
-
+    
     // 更新倒计时显示
     updateMoveTimerDisplay() {
         const timerElement = document.getElementById('move-timer');
@@ -1067,7 +1156,7 @@ class WanhuaGame {
             }
         }
     }
-
+    
     // 检查游戏是否结束
     checkGameEnd() {
         // 清除计时器
@@ -1106,7 +1195,7 @@ class WanhuaGame {
             }, 2000);
         }
     }
-
+    
     // 下一关
     nextLevel() {
         // 清除当前计时器
@@ -1117,10 +1206,8 @@ class WanhuaGame {
         
         this.gameState.level++;
         // 调整目标分数计算方式，使其与步数更匹配
-        // 使用更合理的公式来平衡步数和目标分数
         this.gameState.targetScore = 300 + Math.floor(this.gameState.level * 25 * (1 + this.gameState.level * 0.05));
         // 步数随关卡递减，但不低于10步
-        // 调整步数和目标分数的平衡性
         if (this.gameState.level <= 10) {
             this.gameState.moves = 25; // 前10关25步
         } else if (this.gameState.level <= 30) {
@@ -1151,7 +1238,7 @@ class WanhuaGame {
         this.resetMoveTimer();
         this.showFloatingText(`第${this.gameState.level}关开始`, "#6a11cb");
     }
-
+    
     // 更新UI
     updateUI() {
         const currentLevel = document.getElementById('current-level');
@@ -1179,7 +1266,7 @@ class WanhuaGame {
         // 更新倒计时显示
         this.updateMoveTimerDisplay();
     }
-
+    
     // 更新道具数量
     updateToolCounts() {
         const hammerCount = document.getElementById('hammer-count');
@@ -1192,7 +1279,7 @@ class WanhuaGame {
         if (shuffleCount) shuffleCount.textContent = this.gameState.tools.shuffle;
         if (magicCount) magicCount.textContent = this.gameState.tools.magic;
     }
-
+    
     // 显示成就
     showAchievements() {
         const grid = document.getElementById('achievements-grid');
@@ -1212,7 +1299,7 @@ class WanhuaGame {
         
         this.openModal('achievements-modal');
     }
-
+    
     // 打开弹窗
     openModal(modalId) {
         const modal = document.getElementById(modalId);
@@ -1220,7 +1307,7 @@ class WanhuaGame {
             modal.style.display = 'flex';
         }
     }
-
+    
     // 关闭弹窗
     closeModal(modalId) {
         const modal = document.getElementById(modalId);
@@ -1228,7 +1315,7 @@ class WanhuaGame {
             modal.style.display = 'none';
         }
     }
-
+    
     // 显示浮动文字
     showFloatingText(text, color) {
         const floatingText = document.createElement('div');
@@ -1266,7 +1353,7 @@ class WanhuaGame {
             }, 300);
         }, 2000);
     }
-
+    
     // 显示烟花效果
     showFireworks() {
         for (let i = 0; i < 5; i++) {
@@ -1275,7 +1362,7 @@ class WanhuaGame {
             }, i * 300);
         }
     }
-
+    
     // 创建烟花粒子
     createFirework(x, y) {
         const colors = ['#ff9a9e', '#fad0c4', '#a18cd1', '#fbc2eb', '#6a11cb', '#2575fc'];
@@ -1306,7 +1393,7 @@ class WanhuaGame {
             }, 1000);
         }
     }
-
+    
     // 显示次数不足弹窗
     showAttemptsModal() {
         this.openModal('attempts-modal');
