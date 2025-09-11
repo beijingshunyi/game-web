@@ -431,15 +431,25 @@ class WanhuaGame {
         const board = document.getElementById('game-board');
         if (!board) return;
         
-        board.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
-        board.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
-        board.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+        // 先移除所有现有的事件监听器，防止重复绑定
+        board.removeEventListener('touchstart', this.handleTouchStart.bind(this));
+        board.removeEventListener('touchmove', this.handleTouchMove.bind(this));
+        board.removeEventListener('touchend', this.handleTouchEnd.bind(this));
+        board.removeEventListener('mousedown', this.handleMouseDown.bind(this));
+        board.removeEventListener('mousemove', this.handleMouseMove.bind(this));
+        board.removeEventListener('mouseup', this.handleMouseUp.bind(this));
+        board.removeEventListener('mouseleave', this.handleMouseUp.bind(this));
+        
+        // 重新添加事件监听器
+        board.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+        board.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+        board.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
         
         // 鼠标事件作为备选
-        board.addEventListener('mousedown', (e) => this.handleMouseDown(e));
-        board.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        board.addEventListener('mouseup', (e) => this.handleMouseUp(e));
-        board.addEventListener('mouseleave', (e) => this.handleMouseUp(e));
+        board.addEventListener('mousedown', this.handleMouseDown.bind(this));
+        board.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        board.addEventListener('mouseup', this.handleMouseUp.bind(this));
+        board.addEventListener('mouseleave', this.handleMouseUp.bind(this));
     }
 
     handleTouchStart(e) {
@@ -484,6 +494,11 @@ class WanhuaGame {
                     this.swapAndProcess(this.gameState.dragStart.row, this.gameState.dragStart.col, this.gameState.dragEnd.row, this.gameState.dragEnd.col);
                 }
                 
+                this.gameState.isDragging = false;
+                this.gameState.dragStart = null;
+                this.gameState.dragEnd = null;
+            } else {
+                // 如果没有找到目标单元格，也要重置状态
                 this.gameState.isDragging = false;
                 this.gameState.dragStart = null;
                 this.gameState.dragEnd = null;
@@ -571,6 +586,11 @@ class WanhuaGame {
             // 没有匹配，交换回来
             this.swapCells(row1, col1, row2, col2);
             this.renderBoard();
+            
+            // 确保重新绑定事件监听器
+            setTimeout(() => {
+                this.setupTouchEvents();
+            }, 50);
         }
     }
 
@@ -592,12 +612,32 @@ class WanhuaGame {
             
             // 计算得分 - 调整万花币获取
             let scoreIncrease = 0;
+            const obstaclePositions = []; // 存储需要消除的障碍物位置
             
+            // 先处理普通方块的消除
             matches.forEach(match => {
                 match.forEach(pos => {
                     const cell = this.gameState.board[pos.row][pos.col];
-                    // 如果是障碍物，减少耐久度
-                    if (cell.durability > 1) {
+                    
+                    // 只处理普通方块的消除
+                    if (!this.isObstacle(cell.type) && cell.durability === 1) {
+                        cell.type = '';
+                        cell.special = null;
+                        scoreIncrease += 1; // 普通方块得分
+                    }
+                });
+            });
+            
+            // 然后处理障碍物的耐久度减少
+            matches.forEach(match => {
+                match.forEach(pos => {
+                    const cell = this.gameState.board[pos.row][pos.col];
+                    
+                    // 处理障碍物
+                    if (this.isObstacle(cell.type)) {
+                        // 记录障碍物位置，用于后续处理
+                        obstaclePositions.push(pos);
+                        
                         cell.durability--;
                         // 如果耐久度为0，消除障碍物
                         if (cell.durability <= 0) {
@@ -605,11 +645,6 @@ class WanhuaGame {
                             cell.durability = 1;
                             scoreIncrease += 5; // 障碍物消除奖励
                         }
-                    } else if (cell.durability === 1 && !this.isObstacle(cell.type)) {
-                        // 普通方块被完全消除
-                        cell.type = '';
-                        cell.special = null;
-                        scoreIncrease += 1; // 普通方块得分
                     }
                 });
             });
@@ -631,6 +666,9 @@ class WanhuaGame {
                 
                 // 更新UI
                 this.updateUI();
+                
+                // 重新绑定触摸事件，确保游戏可以继续
+                this.setupTouchEvents();
                 
                 // 检查是否还有自动匹配 - 减少延迟时间以提高响应速度
                 setTimeout(() => {
