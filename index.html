@@ -43,6 +43,7 @@
             font-weight: 800;
             margin-bottom: 15px;
             background: linear-gradient(to right, #6a11cb, #2575fc);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: 0 2px 10px rgba(106, 17, 203, 0.3);
@@ -96,38 +97,141 @@
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin: 20px 0;
+            gap: 15px;
+            margin: 25px 0;
         }
 
         .feature-card {
-            background: white;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
             border-radius: 15px;
-            padding: 15px 10px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(106, 17, 203, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 25px rgba(106, 17, 203, 0.25);
+            background: linear-gradient(135deg, #ffffff 0%, #f0f2ff 100%);
+        }
+
+        .feature-card.ranking {
+            background: linear-gradient(135deg, #fff9c4 0%, #ffd54f 100%);
+        }
+
+        .feature-card.ranking::before {
+            background: linear-gradient(to right, #fbc02d, #ff8f00);
+        }
+
+        .feature-card.achievements {
+            background: linear-gradient(135deg, #c8e6c9 0%, #81c784 100%);
+        }
+
+        .feature-card.achievements::before {
+            background: linear-gradient(to right, #388e3c, #1b5e20);
+        }
+
+        .feature-card.shop {
+            background: linear-gradient(135deg, #bbdefb 0%, #64b5f6 100%);
+        }
+
+        .feature-card.shop::before {
+            background: linear-gradient(to right, #1976d2, #0d47a1);
+        }
+
+        .feature-card.checkin {
+            background: linear-gradient(135deg, #ffcdd2 0%, #e57373 100%);
+        }
+
+        .feature-card.checkin::before {
+            background: linear-gradient(to right, #d32f2f, #b71c1c);
         }
 
         .feature-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
+            font-size: 32px;
+            margin-bottom: 12px;
+            text-align: center;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-card.ranking .feature-icon {
+            background: linear-gradient(to right, #fbc02d, #ff8f00);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-card.achievements .feature-icon {
+            background: linear-gradient(to right, #388e3c, #1b5e20);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-card.shop .feature-icon {
+            background: linear-gradient(to right, #1976d2, #0d47a1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-card.checkin .feature-icon {
+            background: linear-gradient(to right, #d32f2f, #b71c1c);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .feature-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: #333;
+            text-align: center;
         }
 
         .feature-desc {
-            font-size: 11px;
-            color: #666;
+            font-size: 12px;
+            color: #6a11cb;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .feature-card.ranking .feature-desc {
+            color: #f57f17;
+        }
+
+        .feature-card.achievements .feature-desc {
+            color: #1b5e20;
+        }
+
+        .feature-card.shop .feature-desc {
+            color: #0d47a1;
+        }
+
+        .feature-card.checkin .feature-desc {
+            color: #b71c1c;
         }
 
         /* 底部信息 */
@@ -209,6 +313,66 @@
             opacity: 0.8;
         }
 
+        /* 用户个人信息样式 */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #6a11cb;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-right: 15px;
+            font-size: 14px;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .user-id {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .user-coins {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .coin-icon {
+            margin-right: 5px;
+            font-size: 18px;
+        }
+
+        .coin-amount {
+            font-size: 18px;
+        }
+
         /* 游戏页面样式 */
         .game-page {
             display: none;
@@ -266,36 +430,42 @@
 
         .nav-buttons {
             display: flex;
-            gap: 6px;
+            gap: 8px;
         }
 
         .nav-button {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.9);
             border: none;
-            color: white;
-            width: 32px;
-            height: 32px;
+            color: #6a11cb;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
             position: relative;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: bold;
         }
 
         .nav-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
+            background: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .nav-button .button-label {
             position: absolute;
-            bottom: -18px;
-            font-size: 8px;
+            bottom: -20px;
+            font-size: 10px;
             white-space: nowrap;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         /* 游戏区域 */
@@ -535,6 +705,23 @@
             animation: modalAppear 0.3s ease;
             max-height: 90vh;
             overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-content.ranking-modal {
+            background: linear-gradient(135deg, #fff9c4 0%, #ffd54f 100%);
+        }
+
+        .modal-content.achievements-modal {
+            background: linear-gradient(135deg, #c8e6c9 0%, #81c784 100%);
+        }
+
+        .modal-content.shop-modal {
+            background: linear-gradient(135deg, #bbdefb 0%, #64b5f6 100%);
+        }
+
+        .modal-content.checkin-modal {
+            background: linear-gradient(135deg, #ffcdd2 0%, #e57373 100%);
         }
 
         .modal-header {
@@ -542,20 +729,66 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(106, 17, 203, 0.2);
+        }
+
+        .modal-content.ranking-modal .modal-header {
+            border-bottom: 2px solid rgba(245, 127, 23, 0.3);
+        }
+
+        .modal-content.achievements-modal .modal-header {
+            border-bottom: 2px solid rgba(27, 94, 32, 0.3);
+        }
+
+        .modal-content.shop-modal .modal-header {
+            border-bottom: 2px solid rgba(13, 71, 161, 0.3);
+        }
+
+        .modal-content.checkin-modal .modal-header {
+            border-bottom: 2px solid rgba(183, 28, 28, 0.3);
         }
 
         .modal-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             color: #6a11cb;
+        }
+
+        .modal-content.ranking-modal .modal-title {
+            color: #f57f17;
+        }
+
+        .modal-content.achievements-modal .modal-title {
+            color: #1b5e20;
+        }
+
+        .modal-content.shop-modal .modal-title {
+            color: #0d47a1;
+        }
+
+        .modal-content.checkin-modal .modal-title {
+            color: #b71c1c;
         }
 
         .close-button {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
             color: #999;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #666;
         }
 
         .modal-buttons {
@@ -591,97 +824,282 @@
         .tools-shop {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 15px;
             margin-top: 15px;
         }
 
         .tool-shop-item {
-            background: #f5f5f5;
+            background: white;
             border-radius: 15px;
-            padding: 12px;
+            padding: 15px 10px;
             text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(106, 17, 203, 0.1);
+        }
+
+        .tool-shop-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+        }
+
+        .tool-shop-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         .tool-shop-icon {
-            font-size: 30px;
+            font-size: 36px;
             margin-bottom: 8px;
         }
 
         .tool-shop-name {
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 5px;
-            font-size: 14px;
+            font-size: 15px;
+            color: #333;
         }
 
         .tool-shop-price {
             color: gold;
             font-weight: 700;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            background: linear-gradient(to right, #FFD700, #FFA500);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
+
+        .ranking-coins {
+            font-weight: 700;
+            color: gold;
+            font-size: 14px;
+            background: linear-gradient(to right, #FFD700, #FFA500);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 签到弹窗 */
+        .sign-in-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .sign-in-modal h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .sign-in-modal p {
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .sign-in-modal button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .sign-in-modal button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 隐藏滚动条 */
+        .sign-in-modal::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sign-in-modal {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
 
         /* 成就系统 */
         .achievements-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            gap: 15px;
             margin-top: 15px;
         }
 
         .achievement-item {
-            background: #f5f5f5;
-            border-radius: 10px;
-            padding: 10px;
+            background: white;
+            border-radius: 12px;
+            padding: 12px 8px;
             text-align: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(106, 17, 203, 0.1);
+        }
+
+        .achievement-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
         }
 
         .achievement-item.locked {
-            opacity: 0.5;
+            opacity: 0.6;
+            background: #f5f5f5;
+        }
+
+        .achievement-item.locked::before {
+            background: #ccc;
         }
 
         .achievement-icon {
-            font-size: 20px;
-            margin-bottom: 5px;
+            font-size: 24px;
+            margin-bottom: 8px;
         }
 
         .achievement-name {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
+            color: #333;
+        }
+
+        .achievement-item.locked .achievement-name {
+            color: #999;
         }
 
         /* 排行榜 */
+        .ranking-list {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .ranking-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .ranking-list::-webkit-scrollbar-thumb {
+            background: #6a11cb;
+            border-radius: 3px;
+        }
+
         .ranking-item {
             display: flex;
             align-items: center;
-            padding: 10px;
-            margin-bottom: 8px;
-            background: #f5f5f5;
-            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 12px;
             transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(106, 17, 203, 0.1);
         }
 
-        .ranking-item:first-child {
-            background: linear-gradient(to right, #ffd700, #ffa500);
-            color: white;
+        .ranking-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(to bottom, #6a11cb, #2575fc);
+        }
+
+        .ranking-item.top-1 {
+            background: linear-gradient(135deg, #fff9c4 0%, #ffd54f 100%);
+            box-shadow: 0 5px 15px rgba(245, 127, 23, 0.3);
+        }
+
+        .ranking-item.top-1::before {
+            background: linear-gradient(to bottom, #fbc02d, #ff8f00);
+        }
+
+        .ranking-item.top-2 {
+            background: linear-gradient(135deg, #e0e0e0 0%, #9e9e9e 100%);
+            box-shadow: 0 5px 15px rgba(158, 158, 158, 0.3);
+        }
+
+        .ranking-item.top-2::before {
+            background: linear-gradient(to bottom, #9e9e9e, #616161);
+        }
+
+        .ranking-item.top-3 {
+            background: linear-gradient(135deg, #ffcc80 0%, #ffa726 100%);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .ranking-item.top-3::before {
+            background: linear-gradient(to bottom, #fb8c00, #ef6c00);
         }
 
         .ranking-position {
-            font-weight: 700;
-            width: 25px;
+            font-weight: 800;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            font-size: 14px;
+        }
+
+        .ranking-item.top-1 .ranking-position {
+            background: linear-gradient(to right, #fbc02d, #ff8f00);
+        }
+
+        .ranking-item.top-2 .ranking-position {
+            background: linear-gradient(to right, #9e9e9e, #616161);
+        }
+
+        .ranking-item.top-3 .ranking-position {
+            background: linear-gradient(to right, #fb8c00, #ef6c00);
         }
 
         .ranking-avatar {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: linear-gradient(45deg, #ff9a9e, #fad0c4);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            margin: 0 8px;
-            font-size: 12px;
+            margin: 0 12px;
+            font-size: 16px;
+            color: #6a11cb;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .ranking-info {
@@ -690,13 +1108,85 @@
         }
 
         .ranking-name {
-            font-weight: 600;
-            font-size: 14px;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 3px;
+            color: #333;
         }
 
         .ranking-coins {
             font-weight: 700;
             color: gold;
+            font-size: 14px;
+            background: linear-gradient(to right, #FFD700, #FFA500);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 签到弹窗 */
+        .checkin-content {
+            padding: 15px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin: 15px 0;
+            border: 1px solid rgba(106, 17, 203, 0.1);
+        }
+
+        .checkin-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #b71c1c;
+            margin-bottom: 15px;
+        }
+
+        .checkin-info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .checkin-item {
+            text-align: center;
+        }
+
+        .checkin-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .checkin-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #b71c1c;
+        }
+
+        .checkin-reward {
+            background: linear-gradient(135deg, #ffcdd2 0%, #e57373 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            text-align: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .checkin-reward-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #b71c1c;
+            margin-bottom: 10px;
+        }
+
+        .checkin-reward-amount {
+            font-size: 24px;
+            font-weight: 800;
+            color: gold;
+            background: linear-gradient(to right, #FFD700, #FFA500);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         /* 响应式设计 */
@@ -822,6 +1312,21 @@
                 <div class="welcome-subtitle">挑战你的消除技巧，收集万花币，解锁成就</div>
             </div>
             
+            <!-- 添加个人信息区域 -->
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <div class="avatar-icon">玩家朋友</div>
+                </div>
+                <div class="user-details">
+                    <div class="user-name">玩家朋友</div>
+                    <div class="user-id">ID: <span id="user-id-display">-</span></div>
+                </div>
+                <div class="user-coins">
+                    <span class="coin-icon">🪙</span>
+                    <span class="coin-amount" id="home-user-coins">20</span>
+                </div>
+            </div>
+            
             <div class="game-stats">
                 <div class="stat-item">
                     <div class="stat-value">6000</div>
@@ -855,22 +1360,22 @@
             <button class="start-button" id="start-game">开始游戏</button>
             
             <div class="feature-grid">
-                <div class="feature-card" onclick="openModal('ranking-modal')">
+                <div class="feature-card ranking" onclick="openModal('ranking-modal')">
                     <div class="feature-icon">🏆</div>
                     <div class="feature-title">排行榜</div>
                     <div class="feature-desc">查看玩家排名</div>
                 </div>
-                <div class="feature-card" onclick="openModal('achievements-modal')">
+                <div class="feature-card achievements" onclick="openModal('achievements-modal')">
                     <div class="feature-icon">⭐</div>
                     <div class="feature-title">成就系统</div>
                     <div class="feature-desc">解锁游戏成就</div>
                 </div>
-                <div class="feature-card" onclick="openModal('shop-modal')">
+                <div class="feature-card shop" onclick="openModal('shop-modal')">
                     <div class="feature-icon">🛒</div>
                     <div class="feature-title">道具商店</div>
                     <div class="feature-desc">购买游戏道具</div>
                 </div>
-                <div class="feature-card" onclick="openModal('checkin-modal')">
+                <div class="feature-card checkin" onclick="openModal('checkin-modal')">
                     <div class="feature-icon">📅</div>
                     <div class="feature-title">每日签到</div>
                     <div class="feature-desc">领取签到奖励</div>
@@ -997,7 +1502,7 @@
 
     <!-- 道具商店弹窗 -->
     <div class="modal" id="shop-modal">
-        <div class="modal-content">
+        <div class="modal-content shop-modal">
             <div class="modal-header">
                 <div class="modal-title">道具商店</div>
                 <button class="close-button" onclick="closeModal('shop-modal')">&times;</button>
@@ -1049,18 +1554,37 @@
 
     <!-- 签到弹窗 -->
     <div class="modal" id="checkin-modal">
-        <div class="modal-content">
+        <div class="modal-content checkin-modal">
             <div class="modal-header">
                 <div class="modal-title">每日签到</div>
                 <button class="close-button" onclick="closeModal('checkin-modal')">&times;</button>
             </div>
-            <div class="modal-body">
-                <p>签到成功！</p>
-                <p>今日奖励：10 万花币</p>
-                <p>累计签到天数：5 天</p>
-                <p>连续签到天数：3 天</p>
-                <p>累计奖励：50 万花币</p>
-                <p>连续签到奖励：30 万花币</p>
+            <div class="checkin-content">
+                <div class="checkin-title">签到成功！</div>
+                <div class="checkin-reward">
+                    <div class="checkin-reward-text">今日签到奖励</div>
+                    <div class="checkin-reward-amount">10 万花币</div>
+                </div>
+                <div class="checkin-info">
+                    <div class="checkin-item">
+                        <div class="checkin-label">累计签到天数</div>
+                        <div class="checkin-value">5 天</div>
+                    </div>
+                    <div class="checkin-item">
+                        <div class="checkin-label">连续签到天数</div>
+                        <div class="checkin-value">3 天</div>
+                    </div>
+                </div>
+                <div class="checkin-info">
+                    <div class="checkin-item">
+                        <div class="checkin-label">累计奖励</div>
+                        <div class="checkin-value">50 万花币</div>
+                    </div>
+                    <div class="checkin-item">
+                        <div class="checkin-label">连续签到奖励</div>
+                        <div class="checkin-value">30 万花币</div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="action-button" onclick="closeModal('checkin-modal')">关闭</button>
@@ -1074,12 +1598,12 @@
 
     <!-- 排行榜弹窗 -->
     <div class="modal" id="ranking-modal">
-        <div class="modal-content">
+        <div class="modal-content ranking-modal">
             <div class="modal-header">
                 <div class="modal-title">月度排行榜</div>
                 <button class="close-button" onclick="closeModal('ranking-modal')">&times;</button>
             </div>
-            <div id="ranking-list">
+            <div class="ranking-list" id="ranking-list">
                 <!-- 排行榜将通过JavaScript生成 -->
             </div>
             <div class="footer-info" style="margin-top: 20px; font-size: 10px;">
@@ -1091,7 +1615,7 @@
 
     <!-- 成就系统弹窗 -->
     <div class="modal" id="achievements-modal">
-        <div class="modal-content">
+        <div class="modal-content achievements-modal">
             <div class="modal-header">
                 <div class="modal-title">成就系统</div>
                 <button class="close-button" onclick="closeModal('achievements-modal')">&times;</button>
@@ -1130,7 +1654,7 @@
                     <button type="submit" class="modal-button primary-button">提交申请</button>
                 </div>
             </form>
-            <div class="footer-info" style="margin-top: 20px; font-size: 10px;">
+            <div class="footer-info">
                 <p>本游戏由北京修车【万花楼】赞助；由 <a href="https://t.me/bjxc010" target="_blank">@bjxc010</a> 开发</p>
                 <p>© 2025 万花楼 - 消消乐 版权所有</p>
             </div>
@@ -1223,6 +1747,9 @@
             
             // 从数据库加载用户数据
             await loadUserData();
+            
+            // 更新用户信息显示
+            updateHomeUI();
             
             // 绑定首页事件
             document.getElementById('start-game').addEventListener('click', showGamePage);
@@ -1430,8 +1957,12 @@
         // 更新首页UI
         function updateHomeUI() {
             document.getElementById('home-coins').textContent = gameState.coins;
+            document.getElementById('home-user-coins').textContent = gameState.coins;
             document.getElementById('home-level').textContent = gameState.level;
             document.getElementById('home-achievements').textContent = achievements.filter(a => a.unlocked).length;
+            if (gameState.userId) {
+                document.getElementById('user-id-display').textContent = gameState.userId;
+            }
         }
 
         // 创建游戏板
@@ -1481,43 +2012,59 @@
             }
             
             // 根据关卡调整步数，使游戏更具挑战性
+            // 调整步数和目标分数的平衡性
             if (gameState.level <= 10) {
-                gameState.moves = 20; // 前10关20步
+                gameState.moves = 25; // 前10关25步
             } else if (gameState.level <= 30) {
-                gameState.moves = 18; // 11-30关18步
+                gameState.moves = 23; // 11-30关23步
             } else if (gameState.level <= 60) {
-                gameState.moves = 16; // 31-60关16步
+                gameState.moves = 21; // 31-60关21步
             } else if (gameState.level <= 100) {
-                gameState.moves = 15; // 61-100关15步
+                gameState.moves = 20; // 61-100关20步
             } else if (gameState.level <= 200) {
-                gameState.moves = 14; // 101-200关14步
+                gameState.moves = 19; // 101-200关19步
             } else if (gameState.level <= 500) {
-                gameState.moves = 13; // 201-500关13步
+                gameState.moves = 18; // 201-500关18步
             } else if (gameState.level <= 1000) {
-                gameState.moves = 12; // 501-1000关12步
+                gameState.moves = 17; // 501-1000关17步
             } else if (gameState.level <= 2000) {
-                gameState.moves = 11; // 1001-2000关11步
+                gameState.moves = 16; // 1001-2000关16步
             } else {
-                gameState.moves = 10; // 2001+关10步
+                gameState.moves = 15; // 2001+关15步
             }
             
-            // 随着关卡增加，提高目标分数，使增长更陡峭
-            gameState.targetScore = 500 + Math.floor(gameState.level * 40 * (1 + gameState.level * 0.1));
+            // 调整目标分数计算方式，使其与步数更匹配
+            // 使用更合理的公式来平衡步数和目标分数
+            gameState.targetScore = 300 + Math.floor(gameState.level * 25 * (1 + gameState.level * 0.05));
             
             // 随着关卡增加，减少每步时间
-            gameState.baseMoveTime = Math.max(4, 10 - Math.floor(gameState.level / 8));
+            gameState.baseMoveTime = Math.max(5, 12 - Math.floor(gameState.level / 12));
             gameState.moveTimeLeft = gameState.baseMoveTime;
         }
 
         // 渲染游戏板
         function renderBoard() {
             const boardElement = document.getElementById('game-board');
-            boardElement.innerHTML = '';
+            if (!boardElement) return;
+            
+            // 使用文档片段来减少重排次数
+            const fragment = document.createDocumentFragment();
+            const cells = boardElement.querySelectorAll('.game-cell');
+            let cellIndex = 0;
             
             for (let i = 0; i < BOARD_SIZE; i++) {
                 for (let j = 0; j < BOARD_SIZE; j++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'game-cell';
+                    let cell;
+                    // 重用现有的单元格元素，减少DOM操作
+                    if (cellIndex < cells.length) {
+                        cell = cells[cellIndex];
+                        // 清除之前的类和内容
+                        cell.className = 'game-cell';
+                        cell.textContent = '';
+                    } else {
+                        cell = document.createElement('div');
+                        cell.className = 'game-cell';
+                    }
                     
                     const cellData = gameState.board[i][j];
                     
@@ -1550,8 +2097,22 @@
                     
                     cell.dataset.row = i;
                     cell.dataset.col = j;
-                    boardElement.appendChild(cell);
+                    
+                    if (cellIndex >= cells.length) {
+                        fragment.appendChild(cell);
+                    }
+                    cellIndex++;
                 }
+            }
+            
+            // 删除多余的单元格
+            while (cells.length > cellIndex) {
+                cells[cells.length - 1].remove();
+            }
+            
+            // 只有在有新元素时才添加到DOM
+            if (fragment.childNodes.length > 0) {
+                boardElement.appendChild(fragment);
             }
         }
 
@@ -1788,7 +2349,7 @@
                 // 显示动画效果
                 animateMatches(matches);
                 
-                // 延迟更新界面
+                // 延迟更新界面 - 减少延迟时间以提高响应速度
                 setTimeout(() => {
                     // 填充空位
                     fillEmptyCells();
@@ -1799,7 +2360,7 @@
                     // 更新UI
                     updateUI();
                     
-                    // 检查是否还有自动匹配
+                    // 检查是否还有自动匹配 - 减少延迟时间以提高响应速度
                     setTimeout(() => {
                         if (hasMatches()) {
                             processMatches(); // 递归处理自动匹配
@@ -1807,8 +2368,8 @@
                             // 检查游戏是否结束
                             checkGameEnd();
                         }
-                    }, 500);
-                }, 500);
+                    }, 150); // 从500ms减少到150ms
+                }, 150); // 从500ms减少到150ms
             } else {
                 // 检查游戏是否结束
                 checkGameEnd();
@@ -1898,7 +2459,7 @@
             });
         }
 
-        // 填充空位
+        // 填充空位 - 优化此函数以提高性能
         function fillEmptyCells() {
             for (let j = 0; j < BOARD_SIZE; j++) {
                 let emptySpaces = 0;
@@ -1916,7 +2477,7 @@
                     }
                 }
                 
-                // 填充顶部的空位（不填充障碍物位置）
+                // 填充顶部的空位
                 for (let i = 0; i < emptySpaces; i++) {
                     if (gameState.board[i][j].type === '') {
                         gameState.board[i][j] = {
@@ -2025,7 +2586,7 @@
 
         // 执行魔法移动
         function performMagicMove() {
-            // 简化的魔法移动 - 寻找最佳消除位置
+            // 寻找最佳消除位置
             for (let i = 0; i < BOARD_SIZE; i++) {
                 for (let j = 0; j < BOARD_SIZE; j++) {
                     // 检查水平交换
@@ -2041,7 +2602,10 @@
                                 // 找到有效移动，执行消除
                                 gameState.moves--; // 使用魔法棒消耗一步
                                 updateUI();
-                                processMatches();
+                                // 使用较小的延迟来提高响应速度
+                                setTimeout(() => {
+                                    processMatches();
+                                }, 50);
                                 return;
                             }
                             // 换回来
@@ -2062,7 +2626,10 @@
                                 // 找到有效移动，执行消除
                                 gameState.moves--; // 使用魔法棒消耗一步
                                 updateUI();
-                                processMatches();
+                                // 使用较小的延迟来提高响应速度
+                                setTimeout(() => {
+                                    processMatches();
+                                }, 50);
                                 return;
                             }
                             // 换回来
@@ -2224,11 +2791,10 @@
                 if (gameState.moveTimeLeft <= 0) {
                     clearInterval(gameState.moveTimer);
                     gameState.moveTimer = null;
-                    // 自动执行一次随机移动或提示
-                    showFloatingText("时间到！步数-1", "#ff4757");
-                    gameState.moves--;
-                    updateUI();
-                    checkGameEnd();
+                    // 时间到提示，但不减少步数
+                    showFloatingText("时间到！请加快操作速度", "#ff4757");
+                    // 重启计时器
+                    resetMoveTimer();
                 }
             }, 1000);
         }
