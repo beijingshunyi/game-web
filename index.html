@@ -1360,25 +1360,30 @@
             <button class="start-button" id="start-game">开始游戏</button>
             
             <div class="feature-grid">
-                <div class="feature-card ranking" onclick="openModal('ranking-modal')">
+                <div class="feature-card" onclick="openModal('ranking-modal')">
                     <div class="feature-icon">🏆</div>
                     <div class="feature-title">排行榜</div>
                     <div class="feature-desc">查看玩家排名</div>
                 </div>
-                <div class="feature-card achievements" onclick="openModal('achievements-modal')">
+                <div class="feature-card" onclick="openModal('achievements-modal')">
                     <div class="feature-icon">⭐</div>
                     <div class="feature-title">成就系统</div>
                     <div class="feature-desc">解锁游戏成就</div>
                 </div>
-                <div class="feature-card shop" onclick="openModal('shop-modal')">
+                <div class="feature-card" onclick="openModal('shop-modal')">
                     <div class="feature-icon">🛒</div>
                     <div class="feature-title">道具商店</div>
                     <div class="feature-desc">购买游戏道具</div>
                 </div>
-                <div class="feature-card checkin" onclick="openModal('checkin-modal')">
+                <div class="feature-card" onclick="openModal('checkin-modal')">
                     <div class="feature-icon">📅</div>
                     <div class="feature-title">每日签到</div>
                     <div class="feature-desc">领取签到奖励</div>
+                </div>
+                <div class="feature-card" onclick="openModal('withdraw-modal')">
+                    <div class="feature-icon">💰</div>
+                    <div class="feature-title">提现</div>
+                    <div class="feature-desc">万花币提现</div>
                 </div>
             </div>
             
@@ -2120,6 +2125,15 @@
         function setupTouchEvents() {
             const board = document.getElementById('game-board');
             
+            // 清除已有的事件监听器，防止重复绑定
+            board.removeEventListener('touchstart', handleTouchStart);
+            board.removeEventListener('touchmove', handleTouchMove);
+            board.removeEventListener('touchend', handleTouchEnd);
+            board.removeEventListener('mousedown', handleMouseDown);
+            board.removeEventListener('mousemove', handleMouseMove);
+            board.removeEventListener('mouseup', handleMouseUp);
+            board.removeEventListener('mouseleave', handleMouseUp);
+            
             board.addEventListener('touchstart', handleTouchStart, { passive: false });
             board.addEventListener('touchmove', handleTouchMove, { passive: false });
             board.addEventListener('touchend', handleTouchEnd, { passive: false });
@@ -2360,6 +2374,9 @@
                     // 更新UI
                     updateUI();
                     
+                    // 重新绑定触摸事件，确保游戏可以继续
+                    setupTouchEvents();
+                    
                     // 检查是否还有自动匹配 - 减少延迟时间以提高响应速度
                     setTimeout(() => {
                         if (hasMatches()) {
@@ -2580,6 +2597,9 @@
                     // 更新游戏板
                     renderBoard();
                     board.removeEventListener('click', handler);
+                    
+                    // 重新绑定触摸事件，确保游戏可以继续
+                    setupTouchEvents();
                 }
             });
         }
@@ -2675,6 +2695,9 @@
             
             renderBoard();
             showFloatingText("棋盘已重新排列", "#2575fc");
+            
+            // 重新绑定触摸事件，确保游戏可以继续
+            setupTouchEvents();
         }
 
         // 获取道具名称
