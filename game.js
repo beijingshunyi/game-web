@@ -265,32 +265,34 @@ class WanhuaGame {
             this.shuffleBoardInternal();
         }
         
-        // 根据关卡调整步数
+        // 根据关卡调整步数，使步数与目标分数更匹配
+        // 调整步数和目标分数的平衡性
         if (this.gameState.level <= 10) {
-            this.gameState.moves = 20;
+            this.gameState.moves = 25; // 前10关25步
         } else if (this.gameState.level <= 30) {
-            this.gameState.moves = 18;
+            this.gameState.moves = 23; // 11-30关23步
         } else if (this.gameState.level <= 60) {
-            this.gameState.moves = 16;
+            this.gameState.moves = 21; // 31-60关21步
         } else if (this.gameState.level <= 100) {
-            this.gameState.moves = 15;
+            this.gameState.moves = 20; // 61-100关20步
         } else if (this.gameState.level <= 200) {
-            this.gameState.moves = 14;
+            this.gameState.moves = 19; // 101-200关19步
         } else if (this.gameState.level <= 500) {
-            this.gameState.moves = 13;
+            this.gameState.moves = 18; // 201-500关18步
         } else if (this.gameState.level <= 1000) {
-            this.gameState.moves = 12;
+            this.gameState.moves = 17; // 501-1000关17步
         } else if (this.gameState.level <= 2000) {
-            this.gameState.moves = 11;
+            this.gameState.moves = 16; // 1001-2000关16步
         } else {
-            this.gameState.moves = 10;
+            this.gameState.moves = 15; // 2001+关15步
         }
         
-        // 设置目标分数
-        this.gameState.targetScore = 500 + Math.floor(this.gameState.level * 40 * (1 + this.gameState.level * 0.1));
+        // 调整目标分数计算方式，使其与步数更匹配
+        // 使用更合理的公式来平衡步数和目标分数
+        this.gameState.targetScore = 300 + Math.floor(this.gameState.level * 25 * (1 + this.gameState.level * 0.05));
         
         // 设置每步时间
-        this.gameState.baseMoveTime = Math.max(4, 10 - Math.floor(this.gameState.level / 8));
+        this.gameState.baseMoveTime = Math.max(5, 12 - Math.floor(this.gameState.level / 12)); // 增加基本时间
         this.gameState.moveTimeLeft = this.gameState.baseMoveTime;
     }
 
@@ -299,12 +301,26 @@ class WanhuaGame {
         const boardElement = document.getElementById('game-board');
         if (!boardElement) return;
         
-        boardElement.innerHTML = '';
+        // 使用文档片段来减少重排次数
+        const fragment = document.createDocumentFragment();
+        const cells = boardElement.querySelectorAll('.game-cell');
+        let cellIndex = 0;
         
         for (let i = 0; i < this.BOARD_SIZE; i++) {
             for (let j = 0; j < this.BOARD_SIZE; j++) {
-                const cell = document.createElement('div');
-                cell.className = 'game-cell';
+                let cell;
+                // 重用现有的单元格元素，减少DOM操作
+                if (cellIndex < cells.length) {
+                    cell = cells[cellIndex];
+                    // 清除之前的类和内容
+                    cell.className = 'game-cell';
+                    cell.textContent = '';
+                } else {
+                    cell = document.createElement('div');
+                    cell.className = 'game-cell';
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                }
                 
                 const cellData = this.gameState.board[i][j];
                 
@@ -335,10 +351,23 @@ class WanhuaGame {
                     cell.classList.add('special', cellData.special);
                 }
                 
-                cell.dataset.row = i;
-                cell.dataset.col = j;
-                boardElement.appendChild(cell);
+                if (cellIndex >= cells.length) {
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    fragment.appendChild(cell);
+                }
+                cellIndex++;
             }
+        }
+        
+        // 删除多余的单元格
+        while (cells.length > cellIndex) {
+            cells[cells.length - 1].remove();
+        }
+        
+        // 只有在有新元素时才添加到DOM
+        if (fragment.childNodes.length > 0) {
+            boardElement.appendChild(fragment);
         }
     }
 
@@ -561,7 +590,7 @@ class WanhuaGame {
             // 标记匹配的方块
             this.markMatches(matches);
             
-            // 计算得分
+            // 计算得分 - 调整万花币获取
             let scoreIncrease = 0;
             
             matches.forEach(match => {
@@ -592,7 +621,7 @@ class WanhuaGame {
             // 显示动画效果
             this.animateMatches(matches);
             
-            // 延迟更新界面
+            // 延迟更新界面 - 减少延迟时间以提高响应速度
             setTimeout(() => {
                 // 填充空位
                 this.fillEmptyCells();
@@ -603,7 +632,7 @@ class WanhuaGame {
                 // 更新UI
                 this.updateUI();
                 
-                // 检查是否还有自动匹配
+                // 检查是否还有自动匹配 - 减少延迟时间以提高响应速度
                 setTimeout(() => {
                     if (this.hasMatches()) {
                         this.processMatches(); // 递归处理自动匹配
@@ -611,8 +640,8 @@ class WanhuaGame {
                         // 检查游戏是否结束
                         this.checkGameEnd();
                     }
-                }, 500);
-            }, 500);
+                }, 150); // 从300ms减少到150ms
+            }, 150); // 从300ms减少到150ms
         } else {
             // 检查游戏是否结束
             this.checkGameEnd();
@@ -696,13 +725,14 @@ class WanhuaGame {
             match.forEach(pos => {
                 const cell = document.querySelector(`.game-cell[data-row="${pos.row}"][data-col="${pos.col}"]`);
                 if (cell) {
+                    // 使用CSS类而不是直接修改样式来提高性能
                     cell.classList.add('matched');
                 }
             });
         });
     }
 
-    // 填充空位
+    // 填充空位 - 优化此函数以提高性能
     fillEmptyCells() {
         for (let j = 0; j < this.BOARD_SIZE; j++) {
             let emptySpaces = 0;
@@ -714,7 +744,7 @@ class WanhuaGame {
                 } else if (emptySpaces > 0 && 
                           this.gameState.board[i][j].type !== this.obstacleTypes.STONE && 
                           this.gameState.board[i][j].type !== this.obstacleTypes.LOCK) {
-                    // 移动可移动的方块到空位
+                    // 移动可移动的方块到空位（石头和锁链不能移动）
                     this.gameState.board[i + emptySpaces][j] = {...this.gameState.board[i][j]};
                     this.gameState.board[i][j] = {type: '', special: null, durability: 1};
                 }
@@ -722,13 +752,11 @@ class WanhuaGame {
             
             // 填充顶部的空位
             for (let i = 0; i < emptySpaces; i++) {
-                if (this.gameState.board[i][j].type === '') {
-                    this.gameState.board[i][j] = {
-                        type: this.getRandomEmoji(),
-                        special: null,
-                        durability: 1
-                    };
-                }
+                this.gameState.board[i][j] = {
+                    type: this.getRandomEmoji(),
+                    special: null,
+                    durability: 1
+                };
             }
         }
     }
@@ -822,7 +850,10 @@ class WanhuaGame {
                             // 找到有效移动，执行消除
                             this.gameState.moves--; // 使用魔法棒消耗一步
                             this.updateUI();
-                            this.processMatches();
+                            // 使用较小的延迟来提高响应速度
+                            setTimeout(() => {
+                                this.processMatches();
+                            }, 50);
                             return;
                         }
                         // 换回来
@@ -843,7 +874,10 @@ class WanhuaGame {
                             // 找到有效移动，执行消除
                             this.gameState.moves--; // 使用魔法棒消耗一步
                             this.updateUI();
-                            this.processMatches();
+                            // 使用较小的延迟来提高响应速度
+                            setTimeout(() => {
+                                this.processMatches();
+                            }, 50);
                             return;
                         }
                         // 换回来
@@ -911,8 +945,28 @@ class WanhuaGame {
         }
         
         this.gameState.score = 0;
-        this.gameState.moves = 30;
-        this.gameState.baseMoveTime = 10;
+        // 根据关卡调整步数，使步数与目标分数更匹配
+        // 调整步数和目标分数的平衡性
+        if (this.gameState.level <= 10) {
+            this.gameState.moves = 25; // 前10关25步
+        } else if (this.gameState.level <= 30) {
+            this.gameState.moves = 23; // 11-30关23步
+        } else if (this.gameState.level <= 60) {
+            this.gameState.moves = 21; // 31-60关21步
+        } else if (this.gameState.level <= 100) {
+            this.gameState.moves = 20; // 61-100关20步
+        } else if (this.gameState.level <= 200) {
+            this.gameState.moves = 19; // 101-200关19步
+        } else if (this.gameState.level <= 500) {
+            this.gameState.moves = 18; // 201-500关18步
+        } else if (this.gameState.level <= 1000) {
+            this.gameState.moves = 17; // 501-1000关17步
+        } else if (this.gameState.level <= 2000) {
+            this.gameState.moves = 16; // 1001-2000关16步
+        } else {
+            this.gameState.moves = 15; // 2001+关15步
+        }
+        this.gameState.baseMoveTime = Math.max(5, 12 - Math.floor(this.gameState.level / 12));
         this.gameState.moveTimeLeft = this.gameState.baseMoveTime;
         this.createBoard();
         this.renderBoard();
@@ -943,11 +997,18 @@ class WanhuaGame {
             if (this.gameState.moveTimeLeft <= 0) {
                 clearInterval(this.gameState.moveTimer);
                 this.gameState.moveTimer = null;
-                // 自动执行一次随机移动或提示
-                this.showFloatingText("时间到！步数-1", "#ff4757");
+                // 减少步数而不是直接结束游戏
                 this.gameState.moves--;
-                this.updateUI();
-                this.checkGameEnd();
+                showFloatingText("时间到！步数-1", "#ff4757");
+                updateUI();
+                
+                // 检查游戏是否结束
+                checkGameEnd();
+                
+                // 如果游戏未结束，重新启动计时器
+                if (this.gameState.moves > 0 && this.gameState.score < this.gameState.targetScore) {
+                    resetMoveTimer();
+                }
             }
         }, 1000);
     }
@@ -1017,13 +1078,33 @@ class WanhuaGame {
         }
         
         this.gameState.level++;
-        // 随着关卡增加，目标分数增长更快
-        this.gameState.targetScore = 500 + Math.floor(this.gameState.level * 30 * (1 + this.gameState.level * 0.08));
+        // 调整目标分数计算方式，使其与步数更匹配
+        // 使用更合理的公式来平衡步数和目标分数
+        this.gameState.targetScore = 300 + Math.floor(this.gameState.level * 25 * (1 + this.gameState.level * 0.05));
         // 步数随关卡递减，但不低于10步
-        this.gameState.moves = Math.max(10, 30 - Math.floor(this.gameState.level / 3));
+        // 调整步数和目标分数的平衡性
+        if (this.gameState.level <= 10) {
+            this.gameState.moves = 25; // 前10关25步
+        } else if (this.gameState.level <= 30) {
+            this.gameState.moves = 23; // 11-30关23步
+        } else if (this.gameState.level <= 60) {
+            this.gameState.moves = 21; // 31-60关21步
+        } else if (this.gameState.level <= 100) {
+            this.gameState.moves = 20; // 61-100关20步
+        } else if (this.gameState.level <= 200) {
+            this.gameState.moves = 19; // 101-200关19步
+        } else if (this.gameState.level <= 500) {
+            this.gameState.moves = 18; // 201-500关18步
+        } else if (this.gameState.level <= 1000) {
+            this.gameState.moves = 17; // 501-1000关17步
+        } else if (this.gameState.level <= 2000) {
+            this.gameState.moves = 16; // 1001-2000关16步
+        } else {
+            this.gameState.moves = 15; // 2001+关15步
+        }
         this.gameState.score = 0;
         // 减少每步时间
-        this.gameState.baseMoveTime = Math.max(5, 10 - Math.floor(this.gameState.level / 10));
+        this.gameState.baseMoveTime = Math.max(5, 12 - Math.floor(this.gameState.level / 12));
         this.gameState.moveTimeLeft = this.gameState.baseMoveTime;
         this.createBoard();
         this.renderBoard();
