@@ -1,5 +1,5 @@
 // -------------------------- 配置项（关键！替换为你的 Worker 域名） --------------------------
-const API_BASE_URL = "https://你的Worker域名"; // 例如：https://telegram-config-api.yourname.workers.dev
+const API_BASE_URL = "https://wanhua-game.bingkuijing.workers.dev/; // 例如：https://telegram-config-api.yourname.workers.dev
 // ---------------------------------------------------------------------------------------------
 
 // 页面加载完成后执行初始化
