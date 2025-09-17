@@ -3,476 +3,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telegram消息监控系统</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-  
-  <!-- 配置Tailwind -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#3B82F6',
-            secondary: '#10B981',
-            danger: '#EF4444',
-            dark: '#1E293B',
-            light: '#F8FAFC'
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-          },
-        },
-      }
-    }
-  </script>
-  
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .content-auto {
-        content-visibility: auto;
-      }
-      .card-shadow {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-      }
-      .gradient-bg {
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-      }
-    }
-  </style>
+  <title>Telegram 监听配置管理后台</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- 引入图标库（按钮图标用，无需额外下载） -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen">
-  <!-- 导航栏 -->
-  <nav class="gradient-bg text-white shadow-md">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <div class="flex items-center space-x-2">
-        <i class="fa fa-telegram text-2xl"></i>
-        <h1 class="text-xl font-bold">Telegram消息监控系统</h1>
+<body>
+  <div class="container">
+    <!-- 标题区域 -->
+    <header>
+      <h1>📱 Telegram 监听配置管理</h1>
+      <p class="subtitle">轻松管理关键词和自动回复话术</p>
+    </header>
+
+    <!-- 关键词管理卡片 -->
+    <section class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-tags"></i> 监听关键词管理</h2>
+        <p>添加/删除/启用关键词，系统会监听含这些关键词的群消息</p>
       </div>
-      <div class="flex items-center space-x-4">
-        <span id="system-status" class="flex items-center">
-          <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-          <span>运行中</span>
-        </span>
-        <button id="refresh-btn" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded-md transition">
-          <i class="fa fa-refresh mr-1"></i>刷新
+      
+      <!-- 添加关键词区域 -->
+      <div class="keyword-add">
+        <input type="text" id="newKeywordInput" placeholder="输入新关键词（如“通州”“大兴”）" maxlength="20">
+        <button id="addKeywordBtn" class="btn primary-btn">
+          <i class="fas fa-plus"></i> 添加关键词
         </button>
       </div>
-    </div>
-  </nav>
+      
+      <!-- 关键词列表表格 -->
+      <div class="table-container">
+        <table id="keywordsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>关键词</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 关键词数据将通过 JS 动态加载 -->
+            <tr class="loading-row">
+              <td colspan="4">加载中... <i class="fas fa-spinner fa-spin"></i></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- 主内容区 -->
-  <main class="container mx-auto px-4 py-8">
-    <!-- 状态卡片 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-white rounded-xl p-6 card-shadow">
-        <div class="flex justify-between items-start mb-4">
-          <div>
-            <p class="text-gray-500 text-sm">总消息数</p>
-            <h3 id="total-messages" class="text-3xl font-bold">0</h3>
-          </div>
-          <div class="bg-blue-100 p-3 rounded-lg">
-            <i class="fa fa-comments text-primary text-xl"></i>
-          </div>
-        </div>
-        <div class="text-sm text-green-600 flex items-center">
-          <i class="fa fa-arrow-up mr-1"></i>
-          <span id="message-increase">0%</span>
-        </div>
+    <!-- 回复话术管理卡片 -->
+    <section class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-comment-dots"></i> 自动回复话术管理</h2>
+        <p>编辑向用户发送的私信内容，支持表情包和换行</p>
       </div>
       
-      <div class="bg-white rounded-xl p-6 card-shadow">
-        <div class="flex justify-between items-start mb-4">
-          <div>
-            <p class="text-gray-500 text-sm">已回复消息</p>
-            <h3 id="replied-messages" class="text-3xl font-bold">0</h3>
-          </div>
-          <div class="bg-green-100 p-3 rounded-lg">
-            <i class="fa fa-reply text-secondary text-xl"></i>
-          </div>
-        </div>
-        <div class="text-sm text-gray-500">
-          <span>占总消息比例: </span>
-          <span id="reply-rate">0%</span>
-        </div>
-      </div>
-      
-      <div class="bg-white rounded-xl p-6 card-shadow">
-        <div class="flex justify-between items-start mb-4">
-          <div>
-            <p class="text-gray-500 text-sm">活跃用户</p>
-            <h3 id="active-users" class="text-3xl font-bold">0</h3>
-          </div>
-          <div class="bg-purple-100 p-3 rounded-lg">
-            <i class="fa fa-users text-purple-600 text-xl"></i>
-          </div>
-        </div>
-        <div class="text-sm text-gray-500">
-          <span>最近24小时新增: </span>
-          <span id="new-users">0</span>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 图表和消息列表 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- 消息趋势图表 -->
-      <div class="lg:col-span-1 bg-white rounded-xl p-6 card-shadow">
-        <h2 class="text-lg font-semibold mb-4">消息趋势</h2>
-        <div class="h-64">
-          <canvas id="messageChart"></canvas>
-        </div>
-      </div>
-      
-      <!-- 最近消息 -->
-      <div class="lg:col-span-2 bg-white rounded-xl p-6 card-shadow">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold">最近消息</h2>
-          <div class="relative">
-            <input type="text" id="message-filter" placeholder="搜索消息..." 
-                  class="pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-            <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-          </div>
-        </div>
-        
-        <div class="overflow-y-auto max-h-80" id="recent-messages">
-          <!-- 消息列表将通过JavaScript动态填充 -->
-          <div class="text-center text-gray-500 py-10">
-            <i class="fa fa-spinner fa-spin text-2xl mb-2"></i>
-            <p>加载消息中...</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 配置区域 -->
-    <div class="mt-8 bg-white rounded-xl p-6 card-shadow">
-      <h2 class="text-lg font-semibold mb-4">系统配置</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h3 class="font-medium mb-3">关键字设置</h3>
-          <div id="keywords-list" class="flex flex-wrap gap-2 mb-4">
-            <!-- 关键字将通过JavaScript动态填充 -->
-          </div>
-          <div class="flex">
-            <input type="text" id="new-keyword" placeholder="添加新关键字..." 
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-            <button id="add-keyword" class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-primary/90 transition">
-              添加
-            </button>
-          </div>
-        </div>
-        
-        <div>
-          <h3 class="font-medium mb-3">回复消息设置</h3>
-          <textarea id="reply-message" rows="6" 
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                   placeholder="设置自动回复消息..."></textarea>
-          <button id="save-reply" class="mt-3 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition">
-            保存设置
+      <!-- 回复话术编辑器 -->
+      <div class="reply-editor">
+        <textarea 
+          id="replyContentTextarea" 
+          rows="12" 
+          placeholder="输入自动回复话术（支持换行，可添加表情包如🎉🔧）"
+        ></textarea>
+        <div class="editor-actions">
+          <button id="saveReplyBtn" class="btn success-btn">
+            <i class="fas fa-save"></i> 保存回复话术
           </button>
+          <span id="replySaveStatus" class="status-text"></span>
         </div>
       </div>
-    </div>
-  </main>
+    </section>
 
-  <!-- 页脚 -->
-  <footer class="bg-dark text-white mt-12 py-6">
-    <div class="container mx-auto px-4 text-center">
-      <p>Telegram消息监控系统 &copy; 2023</p>
-      <p class="text-gray-400 text-sm mt-1">基于Cloudflare Worker和Supabase构建</p>
-    </div>
-  </footer>
+    <!-- 底部信息 -->
+    <footer>
+      <p>配置管理后台 | 数据同步自 Supabase 数据库</p>
+    </footer>
+  </div>
 
-  <!-- JavaScript -->
-  <script>
-    // 配置
-    const SUPABASE_URL = 'https://ylnfjlltesnlfanrxfoy.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDc0MjMsImV4cCI6MjA3MTY4MzQyM30.czuQwYoFd7Ew9f-PBaojhsWJkXrBEtkqTRdhfX-DWFk';
-    const WORKER_URL = 'https://wanhua-game.bingkuijing.workers.dev/';
-    
-    // 初始化Supabase客户端
-    const supabase = {
-      url: SUPABASE_URL,
-      key: SUPABASE_KEY,
-      async fetch(path, options = {}) {
-        const url = `${this.url}/rest/v1${path}`;
-        const headers = {
-          'apikey': this.key,
-          'Authorization': `Bearer ${this.key}`,
-          'Content-Type': 'application/json'
-        };
-        
-        return fetch(url, { ...options, headers });
-      }
-    };
-    
-    // 消息图表
-    let messageChart;
-    
-    // 初始化图表
-    const initChart = () => {
-      const ctx = document.getElementById('messageChart').getContext('2d');
-      messageChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            label: '消息数量',
-            data: [],
-            borderColor: '#3B82F6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            tension: 0.3,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                precision: 0
-              }
-            }
-          }
-        }
-      });
-    };
-    
-    // 更新统计数据
-    const updateStats = async () => {
-      try {
-        // 获取总消息数
-        const totalResponse = await supabase.fetch('/messages?select=count(*)', { method: 'GET' });
-        const totalData = await totalResponse.json();
-        const totalMessages = totalData[0].count;
-        document.getElementById('total-messages').textContent = totalMessages;
-        
-        // 获取已回复消息数
-        const repliedResponse = await supabase.fetch('/messages?has_replied=eq.true&select=count(*)', { method: 'GET' });
-        const repliedData = await repliedResponse.json();
-        const repliedMessages = repliedData[0].count;
-        document.getElementById('replied-messages').textContent = repliedMessages;
-        
-        // 计算回复率
-        const replyRate = totalMessages > 0 ? Math.round((repliedMessages / totalMessages) * 100) : 0;
-        document.getElementById('reply-rate').textContent = `${replyRate}%`;
-        
-        // 获取活跃用户数
-        const usersResponse = await supabase.fetch('/messages?select=user_id,username&group=user_id', { method: 'GET' });
-        const usersData = await usersResponse.json();
-        document.getElementById('active-users').textContent = usersData.length;
-        
-        // 更新图表数据
-        updateChartData();
-        
-      } catch (error) {
-        console.error('更新统计数据失败:', error);
-      }
-    };
-    
-    // 更新图表数据
-    const updateChartData = async () => {
-      try {
-        // 获取最近7天的消息数据
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const formattedDate = sevenDaysAgo.toISOString().split('T')[0];
-        
-        const response = await supabase.fetch(
-          `/messages?timestamp=gte.${formattedDate}&select=date_trunc('day', timestamp) as day, count(*) as count&group=day&order=day.asc`,
-          { method: 'GET' }
-        );
-        
-        const data = await response.json();
-        
-        // 准备图表数据
-        const labels = data.map(item => {
-          const date = new Date(item.day);
-          return `${date.getMonth() + 1}/${date.getDate()}`;
-        });
-        
-        const counts = data.map(item => item.count);
-        
-        // 更新图表
-        messageChart.data.labels = labels;
-        messageChart.data.datasets[0].data = counts;
-        messageChart.update();
-        
-      } catch (error) {
-        console.error('更新图表数据失败:', error);
-      }
-    };
-    
-    // 加载最近消息
-    const loadRecentMessages = async () => {
-      try {
-        const response = await supabase.fetch(
-          '/messages?order=timestamp.desc&limit=10',
-          { method: 'GET' }
-        );
-        
-        const messages = await response.json();
-        const messagesContainer = document.getElementById('recent-messages');
-        
-        if (messages.length === 0) {
-          messagesContainer.innerHTML = `
-            <div class="text-center text-gray-500 py-10">
-              <p>暂无消息记录</p>
-            </div>
-          `;
-          return;
-        }
-        
-        // 生成消息列表HTML
-        let messagesHTML = '';
-        messages.forEach(msg => {
-          const date = new Date(msg.timestamp);
-          const formattedDate = date.toLocaleString();
-          
-          messagesHTML += `
-            <div class="border-b border-gray-100 py-3 last:border-0">
-              <div class="flex justify-between items-start">
-                <div class="font-medium">${msg.username || `用户${msg.user_id}`}</div>
-                <div class="text-xs text-gray-500">${formattedDate}</div>
-              </div>
-              <div class="mt-1 text-gray-700">${msg.message}</div>
-              <div class="mt-2 flex items-center">
-                <span class="text-xs ${msg.has_replied ? 'text-green-600' : 'text-gray-500'}">
-                  ${msg.has_replied ? '已回复' : '未回复'}
-                </span>
-                ${containsKeyword(msg.message) ? 
-                  '<span class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">含关键字</span>' : ''}
-              </div>
-            </div>
-          `;
-        });
-        
-        messagesContainer.innerHTML = messagesHTML;
-        
-      } catch (error) {
-        console.error('加载最近消息失败:', error);
-        document.getElementById('recent-messages').innerHTML = `
-          <div class="text-center text-red-500 py-10">
-            <p>加载消息失败，请重试</p>
-          </div>
-        `;
-      }
-    };
-    
-    // 检查消息是否包含关键字
-    const containsKeyword = (message) => {
-      // 更新为新的关键字列表
-      const keywords = [
-        '北京', '北京中小', '北京小姐', '朝阳', '海淀', '丰台', 
-        '顺义', '房山', '东城', '西城', '昌平', '石景山', '北京外围'
-      ];
-      if (!message) return false;
-      const lowerMessage = message.toLowerCase();
-      return keywords.some(keyword => lowerMessage.includes(keyword.toLowerCase()));
-    };
-    
-    // 加载关键字列表
-    const loadKeywords = () => {
-      // 更新为新的关键字列表
-      const keywords = [
-        '北京', '北京中小', '北京小姐', '朝阳', '海淀', '丰台', 
-        '顺义', '房山', '东城', '西城', '昌平', '石景山', '北京外围'
-      ];
-      const keywordsContainer = document.getElementById('keywords-list');
-      
-      keywordsContainer.innerHTML = '';
-      keywords.forEach((keyword, index) => {
-        const keywordElement = document.createElement('div');
-        keywordElement.className = 'bg-blue-50 text-primary px-3 py-1 rounded-full text-sm flex items-center';
-        keywordElement.innerHTML = `
-          ${keyword}
-          <button class="ml-1 text-primary/70 hover:text-primary" data-index="${index}">
-            <i class="fa fa-times"></i>
-          </button>
-        `;
-        keywordsContainer.appendChild(keywordElement);
-      });
-      
-      // 添加删除关键字事件
-      document.querySelectorAll('#keywords-list button').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const index = e.target.closest('button').dataset.index;
-          alert(`关键字 "${keywords[index]}" 将被删除`);
-          loadKeywords(); // 重新加载列表
-        });
-      });
-    };
-    
-    // 初始化页面
-    const initPage = () => {
-      initChart();
-      updateStats();
-      loadRecentMessages();
-      loadKeywords();
-      
-      // 设置带表情的默认回复消息
-      document.getElementById('reply-message').value = `您好呀！👋 看到您提到了北京相关的内容，给您推荐一个北京车主们都在关注的优质社群集合——北京修车【万花楼】！🚗💨
-
-这里有各种实用的修车相关群组，涵盖作业信息、公开榜单、老师签到、认证信息、狼友交流和黑车投诉等多个方面，无论您是想了解修车知识、交流经验还是反馈问题，都能找到对应的社群哦！😉
-
-一键关注所有群组很方便哦：
-https://t.me/addlist/iP3W6rxTdbQ1YzFh
-
-也可以直接加入感兴趣的群组：
-- 北京修车【万花楼】出击作业：@bjxczhuoye
-- 北京修车【万花楼】公开榜：@bjxcgongkaibang
-- 北京修车【万花楼】老师签到群：@bjxcqiandao
-- 北京修车【万花楼】老师认证榜：@bjxcrengzheng
-- 北京修车【万花楼】狼友交流群：@bjxclangyou
-- 北京修车【万花楼】黑车投诉榜：@bjxctoushu
-
-如果您想了解上榜相关事宜，欢迎联系@bjxc010 咨询详情，期待您的加入哦！😊`;
-      
-      // 添加事件监听器
-      document.getElementById('refresh-btn').addEventListener('click', () => {
-        updateStats();
-        loadRecentMessages();
-      });
-      
-      document.getElementById('add-keyword').addEventListener('click', () => {
-        const newKeyword = document.getElementById('new-keyword').value.trim();
-        if (newKeyword) {
-          alert(`关键字 "${newKeyword}" 将被添加`);
-          document.getElementById('new-keyword').value = '';
-          loadKeywords(); // 重新加载列表
-        }
-      });
-      
-      document.getElementById('save-reply').addEventListener('click', () => {
-        const replyMessage = document.getElementById('reply-message').value.trim();
-        if (replyMessage) {
-          alert('回复消息已保存');
-        }
-      });
-      
-      document.getElementById('message-filter').addEventListener('input', (e) => {
-        const filterText = e.target.value.toLowerCase();
-        console.log('过滤消息:', filterText);
-      });
-      
-      // 每30秒自动刷新数据
-      setInterval(() => {
-        updateStats();
-        loadRecentMessages();
-      }, 30000);
-    };
-    
-    // 页面加载完成后初始化
-    window.addEventListener('DOMContentLoaded', initPage);
-  </script>
+  <!-- 引入交互逻辑 -->
+  <script src="script.js"></script>
 </body>
 </html>
