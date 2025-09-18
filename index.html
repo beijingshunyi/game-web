@@ -587,7 +587,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Telegram 【万花楼】监听控制系统</h1>
+            <h1>Telegram【万花楼】监听控制系统</h1>
             <div class="status-indicator">
                 <div class="status-dot" id="statusDot"></div>
                 <span id="statusText">检查状态中...</span>
@@ -1062,7 +1062,11 @@
                     showToast('关键词更新成功', 'success');
                 } else {
                     const error = await response.json();
-                    showToast(`更新失败: ${error.error}`, 'danger');
+                    if (response.status === 404) {
+                        showToast('更新失败: 关键词不存在', 'danger');
+                    } else {
+                        showToast(`更新失败: ${error.error}`, 'danger');
+                    }
                 }
             } catch (error) {
                 console.error('更新关键词失败:', error);
@@ -1087,7 +1091,11 @@
                     showToast('关键词删除成功', 'success');
                 } else {
                     const error = await response.json();
-                    showToast(`删除失败: ${error.error}`, 'danger');
+                    if (response.status === 404) {
+                        showToast('删除失败: 关键词不存在', 'danger');
+                    } else {
+                        showToast(`删除失败: ${error.error}`, 'danger');
+                    }
                 }
             } catch (error) {
                 console.error('删除关键词失败:', error);
@@ -1212,7 +1220,11 @@
                     showToast('群组更新成功', 'success');
                 } else {
                     const error = await response.json();
-                    showToast(`更新失败: ${error.error}`, 'danger');
+                    if (response.status === 404) {
+                        showToast('更新失败: 群组不存在', 'danger');
+                    } else {
+                        showToast(`更新失败: ${error.error}`, 'danger');
+                    }
                 }
             } catch (error) {
                 console.error('更新群组失败:', error);
@@ -1237,7 +1249,11 @@
                     showToast('群组删除成功', 'success');
                 } else {
                     const error = await response.json();
-                    showToast(`删除失败: ${error.error}`, 'danger');
+                    if (response.status === 404) {
+                        showToast('删除失败: 群组不存在', 'danger');
+                    } else {
+                        showToast(`删除失败: ${error.error}`, 'danger');
+                    }
                 }
             } catch (error) {
                 console.error('删除群组失败:', error);
