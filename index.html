@@ -1,1002 +1,761 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram监听系统管理</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telegram Telegram监控管理系统</title>
+  <!-- 引入 Element Plus CSS 和图标 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus@2.7.0/dist/index.css">
+  <script src="https://unpkg.com/element-plus@2.7.0/dist/index.full.min.js"></script>
+  <script src="https://unpkg.com/axios@1.6.8/dist/axios.min.js"></script>
+  <!-- 配置 Tailwind 自定义样式 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#409EFF',
+            sidebar: '#272E3B',
+            sidebarActive: '#1F2530'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .sidebar-item {
+        @apply flex items-center px-4 py-3 text-white hover:bg-sidebarActive cursor-pointer transition-colors;
+      }
+      .sidebar-item-active {
+        @apply bg-sidebarActive border-l-4 border-primary;
+      }
+      .card-header {
+        @apply flex justify-between items-center mb-4;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <nav class="bg-blue-600 text-white shadow-md">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-xl font-bold">Telegram监听系统</h1>
-            <div id="status-indicator" class="flex items-center">
-                <span id="status-text" class="mr-2">未连接</span>
-                <span id="status-dot" class="w-3 h-3 rounded-full bg-red-500"></span>
-            </div>
-        </div>
-    </nav>
+<body class="flex h-screen overflow-hidden">
+  <!-- 侧边栏 -->
+  <div class="w-64 bg-sidebar flex-shrink-0">
+    <div class="p-4 text-white text-xl font-bold border-b border-gray-700">
+      监控管理系统
+    </div>
+    <div class="mt-4">
+      <div class="sidebar-item sidebar-item-active" data-page="dashboard">
+        <i class="el-icon-menu mr-3"></i>
+        <span>仪表盘</span>
+      </div>
+      <div class="sidebar-item" data-page="monitorLogs">
+        <i class="el-icon-document mr-3"></i>
+        <span>监控日志</span>
+      </div>
+      <div class="sidebar-item" data-page="sendRecords">
+        <i class="el-icon-message mr-3"></i>
+        <span>发送记录</span>
+      </div>
+      <div class="sidebar-item" data-page="keywords">
+        <i class="el-icon-setting mr-3"></i>
+        <span>关键词管理</span>
+      </div>
+      <div class="sidebar-item" data-page="groups">
+        <i class="el-icon-user-group mr-3"></i>
+        <span>群组管理</span>
+      </div>
+      <div class="sidebar-item" data-page="system">
+        <i class="el-icon-cog mr-3"></i>
+        <span>系统配置</span>
+      </div>
+    </div>
+  </div>
 
-    <div class="container mx-auto px-4 py-6">
-        <div class="flex flex-wrap -mx-4">
-            <!-- 侧边栏 -->
-            <div class="w-full md:w-1/4 px-4 mb-6 md:mb-0">
-                <div class="bg-white rounded-lg shadow-md p-4">
-                    <ul class="space-y-2">
-                        <li>
-                            <a href="#dashboard" class="nav-link block p-2 hover:bg-blue-100 rounded-md active">
-                                <i class="fa fa-tachometer mr-2"></i>仪表盘
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#keywords" class="nav-link block p-2 hover:bg-blue-100 rounded-md">
-                                <i class="fa fa-tags mr-2"></i>关键词管理
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#responses" class="nav-link block p-2 hover:bg-blue-100 rounded-md">
-                                <i class="fa fa-reply mr-2"></i>回复内容
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#channels" class="nav-link block p-2 hover:bg-blue-100 rounded-md">
-                                <i class="fa fa-sitemap mr-2"></i>频道管理
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#logs" class="nav-link block p-2 hover:bg-blue-100 rounded-md">
-                                <i class="fa fa-history mr-2"></i>监听日志
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#settings" class="nav-link block p-2 hover:bg-blue-100 rounded-md">
-                                <i class="fa fa-cog mr-2"></i>系统设置
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- 主内容区 -->
-            <div class="w-full md:w-3/4 px-4">
-                <!-- 仪表盘 -->
-                <div id="dashboard-section" class="bg-white rounded-lg shadow-md p-6 mb-6">
-                    <h2 class="text-2xl font-bold mb-6">仪表盘</h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div class="bg-blue-50 p-4 rounded-lg">
-                            <h3 class="text-blue-600 font-semibold mb-2">活跃关键词</h3>
-                            <p id="keyword-count" class="text-3xl font-bold">0</p>
-                        </div>
-                        <div class="bg-green-50 p-4 rounded-lg">
-                            <h3 class="text-green-600 font-semibold mb-2">监控频道</h3>
-                            <p id="channel-count" class="text-3xl font-bold">0</p>
-                        </div>
-                        <div class="bg-purple-50 p-4 rounded-lg">
-                            <h3 class="text-purple-600 font-semibold mb-2">今日回复</h3>
-                            <p id="response-count" class="text-3xl font-bold">0</p>
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-4">最近活动</h3>
-                        <div id="recent-activity" class="space-y-3 max-h-60 overflow-y-auto">
-                            <!-- 活动内容将通过JS加载 -->
-                            <p class="text-gray-500 italic">加载中...</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-lg font-semibold mb-4">回复统计</h3>
-                        <canvas id="response-chart" height="200"></canvas>
-                    </div>
-                </div>
-
-                <!-- 关键词管理 -->
-                <div id="keywords-section" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">关键词管理</h2>
-                        <button id="add-keyword-btn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                            <i class="fa fa-plus mr-1"></i> 添加关键词
-                        </button>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="px-4 py-3 text-left">关键词</th>
-                                    <th class="px-4 py-3 text-left">添加时间</th>
-                                    <th class="px-4 py-3 text-left">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="keywords-table-body">
-                                <!-- 关键词内容将通过JS加载 -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- 回复内容 -->
-                <div id="responses-section" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
-                    <h2 class="text-2xl font-bold mb-6">回复内容管理</h2>
-                    
-                    <div class="mb-6">
-                        <textarea id="response-content" class="w-full p-3 border border-gray-300 rounded-md h-60" placeholder="输入回复内容..."></textarea>
-                    </div>
-                    
-                    <button id="save-response-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                        <i class="fa fa-save mr-1"></i> 保存回复内容
-                    </button>
-                </div>
-
-                <!-- 频道管理 -->
-                <div id="channels-section" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">频道管理</h2>
-                        <button id="add-channel-btn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                            <i class="fa fa-plus mr-1"></i> 添加频道
-                        </button>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="px-4 py-3 text-left">频道用户名</th>
-                                    <th class="px-4 py-3 text-left">状态</th>
-                                    <th class="px-4 py-3 text-left">添加时间</th>
-                                    <th class="px-4 py-3 text-left">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="channels-table-body">
-                                <!-- 频道内容将通过JS加载 -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- 监听日志 -->
-                <div id="logs-section" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">监听日志</h2>
-                        <div>
-                            <input type="text" id="log-search" placeholder="搜索..." class="px-3 py-1 border border-gray-300 rounded-md">
-                            <button id="clear-logs-btn" class="bg-red-600 text-white px-4 py-1 rounded-md hover:bg-red-700 ml-2">
-                                <i class="fa fa-trash mr-1"></i> 清空日志
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="px-4 py-3 text-left">时间</th>
-                                    <th class="px-4 py-3 text-left">频道</th>
-                                    <th class="px-4 py-3 text-left">用户</th>
-                                    <th class="px-4 py-3 text-left">关键词</th>
-                                    <th class="px-4 py-3 text-left">状态</th>
-                                </tr>
-                            </thead>
-                            <tbody id="logs-table-body">
-                                <!-- 日志内容将通过JS加载 -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="mt-4 flex justify-between">
-                        <button id="prev-page" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50" disabled>
-                            <i class="fa fa-chevron-left mr-1"></i> 上一页
-                        </button>
-                        <span id="page-info">第 1 页</span>
-                        <button id="next-page" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">
-                            下一页 <i class="fa fa-chevron-right ml-1"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 系统设置 -->
-                <div id="settings-section" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
-                    <h2 class="text-2xl font-bold mb-6">系统设置</h2>
-                    
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-gray-700 mb-2">监听频率 (秒)</label>
-                            <input type="number" id="check-interval" class="w-full p-2 border border-gray-300 rounded-md" min="1" value="5">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-gray-700 mb-2">相同用户再次回复间隔 (分钟)</label>
-                            <input type="number" id="user-cooldown" class="w-full p-2 border border-gray-300 rounded-md" min="1" value="60">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-gray-700 mb-2">最大日志保留天数</label>
-                            <input type="number" id="log-retention" class="w-full p-2 border border-gray-300 rounded-md" min="1" value="30">
-                        </div>
-                        
-                        <button id="save-settings-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                            <i class="fa fa-save mr-1"></i> 保存设置
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- 主内容区 -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- 顶部导航 -->
+    <div class="h-14 border-b border-gray-200 flex justify-end items-center px-6">
+      <el-dropdown>
+        <span class="flex items-center cursor-pointer text-gray-700">
+          <i class="el-icon-user mr-2"></i>
+          <span>管理员</span>
+          <i class="el-icon-arrow-down ml-2"></i>
+        </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item>个人中心</el-dropdown-item>
+            <el-dropdown-item>退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
 
-    <!-- 模态框 -->
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-            <h3 id="modal-title" class="text-xl font-bold mb-4">添加关键词</h3>
-            <div id="modal-content">
-                <input type="text" id="modal-input" class="w-full p-2 border border-gray-300 rounded-md mb-4" placeholder="输入内容...">
+    <!-- 内容区域 -->
+    <div class="flex-1 overflow-auto p-6">
+      <!-- 仪表盘页面 -->
+      <div id="dashboard" class="page-content">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+          <!-- 今日日志卡片 -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <p class="text-gray-500 text-sm">今日监控日志</p>
+                <h3 id="todayLogs" class="text-3xl font-bold mt-1">0</h3>
+              </div>
+              <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary">
+                <i class="el-icon-document"></i>
+              </div>
             </div>
-            <div class="flex justify-end space-x-2">
-                <button id="modal-cancel" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">取消</button>
-                <button id="modal-save" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">保存</button>
+            <div class="text-sm text-green-500">
+              <i class="el-icon-arrow-up"></i> 12% 较昨日
             </div>
-        </div>
-    </div>
+          </div>
 
-    <script>
-        // 配置
-        const SUPABASE_URL = 'https://ylnfjlltesnlfanrxfoy.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbmZqbGx0ZXNubGZhbnJ4Zm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMDc0MjMsImV4cCI6MjA3MTY4MzQyM30.czuQwYoFd7Ew9f-PBaojhsWJkXrBEtkqTRdhfX-DWFk';
-        const WORKER_URL = 'https://wanhua-game.bingkuijing.workers.dev/';
+          <!-- 今日发送卡片 -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <p class="text-gray-500 text-sm">今日发送私信</p>
+                <h3 id="todaySends" class="text-3xl font-bold mt-1">0</h3>
+              </div>
+              <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-500">
+                <i class="el-icon-message"></i>
+              </div>
+            </div>
+            <div class="text-sm text-green-500">
+              <i class="el-icon-arrow-up"></i> 8% 较昨日
+            </div>
+          </div>
+
+          <!-- 启用关键词卡片 -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <p class="text-gray-500 text-sm">启用关键词</p>
+                <h3 id="activeKeywords" class="text-3xl font-bold mt-1">0</h3>
+              </div>
+              <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500">
+                <i class="el-icon-tags"></i>
+              </div>
+            </div>
+            <div class="text-sm text-gray-500">
+              共 <span id="totalKeywords">0</span> 个关键词
+            </div>
+          </div>
+
+          <!-- 启用群组卡片 -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <p class="text-gray-500 text-sm">启用监控群组</p>
+                <h3 id="activeGroups" class="text-3xl font-bold mt-1">0</h3>
+              </div>
+              <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
+                <i class="el-icon-user-group"></i>
+              </div>
+            </div>
+            <div class="text-sm text-gray-500">
+              共 <span id="totalGroups">0</span> 个群组
+            </div>
+          </div>
+        </div>
+
+        <!-- 最近日志表格 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="card-header">
+            <h2 class="text-lg font-semibold">最近监控日志</h2>
+            <el-button type="text" size="small" id="refreshDashboard">
+              <i class="el-icon-refresh"></i> 刷新
+            </el-button>
+          </div>
+          <el-table id="recentLogsTable" border :data="[]" style="width: 100%">
+            <el-table-column prop="created_at" label="时间" width="180"></el-table-column>
+            <el-table-column prop="group_id" label="群组ID" width="140"></el-table-column>
+            <el-table-column prop="user_id" label="用户ID" width="140"></el-table-column>
+            <el-table-column prop="matched_keywords" label="匹配关键词"></el-table-column>
+            <el-table-column prop="message" label="消息内容" show-overflow-tooltip></el-table-column>
+          </el-table>
+        </div>
+      </div>
+
+      <!-- 监控日志页面 -->
+      <div id="monitorLogs" class="page-content hidden">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="card-header">
+            <h2 class="text-lg font-semibold">监控日志管理</h2>
+            <div class="flex items-center">
+              <el-input 
+                v-model="logSearch" 
+                placeholder="搜索消息内容" 
+                size="small" 
+                style="width: 240px; margin-right: 10px;"
+                @keyup.enter="fetchMonitorLogs"
+              ></el-input>
+              <el-button type="primary" size="small" @click="fetchMonitorLogs">
+                <i class="el-icon-search"></i> 搜索
+              </el-button>
+            </div>
+          </div>
+          <el-table id="monitorLogsTable" border :data="[]" style="width: 100%; margin-bottom: 16px;">
+            <el-table-column prop="id" label="ID" width="180"></el-table-column>
+            <el-table-column prop="created_at" label="时间" width="180"></el-table-column>
+            <el-table-column prop="group_id" label="群组ID" width="140"></el-table-column>
+            <el-table-column prop="user_id" label="用户ID" width="140"></el-table-column>
+            <el-table-column prop="matched_keywords" label="匹配关键词"></el-table-column>
+            <el-table-column prop="message" label="消息内容" show-overflow-tooltip></el-table-column>
+          </el-table>
+          <el-pagination
+            id="logPagination"
+            @size-change="handleLogSizeChange"
+            @current-change="handleLogCurrentChange"
+            :current-page="1"
+            :page-sizes="[10, 20, 50]"
+            :page-size="10"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="0"
+          ></el-pagination>
+        </div>
+      </div>
+
+      <!-- 发送记录页面 -->
+      <div id="sendRecords" class="page-content hidden">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="card-header">
+            <h2 class="text-lg font-semibold">私信发送记录</h2>
+            <el-button type="text" size="small" @click="fetchSendRecords">
+              <i class="el-icon-refresh"></i> 刷新
+            </el-button>
+          </div>
+          <el-table id="sendRecordsTable" border :data="[]" style="width: 100%; margin-bottom: 16px;">
+            <el-table-column prop="id" label="ID" width="180"></el-table-column>
+            <el-table-column prop="created_at" label="发送时间" width="180"></el-table-column>
+            <el-table-column prop="group_id" label="来源群组" width="140"></el-table-column>
+            <el-table-column prop="user_id" label="接收用户" width="140"></el-table-column>
+            <el-table-column prop="status" label="状态">
+              <template #default="scope">
+                <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'">
+                  {{ scope.row.status === 'success' ? '发送成功' : '发送失败' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="message" label="发送内容" show-overflow-tooltip></el-table-column>
+          </el-table>
+        </div>
+      </div>
+
+      <!-- 关键词管理页面 -->
+      <div id="keywords" class="page-content hidden">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="card-header">
+            <h2 class="text-lg font-semibold">关键词管理</h2>
+            <el-button type="primary" size="small" @click="openAddKeywordDialog">
+              <i class="el-icon-plus"></i> 添加关键词
+            </el-button>
+          </div>
+          <el-table id="keywordsTable" border :data="[]" style="width: 100%; margin-bottom: 16px;">
+            <el-table-column prop="id" label="ID" width="180"></el-table-column>
+            <el-table-column prop="keyword" label="关键词" width="200"></el-table-column>
+            <el-table-column prop="is_active" label="状态">
+              <template #default="scope">
+                <el-switch 
+                  v-model="scope.row.is_active" 
+                  active-color="#13ce66" 
+                  inactive-color="#ff4949"
+                  @change="updateKeywordStatus(scope.row)"
+                ></el-switch>
+              </template>
+            </el-table-column>
+            <el-table-column prop="created_at" label="创建时间" width="180"></el-table-column>
+            <el-table-column label="操作" width="120">
+              <template #default="scope">
+                <el-button 
+                  type="text" 
+                  size="small" 
+                  @click="deleteKeyword(scope.row.id)"
+                  style="color: #ff4949;"
+                >
+                  <i class="el-icon-delete"></i> 删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+
+      <!-- 群组管理页面 -->
+      <div id="groups" class="page-content hidden">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="card-header">
+            <h2 class="text-lg font-semibold">群组管理</h2>
+            <el-button type="primary" size="small" @click="openAddGroupDialog">
+              <i class="el-icon-plus"></i> 添加群组
+            </el-button>
+          </div>
+          <el-table id="groupsTable" border :data="[]" style="width: 100%; margin-bottom: 16px;">
+            <el-table-column prop="id" label="ID" width="180"></el-table-column>
+            <el-table-column prop="group_id" label="群组ID" width="180"></el-table-column>
+            <el-table-column prop="group_name" label="群组名称"></el-table-column>
+            <el-table-column prop="is_active" label="监控状态">
+              <template #default="scope">
+                <el-switch 
+                  v-model="scope.row.is_active" 
+                  active-color="#13ce66" 
+                  inactive-color="#ff4949"
+                  @change="updateGroupStatus(scope.row)"
+                ></el-switch>
+              </template>
+            </el-table-column>
+            <el-table-column prop="created_at" label="添加时间" width="180"></el-table-column>
+          </el-table>
+        </div>
+      </div>
+
+      <!-- 系统配置页面 -->
+      <div id="system" class="page-content hidden">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="card-header">
+            <h2 class="text-lg font-semibold">系统配置</h2>
+            <el-button type="primary" size="small" @click="saveSystemConfig">
+              <i class="el-icon-save"></i> 保存配置
+            </el-button>
+          </div>
+          <el-form id="systemConfigForm" :model="systemConfig" label-width="160px" style="width: 600px;">
+            <el-form-item label="Telegram API ID">
+              <el-input v-model="systemConfig.telegram_api_id"></el-input>
+            </el-form-item>
+            <el-form-item label="Telegram API HASH">
+              <el-input v-model="systemConfig.telegram_api_hash"></el-input>
+            </el-form-item>
+            <el-form-item label="Telegram 账号ID">
+              <el-input v-model="systemConfig.telegram_account_id"></el-input>
+            </el-form-item>
+            <el-form-item label="Worker API 地址">
+              <el-input v-model="systemConfig.worker_api_url" placeholder="https://xxx.workers.dev/api"></el-input>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加关键词弹窗 -->
+  <el-dialog title="添加关键词" id="addKeywordDialog" width="30%" :visible.sync="addKeywordVisible">
+    <el-form :model="newKeyword" label-width="80px">
+      <el-form-item label="关键词">
+        <el-input v-model="newKeyword.keyword" placeholder="请输入要监控的关键词"></el-input>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="addKeywordVisible = false">取消</el-button>
+      <el-button type="primary" @click="addKeyword">确定</el-button>
+    </template>
+  </el-dialog>
+
+  <!-- 添加群组弹窗 -->
+  <el-dialog title="添加群组" id="addGroupDialog" width="30%" :visible.sync="addGroupVisible">
+    <el-form :model="newGroup" label-width="80px">
+      <el-form-item label="群组ID">
+        <el-input v-model="newGroup.group_id" placeholder="请输入群组ID（负数）"></el-input>
+      </el-form-item>
+      <el-form-item label="群组名称">
+        <el-input v-model="newGroup.group_name" placeholder="请输入群组名称"></el-input>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="addGroupVisible = false">取消</el-button>
+      <el-button type="primary" @click="addGroup">确定</el-button>
+    </template>
+  </el-dialog>
+
+  <script>
+    // 全局配置
+    const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev/api';
+    let currentPage = 'dashboard';
+    
+    // 全局状态
+    const state = {
+      // 分页参数
+      logPage: 1,
+      logPageSize: 10,
+      logTotal: 0,
+      logSearch: '',
+      
+      // 弹窗状态
+      addKeywordVisible: false,
+      addGroupVisible: false,
+      
+      // 表单数据
+      newKeyword: { keyword: '' },
+      newGroup: { group_id: '', group_name: '未知群组' },
+      systemConfig: {}
+    };
+
+    // 初始化 Element Plus 组件
+    document.addEventListener('DOMContentLoaded', () => {
+      // 初始化分页组件
+      state.logPagination = window.ElMessageBox.MessageBox.$refs.logPagination;
+      
+      // 侧边栏切换事件
+      document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.addEventListener('click', () => {
+          // 切换激活状态
+          document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('sidebar-item-active'));
+          item.classList.add('sidebar-item-active');
+          
+          // 切换页面内容
+          const page = item.getAttribute('data-page');
+          currentPage = page;
+          document.querySelectorAll('.page-content').forEach(content => content.classList.add('hidden'));
+          document.getElementById(page).classList.remove('hidden');
+          
+          // 加载对应页面数据
+          loadPageData(page);
+        });
+      });
+
+      // 初始化仪表盘数据
+      loadPageData('dashboard');
+
+      // 绑定刷新按钮事件
+      document.getElementById('refreshDashboard').addEventListener('click', () => {
+        loadPageData('dashboard');
+      });
+    });
+
+    // 加载页面数据
+    async function loadPageData(page) {
+      try {
+        switch(page) {
+          case 'dashboard':
+            await loadDashboardData();
+            break;
+          case 'monitorLogs':
+            await fetchMonitorLogs();
+            break;
+          case 'sendRecords':
+            await fetchSendRecords();
+            break;
+          case 'keywords':
+            await fetchKeywords();
+            break;
+          case 'groups':
+            await fetchGroups();
+            break;
+          case 'system':
+            await fetchSystemConfig();
+            break;
+        }
+      } catch (error) {
+        window.ElMessageBox.MessageBox.error(`加载数据失败: ${error.message}`);
+      }
+    }
+
+    // 1. 加载仪表盘数据
+    async function loadDashboardData() {
+      // 获取今日日志数
+      const logRes = await axios.get(`${API_BASE_URL}/logs/monitor?limit=10`);
+      const logs = logRes.data.logs;
+      const totalLogs = logRes.data.total;
+      
+      // 获取发送记录
+      const sendRes = await axios.get(`${API_BASE_URL}/logs/send`);
+      const sends = sendRes.data;
+      
+      // 获取关键词
+      const keywordRes = await axios.get(`${API_BASE_URL}/config/keywords`);
+      const keywords = keywordRes.data;
+      const activeKeywords = keywords.filter(k => k.is_active).length;
+      
+      // 获取群组
+      const groupRes = await axios.get(`${API_BASE_URL}/config/groups`);
+      const groups = groupRes.data;
+      const activeGroups = groups.filter(g => g.is_active).length;
+      
+      // 更新DOM
+      document.getElementById('todayLogs').textContent = totalLogs;
+      document.getElementById('todaySends').textContent = sends.length;
+      document.getElementById('activeKeywords').textContent = activeKeywords;
+      document.getElementById('totalKeywords').textContent = keywords.length;
+      document.getElementById('activeGroups').textContent = activeGroups;
+      document.getElementById('totalGroups').textContent = groups.length;
+      
+      // 更新最近日志表格
+      const logsTable = document.getElementById('recentLogsTable');
+      window.ElTable.Table.setProps(logsTable, { data: logs });
+    }
+
+    // 2. 获取监控日志
+    async function fetchMonitorLogs() {
+      try {
+        const res = await axios.get(
+          `${API_BASE_URL}/logs/monitor?page=${state.logPage}&limit=${state.logPageSize}` +
+          (state.logSearch ? `&search=${state.logSearch}` : '')
+        );
         
-        // Supabase客户端
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const logs = res.data.logs;
+        state.logTotal = res.data.total;
         
-        // 当前页码
-        let currentPage = 1;
-        const itemsPerPage = 20;
+        // 更新表格和分页
+        const logsTable = document.getElementById('monitorLogsTable');
+        window.ElTable.Table.setProps(logsTable, { data: logs });
         
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            // 初始化导航
-            initNavigation();
-            
-            // 加载仪表盘数据
-            loadDashboardData();
-            
-            // 初始化图表
-            initChart();
-            
-            // 检查系统状态
-            checkSystemStatus();
-            
-            // 设置定时刷新
-            setInterval(() => {
-                checkSystemStatus();
-                loadDashboardData();
-            }, 10000);
-            
-            // 绑定事件处理程序
-            bindEventHandlers();
+        const pagination = document.getElementById('logPagination');
+        window.ElPagination.Pagination.setProps(pagination, {
+          currentPage: state.logPage,
+          pageSize: state.logPageSize,
+          total: state.logTotal
+        });
+      } catch (error) {
+        window.ElMessageBox.MessageBox.error(`获取日志失败: ${error.message}`);
+      }
+    }
+
+    // 日志分页事件
+    function handleLogSizeChange(val) {
+      state.logPageSize = val;
+      fetchMonitorLogs();
+    }
+
+    function handleLogCurrentChange(val) {
+      state.logPage = val;
+      fetchMonitorLogs();
+    }
+
+    // 3. 获取发送记录
+    async function fetchSendRecords() {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/logs/send`);
+        const records = res.data;
+        
+        // 更新表格
+        const recordsTable = document.getElementById('sendRecordsTable');
+        window.ElTable.Table.setProps(recordsTable, { data: records });
+      } catch (error) {
+        window.ElMessageBox.MessageBox.error(`获取发送记录失败: ${error.message}`);
+      }
+    }
+
+    // 4. 获取关键词列表
+    async function fetchKeywords() {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/config/keywords`);
+        const keywords = res.data;
+        
+        // 更新表格
+        const keywordsTable = document.getElementById('keywordsTable');
+        window.ElTable.Table.setProps(keywordsTable, { data: keywords });
+      } catch (error) {
+        window.ElMessageBox.MessageBox.error(`获取关键词失败: ${error.message}`);
+      }
+    }
+
+    // 添加关键词
+    function openAddKeywordDialog() {
+      state.addKeywordVisible = true;
+      state.newKeyword.keyword = '';
+      // 显示弹窗
+      const dialog = document.getElementById('addKeywordDialog');
+      window.ElDialog.Dialog.setProps(dialog, { visible: true });
+    }
+
+    async function addKeyword() {
+      if (!state.newKeyword.keyword.trim()) {
+        window.ElMessageBox.MessageBox.warning('请输入关键词');
+        return;
+      }
+      
+      try {
+        await axios.post(`${API_BASE_URL}/config/keywords`, {
+          keyword: state.newKeyword.keyword.trim(),
+          is_active: true
         });
         
-        // 初始化导航
-        function initNavigation() {
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    
-                    // 更新活跃状态
-                    navLinks.forEach(l => l.classList.remove('active', 'bg-blue-100'));
-                    link.classList.add('active', 'bg-blue-100');
-                    
-                    // 显示对应区域
-                    const targetId = link.getAttribute('href').substring(1);
-                    document.querySelectorAll('div[id$="-section"]').forEach(section => {
-                        section.classList.add('hidden');
-                    });
-                    document.getElementById(`${targetId}-section`).classList.remove('hidden');
-                    
-                    // 加载对应数据
-                    if (targetId === 'keywords') loadKeywords();
-                    if (targetId === 'responses') loadResponse();
-                    if (targetId === 'channels') loadChannels();
-                    if (targetId === 'logs') loadLogs();
-                    if (targetId === 'settings') loadSettings();
-                });
+        // 关闭弹窗并刷新列表
+        state.addKeywordVisible = false;
+        const dialog = document.getElementById('addKeywordDialog');
+        window.ElDialog.Dialog.setProps(dialog, { visible: false });
+        fetchKeywords();
+        
+        window.ElMessageBox.MessageBox.success('关键词添加成功');
+      } catch (error) {
+        window.ElMessageBox.MessageBox.error(`添加关键词失败: ${error.message}`);
+      }
+    }
+
+    // 更新关键词状态
+    async function updateKeywordStatus(keyword) {
+      try {
+        await axios.patch(`${API_BASE_URL}/config/keywords`, {
+          id: keyword.id,
+          is_active: keyword.is_active
+        });
+      } catch (error) {
+        // 回滚状态
+        keyword.is_active = !keyword.is_active;
+        window.ElMessageBox.MessageBox.error(`更新关键词状态失败: ${error.message}`);
+      }
+    }
+
+    // 删除关键词
+    async function deleteKeyword(id) {
+      try {
+        await window.ElMessageBox.MessageBox.confirm(
+          '确定要删除该关键词吗？',
+          '提示',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        );
+        
+        await axios.delete(`${API_BASE_URL}/config/keywords?id=${id}`);
+        fetchKeywords();
+        window.ElMessageBox.MessageBox.success('关键词删除成功');
+      } catch (error) {
+        if (error.name !== 'Cancel') {
+          window.ElMessageBox.MessageBox.error(`删除关键词失败: ${error.message}`);
+        }
+      }
+    }
+
+    // 5. 获取群组列表
+    async function fetchGroups() {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/config/groups`);
+        const groups = res.data;
+        
+        // 更新表格
+        const groupsTable = document.getElementById('groupsTable');
+        window.ElTable.Table.setProps(groupsTable, { data: groups });
+      } catch (error) {
+        window.ElMessageBox.MessageBox.error(`获取群组失败: ${error.message}`);
+      }
+    }
+
+    // 添加群组
+    function openAddGroupDialog() {
+      state.addGroupVisible = true;
+      state.newGroup.group_id = '';
+      state.newGroup.group_name = '未知群组';
+      // 显示弹窗
+      const dialog = document.getElementById('addGroupDialog');
+      window.ElDialog.Dialog.setProps(dialog, { visible: true });
+    }
+
+    async function addGroup() {
+      if (!state.newGroup.group_id.trim() || isNaN(Number(state.newGroup.group_id))) {
+        window.ElMessageBox.MessageBox.warning('请输入有效的群组ID（数字）');
+        return;
+      }
+      
+      try {
+        await axios.post(`${API_BASE_URL}/config/groups`, {
+          group_id: Number(state.newGroup.group_id.trim()),
+          group_name: state.newGroup.group_name.trim() || '未知群组',
+          is_active: true
+        });
+        
+        // 关闭弹窗并刷新列表
+        state.addGroupVisible = false;
+        const dialog = document.getElementById('addGroupDialog');
+        window.ElDialog.Dialog.setProps(dialog, { visible: false });
+        fetchGroups();
+        
+        window.ElMessageBox.MessageBox.success('群组添加成功');
+      } catch (error) {
+        window.ElMessageBox.MessageBox.error(`添加群组失败: ${error.message}`);
+      }
+    }
+
+    // 更新群组状态
+    async function updateGroupStatus(group) {
+      try {
+        await axios.patch(`${API_BASE_URL}/config/groups`, {
+          id: group.id,
+          is_active: group.is_active
+        });
+      } catch (error) {
+        // 回滚状态
+        group.is_active = !group.is_active;
+        window.ElMessageBox.MessageBox.error(`更新群组状态失败: ${error.message}`);
+      }
+    }
+
+    // 6. 获取系统配置
+    async function fetchSystemConfig() {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/config/system`);
+        const configList = res.data;
+        
+        // 转换为键值对
+        const config = {};
+        configList.forEach(item => {
+          config[item.config_key] = item.config_value;
+        });
+        
+        // 设置默认值
+        config.worker_api_url = config.worker_api_url || API_BASE_URL;
+        state.systemConfig = config;
+        
+        // 更新表单
+        const form = document.getElementById('systemConfigForm');
+        window.ElForm.Form.setProps(form, { model: state.systemConfig });
+      } catch (error) {
+        window.ElMessageBox.MessageBox.error(`获取系统配置失败: ${error.message}`);
+      }
+    }
+
+    // 保存系统配置
+    async function saveSystemConfig() {
+      try {
+        // 转换为数组格式
+        const configList = Object.entries(state.systemConfig).map(([key, value]) => ({
+          config_key: key,
+          config_value: value
+        }));
+        
+        // 批量更新
+        for (const config of configList) {
+          const res = await axios.get(`${API_BASE_URL}/config/system?config_key=${config.config_key}`);
+          if (res.data.length > 0) {
+            await axios.patch(`${API_BASE_URL}/config/system`, {
+              id: res.data[0].id,
+              config_value: config.config_value
             });
+          }
         }
         
-        // 绑定事件处理程序
-        function bindEventHandlers() {
-            // 添加关键词按钮
-            document.getElementById('add-keyword-btn').addEventListener('click', () => {
-                openModal('添加关键词', 'keyword');
-            });
-            
-            // 添加频道按钮
-            document.getElementById('add-channel-btn').addEventListener('click', () => {
-                openModal('添加频道', 'channel');
-            });
-            
-            // 保存回复按钮
-            document.getElementById('save-response-btn').addEventListener('click', saveResponse);
-            
-            // 保存设置按钮
-            document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
-            
-            // 清空日志按钮
-            document.getElementById('clear-logs-btn').addEventListener('click', clearLogs);
-            
-            // 模态框取消按钮
-            document.getElementById('modal-cancel').addEventListener('click', closeModal);
-            
-            // 模态框保存按钮
-            document.getElementById('modal-save').addEventListener('click', saveModalData);
-            
-            // 日志分页按钮
-            document.getElementById('prev-page').addEventListener('click', () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    loadLogs();
-                }
-            });
-            
-            document.getElementById('next-page').addEventListener('click', () => {
-                currentPage++;
-                loadLogs();
-            });
-            
-            // 日志搜索
-            document.getElementById('log-search').addEventListener('input', (e) => {
-                currentPage = 1;
-                loadLogs(e.target.value);
-            });
-        }
-        
-        // 打开模态框
-        function openModal(title, type) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-input').value = '';
-            document.getElementById('modal').dataset.type = type;
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal-input').focus();
-        }
-        
-        // 关闭模态框
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-        }
-        
-        // 保存模态框数据
-        function saveModalData() {
-            const type = document.getElementById('modal').dataset.type;
-            const value = document.getElementById('modal-input').value.trim();
-            
-            if (!value) {
-                alert('请输入内容');
-                return;
-            }
-            
-            if (type === 'keyword') {
-                addKeyword(value);
-            } else if (type === 'channel') {
-                addChannel(value);
-            }
-            
-            closeModal();
-        }
-        
-        // 检查系统状态
-        async function checkSystemStatus() {
-            try {
-                const response = await fetch(`${WORKER_URL}/status`);
-                const data = await response.json();
-                
-                const statusDot = document.getElementById('status-dot');
-                const statusText = document.getElementById('status-text');
-                
-                if (data.status === 'running') {
-                    statusDot.className = 'w-3 h-3 rounded-full bg-green-500';
-                    statusText.textContent = '运行中';
-                } else {
-                    statusDot.className = 'w-3 h-3 rounded-full bg-red-500';
-                    statusText.textContent = '已停止';
-                }
-            } catch (error) {
-                console.error('检查系统状态失败:', error);
-            }
-        }
-        
-        // 加载仪表盘数据
-        async function loadDashboardData() {
-            try {
-                // 加载关键词数量
-                const { count: keywordCount } = await supabase
-                    .from('keywords')
-                    .select('*', { count: 'exact', head: true });
-                
-                document.getElementById('keyword-count').textContent = keywordCount || 0;
-                
-                // 加载频道数量
-                const { count: channelCount } = await supabase
-                    .from('channels')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('is_active', true);
-                
-                document.getElementById('channel-count').textContent = channelCount || 0;
-                
-                // 加载今日回复数量
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
-                const { count: responseCount } = await supabase
-                    .from('logs')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('response_sent', true)
-                    .gte('created_at', today.toISOString());
-                
-                document.getElementById('response-count').textContent = responseCount || 0;
-                
-                // 加载最近活动
-                const { data: recentLogs } = await supabase
-                    .from('logs')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(5);
-                
-                const activityContainer = document.getElementById('recent-activity');
-                activityContainer.innerHTML = '';
-                
-                if (recentLogs && recentLogs.length > 0) {
-                    recentLogs.forEach(log => {
-                        const date = new Date(log.created_at);
-                        const formattedDate = date.toLocaleString();
-                        
-                        const statusText = log.response_sent ? 
-                            '<span class="text-green-600">已回复</span>' : 
-                            '<span class="text-gray-500">已检测</span>';
-                        
-                        const activityItem = document.createElement('div');
-                        activityItem.className = 'p-2 border-b border-gray-100';
-                        activityItem.innerHTML = `
-                            <p>${formattedDate} - 在 <strong>${log.channel_username}</strong> 中检测到关键词 <strong>${log.matched_keyword}</strong></p>
-                            <p>用户: ${log.user_username || log.user_id} - ${statusText}</p>
-                        `;
-                        
-                        activityContainer.appendChild(activityItem);
-                    });
-                } else {
-                    activityContainer.innerHTML = '<p class="text-gray-500 italic">暂无活动记录</p>';
-                }
-                
-                // 更新图表数据
-                updateChart();
-                
-            } catch (error) {
-                console.error('加载仪表盘数据失败:', error);
-            }
-        }
-        
-        // 初始化图表
-        function initChart() {
-            const ctx = document.getElementById('response-chart').getContext('2d');
-            
-            window.responseChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: '回复数量',
-                        data: [],
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // 更新图表数据
-        async function updateChart() {
-            try {
-                // 获取过去7天的数据
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                
-                const { data } = await supabase
-                    .from('logs')
-                    .select(`
-                        created_at::date as date,
-                        count(*) as count
-                    `)
-                    .eq('response_sent', true)
-                    .gte('created_at', sevenDaysAgo.toISOString())
-                    .groupBy('date')
-                    .order('date');
-                
-                const labels = [];
-                const counts = [];
-                
-                // 填充过去7天的日期
-                for (let i = 6; i >= 0; i--) {
-                    const date = new Date();
-                    date.setDate(date.getDate() - i);
-                    const dateStr = date.toISOString().split('T')[0];
-                    labels.push(date.toLocaleDateString());
-                    
-                    // 查找对应日期的数据
-                    const dayData = data.find(item => item.date === dateStr);
-                    counts.push(dayData ? dayData.count : 0);
-                }
-                
-                // 更新图表
-                window.responseChart.data.labels = labels;
-                window.responseChart.data.datasets[0].data = counts;
-                window.responseChart.update();
-                
-            } catch (error) {
-                console.error('更新图表数据失败:', error);
-            }
-        }
-        
-        // 加载关键词
-        async function loadKeywords() {
-            try {
-                const { data } = await supabase
-                    .from('keywords')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                const tableBody = document.getElementById('keywords-table-body');
-                tableBody.innerHTML = '';
-                
-                if (data && data.length > 0) {
-                    data.forEach(keyword => {
-                        const date = new Date(keyword.created_at);
-                        const formattedDate = date.toLocaleString();
-                        
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td class="px-4 py-3">${keyword.word}</td>
-                            <td class="px-4 py-3">${formattedDate}</td>
-                            <td class="px-4 py-3">
-                                <button class="text-red-600 hover:text-red-800 delete-keyword" data-id="${keyword.id}">
-                                    <i class="fa fa-trash"></i> 删除
-                                </button>
-                            </td>
-                        `;
-                        
-                        tableBody.appendChild(row);
-                    });
-                    
-                    // 绑定删除事件
-                    document.querySelectorAll('.delete-keyword').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const id = e.currentTarget.getAttribute('data-id');
-                            deleteKeyword(id);
-                        });
-                    });
-                } else {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="3" class="px-4 py-3 text-center text-gray-500">
-                                暂无关键词，请添加
-                            </td>
-                        </tr>
-                    `;
-                }
-                
-            } catch (error) {
-                console.error('加载关键词失败:', error);
-            }
-        }
-        
-        // 添加关键词
-        async function addKeyword(word) {
-            try {
-                const { error } = await supabase
-                    .from('keywords')
-                    .insert([{ word }]);
-                
-                if (error) throw error;
-                
-                // 重新加载关键词列表
-                loadKeywords();
-                
-                // 通知Worker更新关键词
-                await fetch(`${WORKER_URL}/refresh-keywords`, { method: 'POST' });
-                
-            } catch (error) {
-                console.error('添加关键词失败:', error);
-                alert('添加关键词失败: ' + error.message);
-            }
-        }
-        
-        // 删除关键词
-        async function deleteKeyword(id) {
-            if (!confirm('确定要删除这个关键词吗？')) return;
-            
-            try {
-                const { error } = await supabase
-                    .from('keywords')
-                    .delete()
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                // 重新加载关键词列表
-                loadKeywords();
-                
-                // 通知Worker更新关键词
-                await fetch(`${WORKER_URL}/refresh-keywords`, { method: 'POST' });
-                
-            } catch (error) {
-                console.error('删除关键词失败:', error);
-                alert('删除关键词失败: ' + error.message);
-            }
-        }
-        
-        // 加载回复内容
-        async function loadResponse() {
-            try {
-                const { data } = await supabase
-                    .from('responses')
-                    .select('*')
-                    .eq('is_active', true)
-                    .single();
-                
-                if (data) {
-                    document.getElementById('response-content').value = data.content;
-                }
-                
-            } catch (error) {
-                console.error('加载回复内容失败:', error);
-            }
-        }
-        
-        // 保存回复内容
-        async function saveResponse() {
-            const content = document.getElementById('response-content').value.trim();
-            
-            if (!content) {
-                alert('回复内容不能为空');
-                return;
-            }
-            
-            try {
-                // 查找当前活跃的回复
-                const { data: activeResponses } = await supabase
-                    .from('responses')
-                    .select('*')
-                    .eq('is_active', true);
-                
-                if (activeResponses && activeResponses.length > 0) {
-                    // 更新现有回复
-                    await supabase
-                        .from('responses')
-                        .update({ content, updated_at: new Date() })
-                        .eq('id', activeResponses[0].id);
-                } else {
-                    // 创建新回复
-                    await supabase
-                        .from('responses')
-                        .insert([{ content }]);
-                }
-                
-                // 通知Worker更新回复内容
-                await fetch(`${WORKER_URL}/refresh-response`, { method: 'POST' });
-                
-                alert('回复内容保存成功');
-                
-            } catch (error) {
-                console.error('保存回复内容失败:', error);
-                alert('保存回复内容失败: ' + error.message);
-            }
-        }
-        
-        // 加载频道
-        async function loadChannels() {
-            try {
-                const { data } = await supabase
-                    .from('channels')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                const tableBody = document.getElementById('channels-table-body');
-                tableBody.innerHTML = '';
-                
-                if (data && data.length > 0) {
-                    data.forEach(channel => {
-                        const date = new Date(channel.created_at);
-                        const formattedDate = date.toLocaleString();
-                        const statusClass = channel.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
-                        const statusText = channel.is_active ? '活跃' : '已停用';
-                        const toggleText = channel.is_active ? '停用' : '启用';
-                        const toggleIcon = channel.is_active ? 'fa-pause' : 'fa-play';
-                        const toggleColor = channel.is_active ? 'text-yellow-600' : 'text-green-600';
-                        
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td class="px-4 py-3">@${channel.username}</td>
-                            <td class="px-4 py-3">
-                                <span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span>
-                            </td>
-                            <td class="px-4 py-3">${formattedDate}</td>
-                            <td class="px-4 py-3">
-                                <button class="mr-2 ${toggleColor} hover:text-blue-800 toggle-channel" data-id="${channel.id}" data-active="${channel.is_active}">
-                                    <i class="fa ${toggleIcon}"></i> ${toggleText}
-                                </button>
-                                <button class="text-red-600 hover:text-red-800 delete-channel" data-id="${channel.id}">
-                                    <i class="fa fa-trash"></i> 删除
-                                </button>
-                            </td>
-                        `;
-                        
-                        tableBody.appendChild(row);
-                    });
-                    
-                    // 绑定切换状态事件
-                    document.querySelectorAll('.toggle-channel').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const id = e.currentTarget.getAttribute('data-id');
-                            const isActive = e.currentTarget.getAttribute('data-active') === 'true';
-                            toggleChannelStatus(id, !isActive);
-                        });
-                    });
-                    
-                    // 绑定删除事件
-                    document.querySelectorAll('.delete-channel').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const id = e.currentTarget.getAttribute('data-id');
-                            deleteChannel(id);
-                        });
-                    });
-                } else {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="4" class="px-4 py-3 text-center text-gray-500">
-                                暂无频道，请添加
-                            </td>
-                        </tr>
-                    `;
-                }
-                
-            } catch (error) {
-                console.error('加载频道失败:', error);
-            }
-        }
-        
-        // 添加频道
-        async function addChannel(username) {
-            // 移除可能的@符号
-            username = username.replace('@', '').trim();
-            
-            try {
-                const { error } = await supabase
-                    .from('channels')
-                    .insert([{ username }]);
-                
-                if (error) throw error;
-                
-                // 重新加载频道列表
-                loadChannels();
-                
-                // 通知Worker更新频道
-                await fetch(`${WORKER_URL}/refresh-channels`, { method: 'POST' });
-                
-            } catch (error) {
-                console.error('添加频道失败:', error);
-                alert('添加频道失败: ' + error.message);
-            }
-        }
-        
-        // 切换频道状态
-        async function toggleChannelStatus(id, isActive) {
-            try {
-                const { error } = await supabase
-                    .from('channels')
-                    .update({ is_active: isActive, updated_at: new Date() })
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                // 重新加载频道列表
-                loadChannels();
-                
-                // 通知Worker更新频道
-                await fetch(`${WORKER_URL}/refresh-channels`, { method: 'POST' });
-                
-            } catch (error) {
-                console.error('切换频道状态失败:', error);
-                alert('切换频道状态失败: ' + error.message);
-            }
-        }
-        
-        // 删除频道
-        async function deleteChannel(id) {
-            if (!confirm('确定要删除这个频道吗？')) return;
-            
-            try {
-                const { error } = await supabase
-                    .from('channels')
-                    .delete()
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                // 重新加载频道列表
-                loadChannels();
-                
-                // 通知Worker更新频道
-                await fetch(`${WORKER_URL}/refresh-channels`, { method: 'POST' });
-                
-            } catch (error) {
-                console.error('删除频道失败:', error);
-                alert('删除频道失败: ' + error.message);
-            }
-        }
-        
-        // 加载日志
-        async function loadLogs(searchText = '') {
-            try {
-                let query = supabase
-                    .from('logs')
-                    .select('*', { count: 'exact' })
-                    .order('created_at', { ascending: false })
-                    .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1);
-                
-                // 如果有搜索文本，添加搜索条件
-                if (searchText) {
-                    query = query.or(
-                        `channel_username.ilike.%${searchText}%,` +
-                        `user_username.ilike.%${searchText}%,` +
-                        `matched_keyword.ilike.%${searchText}%,` +
-                        `message_text.ilike.%${searchText}%`
-                    );
-                }
-                
-                const { data, count, error } = await query;
-                
-                if (error) throw error;
-                
-                const tableBody = document.getElementById('logs-table-body');
-                tableBody.innerHTML = '';
-                
-                if (data && data.length > 0) {
-                    data.forEach(log => {
-                        const date = new Date(log.created_at);
-                        const formattedDate = date.toLocaleString();
-                        const statusClass = log.response_sent ? 'text-green-600' : 'text-gray-500';
-                        const statusText = log.response_sent ? '已回复' : '已检测';
-                        
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td class="px-4 py-3">${formattedDate}</td>
-                            <td class="px-4 py-3">@${log.channel_username}</td>
-                            <td class="px-4 py-3">${log.user_username || log.user_id}</td>
-                            <td class="px-4 py-3">${log.matched_keyword || '-'}</td>
-                            <td class="px-4 py-3"><span class="${statusClass}">${statusText}</span></td>
-                        `;
-                        
-                        tableBody.appendChild(row);
-                    });
-                } else {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="px-4 py-3 text-center text-gray-500">
-                                暂无日志记录
-                            </td>
-                        </tr>
-                    `;
-                }
-                
-                // 更新分页信息
-                document.getElementById('page-info').textContent = `第 ${currentPage} 页`;
-                
-                // 更新分页按钮状态
-                document.getElementById('prev-page').disabled = currentPage <= 1;
-                document.getElementById('next-page').disabled = currentPage * itemsPerPage >= count;
-                
-            } catch (error) {
-                console.error('加载日志失败:', error);
-            }
-        }
-        
-        // 清空日志
-        async function clearLogs() {
-            if (!confirm('确定要清空所有日志吗？此操作不可恢复！')) return;
-            
-            try {
-                const { error } = await supabase
-                    .from('logs')
-                    .delete()
-                    .neq('id', ''); // 删除所有记录
-                
-                if (error) throw error;
-                
-                // 重新加载日志
-                currentPage = 1;
-                loadLogs();
-                
-            } catch (error) {
-                console.error('清空日志失败:', error);
-                alert('清空日志失败: ' + error.message);
-            }
-        }
-        
-        // 加载设置
-        async function loadSettings() {
-            try {
-                const { data } = await supabase
-                    .from('settings')
-                    .select('*');
-                
-                if (data && data.length > 0) {
-                    const settings = {};
-                    data.forEach(setting => {
-                        settings[setting.key] = setting.value;
-                    });
-                    
-                    document.getElementById('check-interval').value = settings.check_interval || 5;
-                    document.getElementById('user-cooldown').value = settings.user_cooldown || 60;
-                    document.getElementById('log-retention').value = settings.log_retention || 30;
-                }
-                
-            } catch (error) {
-                console.error('加载设置失败:', error);
-            }
-        }
-        
-        // 保存设置
-        async function saveSettings() {
-            const checkInterval = document.getElementById('check-interval').value;
-            const userCooldown = document.getElementById('user-cooldown').value;
-            const logRetention = document.getElementById('log-retention').value;
-            
-            if (!checkInterval || !userCooldown || !logRetention) {
-                alert('请填写所有设置项');
-                return;
-            }
-            
-            try {
-                // 先删除现有设置
-                await supabase
-                    .from('settings')
-                    .delete()
-                    .neq('id', '');
-                
-                // 插入新设置
-                const { error } = await supabase
-                    .from('settings')
-                    .insert([
-                        { key: 'check_interval', value: checkInterval },
-                        { key: 'user_cooldown', value: userCooldown },
-                        { key: 'log_retention', value: logRetention }
-                    ]);
-                
-                if (error) throw error;
-                
-                // 通知Worker更新设置
-                await fetch(`${WORKER_URL}/refresh-settings`, { method: 'POST' });
-                
-                alert('设置保存成功');
-                
-            } catch (error) {
-                console.error('保存设置失败:', error);
-                alert('保存设置失败: ' + error.message);
-            }
-        }
-    </script>
+        window.ElMessageBox.MessageBox.success('系统配置保存成功');
+      } catch (error) {
+        window.ElMessageBox.MessageBox.error(`保存系统配置失败: ${error.message}`);
+      }
+    }
+
+    // 绑定全局变量到window，供Element组件调用
+    window.state = state;
+    window.loadPageData = loadPageData;
+    window.fetchMonitorLogs = fetchMonitorLogs;
+    window.handleLogSizeChange = handleLogSizeChange;
+    window.handleLogCurrentChange = handleLogCurrentChange;
+    window.fetchSendRecords = fetchSendRecords;
+    window.fetchKeywords = fetchKeywords;
+    window.openAddKeywordDialog = openAddKeywordDialog;
+    window.addKeyword = addKeyword;
+    window.updateKeywordStatus = updateKeywordStatus;
+    window.deleteKeyword = deleteKeyword;
+    window.fetchGroups = fetchGroups;
+    window.openAddGroupDialog = openAddGroupDialog;
+    window.addGroup = addGroup;
+    window.updateGroupStatus = updateGroupStatus;
+    window.fetchSystemConfig = fetchSystemConfig;
+    window.saveSystemConfig = saveSystemConfig;
+  </script>
 </body>
 </html>
