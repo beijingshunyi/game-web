@@ -587,7 +587,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Telegram 【万花楼】监听后台控制系统</h1>
+            <h1>Telegram 【万花楼】监听控制系统</h1>
             <div class="status-indicator">
                 <div class="status-dot" id="statusDot"></div>
                 <span id="statusText">检查状态中...</span>
@@ -1253,8 +1253,10 @@
                 
                 if (messages.length > 0) {
                     const activeMessage = messages.find(m => m.is_active) || messages[0];
-                    document.getElementById('replyMessage').value = activeMessage.message_text;
-                    document.getElementById('messageActive').checked = activeMessage.is_active;
+                    if (activeMessage && activeMessage.message_text) {
+                        document.getElementById('replyMessage').value = activeMessage.message_text;
+                        document.getElementById('messageActive').checked = activeMessage.is_active;
+                    }
                 }
                 
                 const messagesList = document.getElementById('messagesList');
@@ -1278,7 +1280,7 @@
                     
                     html += `
                         <tr>
-                            <td>${message.message_text.substring(0, 50)}${message.message_text.length > 50 ? '...' : ''}</td>
+                            <td>${message.message_text ? message.message_text.substring(0, 50) + (message.message_text.length > 50 ? '...' : '') : ''}</td>
                             <td><span style="color: var(--${statusClass})">${statusText}</span></td>
                             <td>${createdAt}</td>
                             <td class="actions">
@@ -1344,7 +1346,7 @@
                 const message = messages.find(m => m.id === id);
                 
                 if (message) {
-                    document.getElementById('replyMessage').value = message.message_text;
+                    document.getElementById('replyMessage').value = message.message_text || '';
                     document.getElementById('messageActive').checked = message.is_active;
                     
                     // 滚动到消息编辑区域
@@ -1378,14 +1380,14 @@
                 
                 data.data.forEach(log => {
                     const createdAt = new Date(log.created_at).toLocaleString('zh-CN');
-                    const messagePreview = log.message.length > 50 ? log.message.substring(0, 50) + '...' : log.message;
+                    const messagePreview = log.message && log.message.length > 50 ? log.message.substring(0, 50) + '...' : (log.message || '');
                     const matchedKeywords = Array.isArray(log.matched_keywords) ? log.matched_keywords.join(', ') : '';
                     
                     html += `
                         <tr>
                             <td>${log.group_id || '-'}</td>
                             <td>${log.user_id}</td>
-                            <td title="${log.message}">${messagePreview}</td>
+                            <td title="${log.message || ''}">${messagePreview}</td>
                             <td>${matchedKeywords}</td>
                             <td>${createdAt}</td>
                         </tr>
