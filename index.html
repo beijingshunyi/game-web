@@ -383,7 +383,7 @@
               <el-table-column prop="matched_keywords" label="匹配关键词">
                 <template #default="scope">
                   <div class="flex flex-wrap gap-1">
-                    <span v-for="kw in scope.row.matched_keywords" :key="kw" class="text-xs bg-blue-50 text-ios-blue px-2 py-0.5 rounded-ios-sm">
+                    <span v-for="kw in (scope.row.matched_keywords || [])" :key="kw" class="text-xs bg-blue-50 text-ios-blue px-2 py-0.5 rounded-ios-sm">
                       {{ kw }}
                     </span>
                   </div>
@@ -702,17 +702,27 @@
   </div>
 
   <script>
-    // 1. 从Element Plus中导入所需组件（修复ElMessageBox未定义）
+    // 1. 从Element Plus中导入所需组件
     const { 
       ElMessageBox, 
       ElMessage 
     } = ElementPlus;
 
-    // 2. 初始化Vue实例
-    const { createApp, ref, onMounted, reactive, toRefs, watch } = Vue;
+    // 2. 初始化Axios（核心：修复CORS问题，移除credentials: include）
+    const api = axios.create({
+      baseURL: 'https://wanhua-game.bingkuijing.workers.dev/api',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      // 关键修复：删除 credentials: 'include'，避免跨域请求携带Cookie导致CORS错误
+      withCredentials: false
+    });
+
+    // 3. 初始化Vue实例
+    const { createApp, ref, onMounted, reactive, toRefs } = Vue;
     const app = createApp({
       setup() {
-        // 3. 全局状态（初始化所有数组为[]，避免表格数据异常）
+        // 4. 全局状态（初始化所有数组为[]）
         const state = reactive({
           // 页面切换
           currentPage: 'dashboard',
@@ -725,26 +735,26 @@
             totalKeywords: 0,
             activeGroups: 0,
             totalGroups: 0,
-            recentLogs: [] // 初始化为空数组
+            recentLogs: []
           },
           
           // 监控日志数据
-          monitorLogs: [], // 初始化为空数组
+          monitorLogs: [],
           logPage: 1,
           logPageSize: 10,
           logTotal: 0,
           logSearch: '',
           
           // 发送记录数据
-          sendRecords: [], // 初始化为空数组
+          sendRecords: [],
           
           // 关键词数据
-          keywords: [], // 初始化为空数组
+          keywords: [],
           addKeywordVisible: false,
           newKeyword: { keyword: '' },
           
           // 群组数据
-          groups: [], // 初始化为空数组
+          groups: [],
           addGroupVisible: false,
           newGroup: { group_id: '', group_name: '未知群组' },
           
@@ -752,13 +762,9 @@
           systemConfig: {}
         });
 
-        // 4. 接口基础配置
-        const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev/api';
-
         // 5. 页面切换方法
         const changePage = (page) => {
           state.currentPage = page;
-          // 加载对应页面数据（添加加载状态提示）
           ElMessage.info(`加载${getPageName(page)}中...`);
           switch(page) {
             case 'dashboard':
@@ -795,7 +801,7 @@
           return pageMap[page] || '数据';
         };
 
-        // 6. 工具函数：格式化时间（处理null/undefined）
+        // 6. 工具函数：格式化时间
         const formatTime = (timeStr) => {
           if (!timeStr) return '暂无时间';
           try {
@@ -806,26 +812,26 @@
           }
         };
 
-        // 7. 仪表盘数据加载（添加错误处理和数据兜底）
+        // 7. 仪表盘数据加载
         const loadDashboardData = async () => {
           try {
             // 加载监控日志（最近10条）
-            const logRes = await axios.get(`${API_BASE_URL}/logs/monitor?limit=10`);
+            const logRes = await api.get('/logs/monitor?limit=10');
             state.dashboardData.recentLogs = Array.isArray(logRes.data.logs) ? logRes.data.logs : [];
             state.dashboardData.todayLogs = typeof logRes.data.total === 'number' ? logRes.data.total : 0;
             
             // 加载发送记录
-            const sendRes = await axios.get(`${API_BASE_URL}/logs/send`);
+            const sendRes = await api.get('/logs/send');
             state.dashboardData.todaySends = Array.isArray(sendRes.data) ? sendRes.data.length : 0;
             
             // 加载关键词
-            const keywordRes = await axios.get(`${API_BASE_URL}/config/keywords`);
+            const keywordRes = await api.get('/config/keywords');
             const keywords = Array.isArray(keywordRes.data) ? keywordRes.data : [];
             state.dashboardData.totalKeywords = keywords.length;
             state.dashboardData.activeKeywords = keywords.filter(k => k.is_active).length;
             
             // 加载群组
-            const groupRes = await axios.get(`${API_BASE_URL}/config/groups`);
+            const groupRes = await api.get('/config/groups');
             const groups = Array.isArray(groupRes.data) ? groupRes.data : [];
             state.dashboardData.totalGroups = groups.length;
             state.dashboardData.activeGroups = groups.filter(g => g.is_active).length;
@@ -837,29 +843,37 @@
             state.dashboardData.recentLogs = [];
             state.dashboardData.todayLogs = 0;
             state.dashboardData.todaySends = 0;
-            ElMessage.error(`仪表盘加载失败: ${error.message.slice(0, 50)}`);
+            // 区分CORS错误并给出明确提示
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('数据加载失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`仪表盘加载失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
-        // 8. 监控日志加载（添加数据格式校验）
+        // 8. 监控日志加载
         const fetchMonitorLogs = async () => {
           try {
-            let url = `${API_BASE_URL}/logs/monitor?page=${state.logPage}&limit=${state.logPageSize}`;
+            let url = `/logs/monitor?page=${state.logPage}&limit=${state.logPageSize}`;
             if (state.logSearch) {
               url += `&search=${encodeURIComponent(state.logSearch)}`;
             }
             
-            const res = await axios.get(url);
-            // 确保返回数据是数组
+            const res = await api.get(url);
             state.monitorLogs = Array.isArray(res.data.logs) ? res.data.logs : [];
             state.logTotal = typeof res.data.total === 'number' ? res.data.total : 0;
             
             ElMessage.success(`加载到 ${state.monitorLogs.length} 条日志`);
           } catch (error) {
             console.error('日志加载错误:', error);
-            state.monitorLogs = []; // 错误时设为空数组
+            state.monitorLogs = [];
             state.logTotal = 0;
-            ElMessage.error(`日志加载失败: ${error.message.slice(0, 50)}`);
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('日志加载失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`日志加载失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
@@ -874,30 +888,37 @@
           fetchMonitorLogs();
         };
 
-        // 9. 发送记录加载（修复reduce/is not a function错误）
+        // 9. 发送记录加载
         const fetchSendRecords = async () => {
           try {
-            const res = await axios.get(`${API_BASE_URL}/logs/send`);
-            // 关键修复：确保数据是数组
+            const res = await api.get('/logs/send');
             state.sendRecords = Array.isArray(res.data) ? res.data : [];
             ElMessage.success(`加载到 ${state.sendRecords.length} 条发送记录`);
           } catch (error) {
             console.error('发送记录加载错误:', error);
-            state.sendRecords = []; // 错误时设为空数组
-            ElMessage.error(`发送记录加载失败: ${error.message.slice(0, 50)}`);
+            state.sendRecords = [];
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('发送记录加载失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`发送记录加载失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
-        // 10. 关键词管理（添加数据安全处理）
+        // 10. 关键词管理
         const fetchKeywords = async () => {
           try {
-            const res = await axios.get(`${API_BASE_URL}/config/keywords`);
+            const res = await api.get('/config/keywords');
             state.keywords = Array.isArray(res.data) ? res.data : [];
             ElMessage.success(`加载到 ${state.keywords.length} 个关键词`);
           } catch (error) {
             console.error('关键词加载错误:', error);
             state.keywords = [];
-            ElMessage.error(`关键词加载失败: ${error.message.slice(0, 50)}`);
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('关键词加载失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`关键词加载失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
@@ -915,7 +936,7 @@
           }
 
           try {
-            await axios.post(`${API_BASE_URL}/config/keywords`, {
+            await api.post('/config/keywords', {
               keyword: state.newKeyword.keyword.trim(),
               is_active: true
             });
@@ -925,14 +946,18 @@
             ElMessage.success('关键词添加成功');
           } catch (error) {
             console.error('添加关键词错误:', error);
-            ElMessage.error(`添加失败: ${error.message.slice(0, 50)}`);
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('添加关键词失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`添加失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
         // 更新关键词状态
         const updateKeywordStatus = async (keyword) => {
           try {
-            await axios.patch(`${API_BASE_URL}/config/keywords`, {
+            await api.patch('/config/keywords', {
               id: keyword.id,
               is_active: keyword.is_active
             });
@@ -941,7 +966,11 @@
             console.error('更新关键词错误:', error);
             // 回滚状态
             keyword.is_active = !keyword.is_active;
-            ElMessage.error(`更新失败: ${error.message.slice(0, 50)}`);
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('更新关键词失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`更新失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
@@ -958,13 +987,17 @@
               }
             );
 
-            await axios.delete(`${API_BASE_URL}/config/keywords?id=${id}`);
+            await api.delete(`/config/keywords?id=${id}`);
             fetchKeywords();
             ElMessage.success('关键词删除成功');
           } catch (error) {
             if (error.name !== 'Cancel') {
               console.error('删除关键词错误:', error);
-              ElMessage.error(`删除失败: ${error.message.slice(0, 50)}`);
+              if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                ElMessage.error('删除关键词失败：跨域访问被拒绝，请检查Worker配置');
+              } else {
+                ElMessage.error(`删除失败: ${error.message.slice(0, 50)}`);
+              }
             }
           }
         };
@@ -972,13 +1005,17 @@
         // 11. 群组管理
         const fetchGroups = async () => {
           try {
-            const res = await axios.get(`${API_BASE_URL}/config/groups`);
+            const res = await api.get('/config/groups');
             state.groups = Array.isArray(res.data) ? res.data : [];
             ElMessage.success(`加载到 ${state.groups.length} 个群组`);
           } catch (error) {
             console.error('群组加载错误:', error);
             state.groups = [];
-            ElMessage.error(`群组加载失败: ${error.message.slice(0, 50)}`);
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('群组加载失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`群组加载失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
@@ -997,7 +1034,7 @@
           }
 
           try {
-            await axios.post(`${API_BASE_URL}/config/groups`, {
+            await api.post('/config/groups', {
               group_id: Number(state.newGroup.group_id.trim()),
               group_name: state.newGroup.group_name.trim() || '未知群组',
               is_active: true
@@ -1008,14 +1045,18 @@
             ElMessage.success('群组添加成功');
           } catch (error) {
             console.error('添加群组错误:', error);
-            ElMessage.error(`添加失败: ${error.message.slice(0, 50)}`);
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('添加群组失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`添加失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
         // 更新群组状态
         const updateGroupStatus = async (group) => {
           try {
-            await axios.patch(`${API_BASE_URL}/config/groups`, {
+            await api.patch('/config/groups', {
               id: group.id,
               is_active: group.is_active
             });
@@ -1024,29 +1065,36 @@
             console.error('更新群组错误:', error);
             // 回滚状态
             group.is_active = !group.is_active;
-            ElMessage.error(`更新失败: ${error.message.slice(0, 50)}`);
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('更新群组失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`更新失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
         // 12. 系统配置
         const fetchSystemConfig = async () => {
           try {
-            const res = await axios.get(`${API_BASE_URL}/config/system`);
+            const res = await api.get('/config/system');
             const configMap = {};
-            // 确保是数组再遍历
             if (Array.isArray(res.data)) {
               res.data.forEach(item => {
                 configMap[item.config_key] = item.config_value;
               });
             }
             // 设置默认值
-            configMap.worker_api_url = configMap.worker_api_url || API_BASE_URL;
+            configMap.worker_api_url = configMap.worker_api_url || 'https://wanhua-game.bingkuijing.workers.dev/api';
             state.systemConfig = configMap;
             ElMessage.success('系统配置加载成功');
           } catch (error) {
             console.error('配置加载错误:', error);
             state.systemConfig = {};
-            ElMessage.error(`配置加载失败: ${error.message.slice(0, 50)}`);
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('配置加载失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`配置加载失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
@@ -1061,9 +1109,9 @@
 
             // 逐个更新配置
             for (const config of configList) {
-              const res = await axios.get(`${API_BASE_URL}/config/system?config_key=${config.config_key}`);
+              const res = await api.get(`/config/system?config_key=${config.config_key}`);
               if (Array.isArray(res.data) && res.data.length > 0) {
-                await axios.patch(`${API_BASE_URL}/config/system`, {
+                await api.patch('/config/system', {
                   id: res.data[0].id,
                   config_value: config.config_value
                 });
@@ -1073,7 +1121,11 @@
             ElMessage.success('系统配置保存成功');
           } catch (error) {
             console.error('保存配置错误:', error);
-            ElMessage.error(`保存失败: ${error.message.slice(0, 50)}`);
+            if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+              ElMessage.error('保存配置失败：跨域访问被拒绝，请检查Worker配置');
+            } else {
+              ElMessage.error(`保存失败: ${error.message.slice(0, 50)}`);
+            }
           }
         };
 
