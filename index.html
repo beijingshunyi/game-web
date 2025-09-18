@@ -3,1006 +3,1555 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram监控管理后台</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        // Tailwind配置 - iOS风格
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#007AFF',
-                        secondary: '#34C759',
-                        danger: '#FF3B30',
-                        warning: '#FF9500',
-                        gray: {
-                            50: '#F9F9F9',
-                            100: '#F2F2F7',
-                            200: '#E5E5EA',
-                            300: '#D1D1D6',
-                            400: '#C7C7CC',
-                            500: '#AEAEB2',
-                            600: '#8E8E93',
-                            700: '#636366',
-                            800: '#3A3A3C',
-                            900: '#1C1C1E',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'ios': '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
-                        'ios-hover': '0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12)',
-                        'ios-button': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                    }
-                },
+    <title>Telegram 监控控制台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* iOS 风格样式 */
+        :root {
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --ios-orange: #FF9500;
+            --ios-yellow: #FFCC00;
+            --ios-purple: #AF52DE;
+            --ios-pink: #FF2D55;
+            --ios-teal: #5AC8FA;
+            --ios-indigo: #5856D6;
+            --ios-gray: #8E8E93;
+            --ios-gray-light: #C7C7CC;
+            --ios-gray-lighter: #E5E5EA;
+            --ios-gray-dark: #636366;
+            --ios-background: #F2F2F7;
+            --ios-card-background: #FFFFFF;
+            --ios-text-primary: #000000;
+            --ios-text-secondary: #3C3C43;
+            --ios-text-tertiary: #3C3C4399;
+            --ios-border-radius: 10px;
+            --ios-transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--ios-background);
+            color: var(--ios-text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--ios-card-background);
+            border-radius: var(--ios-border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: var(--ios-text-secondary);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-dot.active {
+            background-color: var(--ios-green);
+        }
+
+        .status-dot.inactive {
+            background-color: var(--ios-gray);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--ios-card-background);
+            border-radius: var(--ios-border-radius);
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: var(--ios-transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--ios-blue);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--ios-text-secondary);
+        }
+
+        .tabs {
+            display: flex;
+            background-color: var(--ios-card-background);
+            border-radius: var(--ios-border-radius);
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--ios-transition);
+            font-weight: 500;
+            color: var(--ios-text-secondary);
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .tab.active {
+            color: var(--ios-blue);
+            border-bottom: 2px solid var(--ios-blue);
+        }
+
+        .tab-content {
+            display: none;
+            background-color: var(--ios-card-background);
+            border-radius: var(--ios-border-radius);
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--ios-text-secondary);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--ios-gray-lighter);
+            border-radius: var(--ios-border-radius);
+            background-color: var(--ios-background);
+            font-size: 16px;
+            transition: var(--ios-transition);
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--ios-blue);
+            background-color: var(--ios-card-background);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--ios-border-radius);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--ios-transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--ios-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0062D3;
+        }
+
+        .btn-success {
+            background-color: var(--ios-green);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #28A745;
+        }
+
+        .btn-danger {
+            background-color: var(--ios-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #D32F2F;
+        }
+
+        .btn-secondary {
+            background-color: var(--ios-gray-lighter);
+            color: var(--ios-text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--ios-gray-light);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--ios-gray-lighter);
+        }
+
+        .data-table th {
+            font-weight: 600;
+            color: var(--ios-text-secondary);
+            background-color: var(--ios-background);
+        }
+
+        .data-table tr:hover {
+            background-color: var(--ios-background);
+        }
+
+        .data-table .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .data-table .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            font-size: 14px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+
+        .pagination button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--ios-card-background);
+            color: var(--ios-text-primary);
+            cursor: pointer;
+            transition: var(--ios-transition);
+        }
+
+        .pagination button:hover {
+            background-color: var(--ios-gray-lighter);
+        }
+
+        .pagination button.active {
+            background-color: var(--ios-blue);
+            color: white;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--ios-card-background);
+            border-radius: var(--ios-border-radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
             }
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--ios-gray-lighter);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--ios-text-secondary);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--ios-transition);
+        }
+
+        .modal-close:hover {
+            background-color: var(--ios-gray-lighter);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--ios-gray-lighter);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: var(--ios-border-radius);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .alert i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .alert-success {
+            background-color: rgba(52, 199, 89, 0.1);
+            color: var(--ios-green);
+        }
+
+        .alert-danger {
+            background-color: rgba(255, 59, 48, 0.1);
+            color: var(--ios-red);
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 149, 0, 0.1);
+            color: var(--ios-orange);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--ios-gray-dark);
+            color: white;
+            padding: 15px 20px;
+            border-radius: var(--ios-border-radius);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--ios-gray-light);
+            transition: var(--ios-transition);
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: var(--ios-transition);
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--ios-green);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--ios-text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: var(--ios-gray-light);
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
             }
-            .ios-card {
-                @apply bg-white rounded-xl shadow-ios transition-shadow duration-300 hover:shadow-ios-hover overflow-hidden;
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
             }
-            .ios-button {
-                @apply bg-primary text-white font-medium py-2 px-4 rounded-lg shadow-ios-button transition-all duration-200 hover:bg-primary/90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50;
+
+            .status-indicator {
+                margin-top: 10px;
             }
-            .ios-button-secondary {
-                @apply bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded-lg shadow-ios-button transition-all duration-200 hover:bg-gray-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-300;
+
+            .stats-container {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
-            .ios-button-danger {
-                @apply bg-danger text-white font-medium py-2 px-4 rounded-lg shadow-ios-button transition-all duration-200 hover:bg-danger/90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-danger/50;
+
+            .tabs {
+                flex-wrap: wrap;
             }
-            .ios-input {
-                @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition duration-200;
+
+            .tab {
+                min-width: 50%;
             }
-            .ios-label {
-                @apply block text-gray-700 text-sm font-medium mb-1;
+
+            .modal-content {
+                width: 95%;
             }
-            .nav-item {
-                @apply flex flex-col items-center justify-center p-3 text-gray-600 hover:text-primary transition-colors duration-200;
+
+            .data-table {
+                font-size: 14px;
             }
-            .nav-item.active {
-                @apply text-primary;
+
+            .data-table th,
+            .data-table td {
+                padding: 8px 10px;
             }
-            .section-title {
-                @apply text-xl font-semibold text-gray-800 mb-4;
-            }
-            .list-item {
-                @apply flex items-center justify-between p-3 border-b border-gray-100 last:border-b-0;
-            }
-            .badge {
-                @apply text-xs font-medium px-2 py-1 rounded-full;
+
+            .btn {
+                font-size: 14px;
+                padding: 10px 15px;
             }
         }
     </style>
 </head>
-<body class="bg-gray-50 font-sans text-gray-800 min-h-screen flex flex-col">
-    <!-- 顶部导航栏 -->
-    <header class="bg-white border-b border-gray-200 py-3 px-4 sticky top-0 z-10">
-        <div class="flex items-center justify-between">
-            <h1 class="text-xl font-semibold" id="page-title">Telegram监控管理</h1>
-            <button id="settings-btn" class="text-gray-600 hover:text-primary transition-colors">
-                <i class="fa fa-cog text-xl"></i>
-            </button>
+<body>
+    <div class="container">
+        <header>
+            <h1>Telegram 监控控制台</h1>
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">检查状态中...</span>
+            </div>
+        </header>
+
+        <div class="stats-container" id="statsContainer">
+            <!-- 统计卡片将通过 JavaScript 动态生成 -->
         </div>
-    </header>
 
-    <!-- 主内容区 -->
-    <main class="flex-1 overflow-y-auto">
-        <!-- 控制面板页面 -->
-        <section id="dashboard-page" class="p-4">
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="ios-card p-4">
-                    <div class="text-gray-600 text-sm mb-1">监控群组</div>
-                    <div class="text-2xl font-semibold" id="group-count">0</div>
-                </div>
-                <div class="ios-card p-4">
-                    <div class="text-gray-600 text-sm mb-1">关键词</div>
-                    <div class="text-2xl font-semibold" id="keyword-count">0</div>
-                </div>
-                <div class="ios-card p-4">
-                    <div class="text-gray-600 text-sm mb-1">已发送用户</div>
-                    <div class="text-2xl font-semibold" id="sent-users-count">0</div>
-                </div>
-                <div class="ios-card p-4">
-                    <div class="text-gray-600 text-sm mb-1">今日发送</div>
-                    <div class="text-2xl font-semibold" id="today-sent-count">0</div>
-                </div>
-            </div>
+        <div class="tabs">
+            <div class="tab active" data-tab="keywords">关键词管理</div>
+            <div class="tab" data-tab="groups">群组管理</div>
+            <div class="tab" data-tab="messages">回复消息</div>
+            <div class="tab" data-tab="monitor-logs">监控日志</div>
+            <div class="tab" data-tab="send-logs">发送记录</div>
+            <div class="tab" data-tab="settings">系统设置</div>
+        </div>
 
-            <h2 class="section-title">最近活动</h2>
-            <div class="ios-card mb-6">
-                <div class="p-3 border-b border-gray-100 bg-gray-50">
-                    <div class="font-medium">监控日志</div>
-                </div>
-                <div id="recent-activity" class="max-h-64 overflow-y-auto">
-                    <!-- 活动日志将在这里动态加载 -->
-                    <div class="list-item">
-                        <div class="text-gray-500">加载中...</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 关键词管理页面 -->
-        <section id="keywords-page" class="p-4 hidden">
-            <h2 class="section-title">监控关键词</h2>
-            
-            <div class="ios-card mb-6">
-                <div class="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                    <div class="font-medium">关键词列表</div>
-                    <button id="add-keyword-btn" class="ios-button text-sm py-1">
-                        <i class="fa fa-plus mr-1"></i> 添加
+        <div class="tab-content active" id="keywords-tab">
+            <h2>关键词管理</h2>
+            <div class="form-group">
+                <label for="newKeyword">添加新关键词</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newKeyword" placeholder="输入关键词...">
+                    <button class="btn btn-primary" id="addKeywordBtn">
+                        <i class="fas fa-plus"></i> 添加
                     </button>
                 </div>
-                <div id="keywords-list" class="max-h-[calc(100vh-220px)] overflow-y-auto">
-                    <!-- 关键词列表将在这里动态加载 -->
-                    <div class="list-item">
-                        <div class="text-gray-500">加载中...</div>
-                    </div>
-                </div>
             </div>
-        </section>
-
-        <!-- 群组管理页面 -->
-        <section id="groups-page" class="p-4 hidden">
-            <h2 class="section-title">监控群组</h2>
-            
-            <div class="ios-card mb-6">
-                <div class="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                    <div class="font-medium">群组列表</div>
-                    <button id="add-group-btn" class="ios-button text-sm py-1">
-                        <i class="fa fa-plus mr-1"></i> 添加
-                    </button>
-                </div>
-                <div id="groups-list" class="max-h-[calc(100vh-220px)] overflow-y-auto">
-                    <!-- 群组列表将在这里动态加载 -->
-                    <div class="list-item">
-                        <div class="text-gray-500">加载中...</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 回复消息页面 -->
-        <section id="reply-page" class="p-4 hidden">
-            <h2 class="section-title">自动回复消息</h2>
-            
-            <div class="ios-card mb-6">
-                <div class="p-4">
-                    <label class="ios-label" for="reply-content">回复内容</label>
-                    <textarea id="reply-content" class="ios-input h-40" placeholder="输入自动回复的内容..."></textarea>
-                    <div class="mt-4 flex justify-end">
-                        <button id="save-reply-btn" class="ios-button">保存修改</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 发送记录页面 -->
-        <section id="logs-page" class="p-4 hidden">
-            <h2 class="section-title">监控与发送记录</h2>
-            
-            <div class="ios-card mb-6">
-                <div class="p-3 border-b border-gray-100 bg-gray-50">
-                    <div class="font-medium">发送记录</div>
-                </div>
-                <div id="send-records-list" class="max-h-[calc(100vh-220px)] overflow-y-auto">
-                    <!-- 发送记录将在这里动态加载 -->
-                    <div class="list-item">
-                        <div class="text-gray-500">加载中...</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 已发送用户页面 -->
-        <section id="sent-users-page" class="p-4 hidden">
-            <h2 class="section-title">已发送用户</h2>
-            
-            <div class="ios-card mb-6">
-                <div class="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                    <div class="font-medium">用户列表</div>
-                    <button id="clear-sent-users-btn" class="ios-button-danger text-sm py-1">
-                        <i class="fa fa-trash mr-1"></i> 清空
-                    </button>
-                </div>
-                <div id="sent-users-list" class="max-h-[calc(100vh-220px)] overflow-y-auto">
-                    <!-- 已发送用户列表将在这里动态加载 -->
-                    <div class="list-item">
-                        <div class="text-gray-500">加载中...</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- 底部导航栏 -->
-    <footer class="bg-white border-t border-gray-200 py-2 px-4 sticky bottom-0 z-10">
-        <div class="flex justify-around">
-            <button class="nav-item active" data-page="dashboard-page">
-                <i class="fa fa-tachometer text-xl mb-1"></i>
-                <span class="text-xs">控制台</span>
-            </button>
-            <button class="nav-item" data-page="keywords-page">
-                <i class="fa fa-tags text-xl mb-1"></i>
-                <span class="text-xs">关键词</span>
-            </button>
-            <button class="nav-item" data-page="groups-page">
-                <i class="fa fa-users text-xl mb-1"></i>
-                <span class="text-xs">群组</span>
-            </button>
-            <button class="nav-item" data-page="reply-page">
-                <i class="fa fa-comment text-xl mb-1"></i>
-                <span class="text-xs">回复</span>
-            </button>
-            <button class="nav-item" data-page="logs-page">
-                <i class="fa fa-history text-xl mb-1"></i>
-                <span class="text-xs">记录</span>
-            </button>
-        </div>
-    </footer>
-
-    <!-- 添加关键词模态框 -->
-    <div id="keyword-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-xl w-full max-w-md p-5">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold" id="keyword-modal-title">添加关键词</h3>
-                <button id="close-keyword-modal" class="text-gray-500 hover:text-gray-800">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-            <div class="mb-4">
-                <label class="ios-label" for="keyword-input">关键词</label>
-                <input type="text" id="keyword-input" class="ios-input" placeholder="输入关键词">
-            </div>
-            <input type="hidden" id="keyword-id">
-            <div class="flex justify-end gap-2">
-                <button id="cancel-keyword-btn" class="ios-button-secondary">取消</button>
-                <button id="save-keyword-btn" class="ios-button">保存</button>
+            <div id="keywordsList">
+                <!-- 关键词列表将通过 JavaScript 动态生成 -->
             </div>
         </div>
-    </div>
 
-    <!-- 添加群组模态框 -->
-    <div id="group-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-xl w-full max-w-md p-5">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold" id="group-modal-title">添加群组</h3>
-                <button id="close-group-modal" class="text-gray-500 hover:text-gray-800">
-                    <i class="fa fa-times"></i>
-                </button>
+        <div class="tab-content" id="groups-tab">
+            <h2>群组管理</h2>
+            <div class="form-group">
+                <label for="newGroupId">添加新群组</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="newGroupId" placeholder="群组 ID...">
+                    <input type="text" id="newGroupName" placeholder="群组名称...">
+                    <button class="btn btn-primary" id="addGroupBtn">
+                        <i class="fas fa-plus"></i> 添加
+                    </button>
+                </div>
             </div>
-            <div class="mb-4">
-                <label class="ios-label" for="group-id-input">群组ID</label>
-                <input type="text" id="group-id-input" class="ios-input" placeholder="输入群组ID">
+            <div id="groupsList">
+                <!-- 群组列表将通过 JavaScript 动态生成 -->
             </div>
-            <div class="mb-4">
-                <label class="ios-label" for="group-name-input">群组名称（可选）</label>
-                <input type="text" id="group-name-input" class="ios-input" placeholder="输入群组名称">
+        </div>
+
+        <div class="tab-content" id="messages-tab">
+            <h2>回复消息管理</h2>
+            <div class="form-group">
+                <label for="replyMessage">回复消息内容</label>
+                <textarea id="replyMessage" placeholder="输入回复消息内容..."></textarea>
             </div>
-            <div class="mb-4">
-                <label class="flex items-center">
-                    <input type="checkbox" id="group-active-input" class="mr-2" checked>
-                    <span>启用监控</span>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="messageActive" checked> 启用此消息
                 </label>
             </div>
-            <input type="hidden" id="group-id">
-            <div class="flex justify-end gap-2">
-                <button id="cancel-group-btn" class="ios-button-secondary">取消</button>
-                <button id="save-group-btn" class="ios-button">保存</button>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="saveMessageBtn">
+                    <i class="fas fa-save"></i> 保存消息
+                </button>
+                <button class="btn btn-secondary" id="resetMessageBtn">
+                    <i class="fas fa-undo"></i> 重置
+                </button>
+            </div>
+            <div id="messagesList" style="margin-top: 30px;">
+                <!-- 消息列表将通过 JavaScript 动态生成 -->
+            </div>
+        </div>
+
+        <div class="tab-content" id="monitor-logs-tab">
+            <h2>监控日志</h2>
+            <div id="monitorLogsList">
+                <!-- 监控日志将通过 JavaScript 动态生成 -->
+            </div>
+            <div class="pagination" id="monitorLogsPagination">
+                <!-- 分页按钮将通过 JavaScript 动态生成 -->
+            </div>
+        </div>
+
+        <div class="tab-content" id="send-logs-tab">
+            <h2>发送记录</h2>
+            <div id="sendLogsList">
+                <!-- 发送记录将通过 JavaScript 动态生成 -->
+            </div>
+            <div class="pagination" id="sendLogsPagination">
+                <!-- 分页按钮将通过 JavaScript 动态生成 -->
+            </div>
+        </div>
+
+        <div class="tab-content" id="settings-tab">
+            <h2>系统设置</h2>
+            <div class="form-group">
+                <label for="apiId">API ID</label>
+                <input type="text" id="apiId" placeholder="Telegram API ID...">
+            </div>
+            <div class="form-group">
+                <label for="apiHash">API Hash</label>
+                <input type="text" id="apiHash" placeholder="Telegram API Hash...">
+            </div>
+            <div class="form-group">
+                <label for="sessionFile">会话文件名</label>
+                <input type="text" id="sessionFile" placeholder="会话文件名...">
+            </div>
+            <div class="form-group">
+                <label>监控状态</label>
+                <label class="switch">
+                    <input type="checkbox" id="monitorStatus">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="saveSettingsBtn">
+                    <i class="fas fa-save"></i> 保存设置
+                </button>
+                <button class="btn btn-secondary" id="resetSettingsBtn">
+                    <i class="fas fa-undo"></i> 重置
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- 确认对话框 -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-xl w-full max-w-md p-5">
-            <h3 class="text-lg font-semibold mb-3" id="confirm-title">确认操作</h3>
-            <p class="text-gray-600 mb-5" id="confirm-message">您确定要执行此操作吗？</p>
-            <input type="hidden" id="confirm-action">
-            <input type="hidden" id="confirm-id">
-            <div class="flex justify-end gap-2">
-                <button id="cancel-confirm-btn" class="ios-button-secondary">取消</button>
-                <button id="confirm-btn" class="ios-button-danger">确认</button>
+    <!-- 编辑关键词模态框 -->
+    <div class="modal" id="editKeywordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑关键词</h3>
+                <button class="modal-close" data-modal="editKeywordModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="editKeywordInput">关键词</label>
+                    <input type="text" id="editKeywordInput">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal="editKeywordModal">取消</button>
+                <button class="btn btn-primary" id="saveKeywordBtn">保存</button>
             </div>
         </div>
     </div>
 
-    <!-- 通知提示 -->
-    <div id="toast" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 z-50"></div>
+    <!-- 编辑群组模态框 -->
+    <div class="modal" id="editGroupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑群组</h3>
+                <button class="modal-close" data-modal="editGroupModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="editGroupIdInput">群组 ID</label>
+                    <input type="number" id="editGroupIdInput">
+                </div>
+                <div class="form-group">
+                    <label for="editGroupNameInput">群组名称</label>
+                    <input type="text" id="editGroupNameInput">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal="editGroupModal">取消</button>
+                <button class="btn btn-primary" id="saveGroupBtn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    <div class="toast" id="toast"></div>
 
     <script>
-        // 配置
-        const API_URL = "https://wanhua-game.bingkuijing.workers.dev/api";
-        const ADMIN_TOKEN = "your-secure-admin-token"; // 替换为你设置的ADMIN_TOKEN
-        
-        // DOM元素
-        const pages = document.querySelectorAll('main > section');
-        const navItems = document.querySelectorAll('.nav-item');
-        const pageTitle = document.getElementById('page-title');
-        
-        // 导航切换
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                // 移除所有活动状态
-                navItems.forEach(i => i.classList.remove('active'));
-                pages.forEach(page => page.classList.add('hidden'));
-                
-                // 设置当前活动状态
-                item.classList.add('active');
-                const pageId = item.getAttribute('data-page');
-                document.getElementById(pageId).classList.remove('hidden');
-                
-                // 更新页面标题
-                switch(pageId) {
-                    case 'dashboard-page':
-                        pageTitle.textContent = 'Telegram监控管理';
-                        break;
-                    case 'keywords-page':
-                        pageTitle.textContent = '监控关键词';
-                        loadKeywords();
-                        break;
-                    case 'groups-page':
-                        pageTitle.textContent = '监控群组';
-                        loadGroups();
-                        break;
-                    case 'reply-page':
-                        pageTitle.textContent = '自动回复消息';
-                        loadReplyMessage();
-                        break;
-                    case 'logs-page':
-                        pageTitle.textContent = '监控与发送记录';
-                        loadSendRecords();
-                        break;
-                    case 'sent-users-page':
-                        pageTitle.textContent = '已发送用户';
-                        loadSentUsers();
-                        break;
-                }
-            });
+        // API 基础 URL
+        const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev/api';
+
+        // 当前编辑的关键词/群组 ID
+        let currentEditId = null;
+
+        // 监控日志和发送记录的当前页码
+        let monitorLogsPage = 1;
+        let sendLogsPage = 1;
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化标签页切换
+            initTabs();
+            
+            // 初始化模态框
+            initModals();
+            
+            // 加载统计数据
+            loadStats();
+            
+            // 加载关键词列表
+            loadKeywords();
+            
+            // 加载群组列表
+            loadGroups();
+            
+            // 加载回复消息
+            loadMessages();
+            
+            // 加载监控日志
+            loadMonitorLogs();
+            
+            // 加载发送记录
+            loadSendLogs();
+            
+            // 加载系统设置
+            loadSettings();
+            
+            // 绑定按钮事件
+            bindButtonEvents();
         });
-        
-        // API请求函数
-        async function apiRequest(endpoint, method = 'GET', data = null) {
-            try {
-                const options = {
-                    method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+
+        // 初始化标签页切换
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    
+                    // 移除所有标签的 active 类
+                    tabs.forEach(t => t.classList.remove('active'));
+                    
+                    // 添加当前标签的 active 类
+                    this.classList.add('active');
+                    
+                    // 隐藏所有标签内容
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // 显示当前标签内容
+                    document.getElementById(`${tabName}-tab`).classList.add('active');
+                });
+            });
+        }
+
+        // 初始化模态框
+        function initModals() {
+            const modalCloseButtons = document.querySelectorAll('.modal-close');
+            const modalCancelButtons = document.querySelectorAll('.modal-footer .btn-secondary');
+            
+            modalCloseButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modalId = this.getAttribute('data-modal');
+                    document.getElementById(modalId).classList.remove('active');
+                });
+            });
+            
+            modalCancelButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modalId = this.getAttribute('data-modal');
+                    document.getElementById(modalId).classList.remove('active');
+                });
+            });
+            
+            // 点击模态框外部关闭
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('active');
                     }
-                };
+                });
+            });
+        }
+
+        // 绑定按钮事件
+        function bindButtonEvents() {
+            // 添加关键词按钮
+            document.getElementById('addKeywordBtn').addEventListener('click', addKeyword);
+            
+            // 保存关键词按钮
+            document.getElementById('saveKeywordBtn').addEventListener('click', saveKeyword);
+            
+            // 添加群组按钮
+            document.getElementById('addGroupBtn').addEventListener('click', addGroup);
+            
+            // 保存群组按钮
+            document.getElementById('saveGroupBtn').addEventListener('click', saveGroup);
+            
+            // 保存消息按钮
+            document.getElementById('saveMessageBtn').addEventListener('click', saveMessage);
+            
+            // 重置消息按钮
+            document.getElementById('resetMessageBtn').addEventListener('click', resetMessage);
+            
+            // 保存设置按钮
+            document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+            
+            // 重置设置按钮
+            document.getElementById('resetSettingsBtn').addEventListener('click', resetSettings);
+        }
+
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats`);
+                const data = await response.json();
                 
-                if (data) {
-                    options.body = JSON.stringify(data);
+                // 更新状态指示器
+                const statusDot = document.getElementById('statusDot');
+                const statusText = document.getElementById('statusText');
+                
+                if (data.monitor_status === 'running') {
+                    statusDot.classList.add('active');
+                    statusDot.classList.remove('inactive');
+                    statusText.textContent = '监控运行中';
+                } else {
+                    statusDot.classList.add('inactive');
+                    statusDot.classList.remove('active');
+                    statusText.textContent = '监控已停止';
                 }
                 
-                const response = await fetch(`${API_URL}${endpoint}`, options);
-                
-                if (!response.ok) {
-                    throw new Error(`API请求失败: ${response.status}`);
-                }
-                
-                return await response.json();
+                // 生成统计卡片
+                const statsContainer = document.getElementById('statsContainer');
+                statsContainer.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-hashtag"></i></div>
+                        <div class="stat-value">${data.keywords_count}</div>
+                        <div class="stat-label">监控关键词</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-value">${data.groups_count}</div>
+                        <div class="stat-label">监控群组</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                        <div class="stat-value">${data.sent_users_count}</div>
+                        <div class="stat-label">已发送用户</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-eye"></i></div>
+                        <div class="stat-value">${data.monitor_logs_count}</div>
+                        <div class="stat-label">监控日志</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-paper-plane"></i></div>
+                        <div class="stat-value">${data.send_logs_count}</div>
+                        <div class="stat-label">发送记录</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-value">${data.success_rate}%</div>
+                        <div class="stat-label">发送成功率</div>
+                    </div>
+                `;
             } catch (error) {
-                console.error('API请求错误:', error);
-                showToast('操作失败，请稍后重试');
-                return null;
+                console.error('加载统计数据失败:', error);
+                showToast('加载统计数据失败', 'danger');
             }
         }
-        
-        // 显示提示消息
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.remove('opacity-0');
-            toast.classList.add('opacity-100');
-            
-            setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0');
-            }, 3000);
-        }
-        
-        // 加载控制面板数据
-        async function loadDashboard() {
-            // 加载群组数量
-            const groups = await apiRequest('/groups');
-            if (groups) {
-                document.getElementById('group-count').textContent = groups.length;
-            }
-            
-            // 加载关键词数量
-            const keywords = await apiRequest('/keywords');
-            if (keywords) {
-                document.getElementById('keyword-count').textContent = keywords.length;
-            }
-            
-            // 加载已发送用户数量
-            const sentUsers = await apiRequest('/sent-users');
-            if (sentUsers) {
-                document.getElementById('sent-users-count').textContent = sentUsers.length;
-            }
-            
-            // 加载最近活动
-            const logs = await apiRequest('/monitor-logs');
-            if (logs) {
-                const activityContainer = document.getElementById('recent-activity');
-                activityContainer.innerHTML = '';
+
+        // 加载关键词列表
+        async function loadKeywords() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/keywords`);
+                const keywords = await response.json();
                 
-                if (logs.length === 0) {
-                    activityContainer.innerHTML = `
-                        <div class="list-item">
-                            <div class="text-gray-500">暂无监控记录</div>
+                const keywordsList = document.getElementById('keywordsList');
+                
+                if (keywords.length === 0) {
+                    keywordsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-hashtag"></i>
+                            <p>暂无关键词</p>
                         </div>
                     `;
                     return;
                 }
                 
-                logs.slice(0, 5).forEach(log => {
-                    const date = new Date(log.created_at).toLocaleString();
-                    const item = document.createElement('div');
-                    item.className = 'list-item';
-                    item.innerHTML = `
-                        <div>
-                            <div class="font-medium">用户 ${log.user_id}</div>
-                            <div class="text-sm text-gray-600">匹配关键词: ${log.matched_keywords.join(', ')}</div>
-                            <div class="text-xs text-gray-500">${date}</div>
-                        </div>
+                let html = '<table class="data-table"><thead><tr><th>关键词</th><th>创建时间</th><th>操作</th></tr></thead><tbody>';
+                
+                keywords.forEach(keyword => {
+                    const createdAt = new Date(keyword.created_at).toLocaleString('zh-CN');
+                    html += `
+                        <tr>
+                            <td>${keyword.keyword}</td>
+                            <td>${createdAt}</td>
+                            <td class="actions">
+                                <button class="btn btn-primary btn-icon" onclick="editKeyword(${keyword.id}, '${keyword.keyword}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-icon" onclick="deleteKeyword(${keyword.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
                     `;
-                    activityContainer.appendChild(item);
                 });
-            }
-            
-            // 计算今日发送数量
-            const sendRecords = await apiRequest('/send-records');
-            if (sendRecords) {
-                const today = new Date().toISOString().split('T')[0];
-                const todayCount = sendRecords.filter(record => 
-                    record.created_at.startsWith(today) && record.status === 'success'
-                ).length;
-                document.getElementById('today-sent-count').textContent = todayCount;
+                
+                html += '</tbody></table>';
+                keywordsList.innerHTML = html;
+            } catch (error) {
+                console.error('加载关键词列表失败:', error);
+                showToast('加载关键词列表失败', 'danger');
             }
         }
-        
-        // 加载关键词
-        async function loadKeywords() {
-            const keywords = await apiRequest('/keywords');
-            const container = document.getElementById('keywords-list');
-            
-            if (!keywords) {
-                container.innerHTML = `
-                    <div class="list-item">
-                        <div class="text-gray-500">加载关键词失败</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            if (keywords.length === 0) {
-                container.innerHTML = `
-                    <div class="list-item">
-                        <div class="text-gray-500">暂无关键词，请添加</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = '';
-            keywords.forEach(keyword => {
-                const item = document.createElement('div');
-                item.className = 'list-item';
-                item.innerHTML = `
-                    <div class="font-medium">${keyword.keyword}</div>
-                    <div class="flex gap-2">
-                        <button class="edit-keyword-btn text-primary" data-id="${keyword.id}" data-keyword="${keyword.keyword}">
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                        <button class="delete-keyword-btn text-danger" data-id="${keyword.id}" data-name="${keyword.keyword}">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-            
-            // 添加编辑和删除事件监听
-            document.querySelectorAll('.edit-keyword-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    openKeywordModal(btn.getAttribute('data-id'), btn.getAttribute('data-keyword'));
-                });
-            });
-            
-            document.querySelectorAll('.delete-keyword-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    openConfirmModal(
-                        '删除关键词', 
-                        `确定要删除关键词"${btn.getAttribute('data-name')}"吗？`,
-                        'delete-keyword',
-                        btn.getAttribute('data-id')
-                    );
-                });
-            });
-        }
-        
-        // 打开关键词模态框
-        function openKeywordModal(id = null, keyword = '') {
-            const modal = document.getElementById('keyword-modal');
-            const title = document.getElementById('keyword-modal-title');
-            const input = document.getElementById('keyword-input');
-            const keywordId = document.getElementById('keyword-id');
-            
-            if (id) {
-                title.textContent = '编辑关键词';
-                input.value = keyword;
-                keywordId.value = id;
-            } else {
-                title.textContent = '添加关键词';
-                input.value = '';
-                keywordId.value = '';
-            }
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            input.focus();
-        }
-        
-        // 关闭关键词模态框
-        function closeKeywordModal() {
-            const modal = document.getElementById('keyword-modal');
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }
-        
-        // 保存关键词
-        async function saveKeyword() {
-            const id = document.getElementById('keyword-id').value;
-            const keyword = document.getElementById('keyword-input').value.trim();
+
+        // 添加关键词
+        async function addKeyword() {
+            const keywordInput = document.getElementById('newKeyword');
+            const keyword = keywordInput.value.trim();
             
             if (!keyword) {
-                showToast('请输入关键词');
+                showToast('请输入关键词', 'warning');
                 return;
             }
             
-            let result;
-            if (id) {
-                result = await apiRequest(`/keywords/${id}`, 'PUT', { keyword });
-            } else {
-                result = await apiRequest('/keywords', 'POST', { keyword });
-            }
-            
-            if (result) {
-                showToast(id ? '关键词更新成功' : '关键词添加成功');
-                closeKeywordModal();
-                loadKeywords();
-                loadDashboard(); // 刷新控制面板数据
+            try {
+                const response = await fetch(`${API_BASE_URL}/keywords`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ keyword }),
+                });
+                
+                if (response.ok) {
+                    keywordInput.value = '';
+                    loadKeywords();
+                    loadStats();
+                    showToast('关键词添加成功', 'success');
+                } else {
+                    const error = await response.json();
+                    showToast(`添加失败: ${error.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('添加关键词失败:', error);
+                showToast('添加关键词失败', 'danger');
             }
         }
-        
+
+        // 编辑关键词
+        function editKeyword(id, keyword) {
+            currentEditId = id;
+            document.getElementById('editKeywordInput').value = keyword;
+            document.getElementById('editKeywordModal').classList.add('active');
+        }
+
+        // 保存编辑的关键词
+        async function saveKeyword() {
+            const keyword = document.getElementById('editKeywordInput').value.trim();
+            
+            if (!keyword) {
+                showToast('请输入关键词', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/keywords?id=${currentEditId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ keyword }),
+                });
+                
+                if (response.ok) {
+                    document.getElementById('editKeywordModal').classList.remove('active');
+                    loadKeywords();
+                    showToast('关键词更新成功', 'success');
+                } else {
+                    const error = await response.json();
+                    showToast(`更新失败: ${error.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('更新关键词失败:', error);
+                showToast('更新关键词失败', 'danger');
+            }
+        }
+
         // 删除关键词
         async function deleteKeyword(id) {
-            const result = await apiRequest(`/keywords/${id}`, 'DELETE');
-            if (result && result.success !== false) {
-                showToast('关键词删除成功');
-                loadKeywords();
-                loadDashboard(); // 刷新控制面板数据
+            if (!confirm('确定要删除这个关键词吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/keywords?id=${id}`, {
+                    method: 'DELETE',
+                });
+                
+                if (response.ok) {
+                    loadKeywords();
+                    loadStats();
+                    showToast('关键词删除成功', 'success');
+                } else {
+                    const error = await response.json();
+                    showToast(`删除失败: ${error.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('删除关键词失败:', error);
+                showToast('删除关键词失败', 'danger');
             }
         }
-        
-        // 加载群组
+
+        // 加载群组列表
         async function loadGroups() {
-            const groups = await apiRequest('/groups');
-            const container = document.getElementById('groups-list');
-            
-            if (!groups) {
-                container.innerHTML = `
-                    <div class="list-item">
-                        <div class="text-gray-500">加载群组失败</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            if (groups.length === 0) {
-                container.innerHTML = `
-                    <div class="list-item">
-                        <div class="text-gray-500">暂无群组，请添加</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = '';
-            groups.forEach(group => {
-                const item = document.createElement('div');
-                item.className = 'list-item';
-                item.innerHTML = `
-                    <div>
-                        <div class="font-medium">${group.group_name || '未命名群组'}</div>
-                        <div class="text-sm text-gray-600">ID: ${group.group_id}</div>
-                        <div class="text-xs text-gray-500">
-                            ${group.is_active ? 
-                                '<span class="badge bg-secondary/20 text-secondary">已启用</span>' : 
-                                '<span class="badge bg-gray-200 text-gray-600">已禁用</span>'
-                            }
+            try {
+                const response = await fetch(`${API_BASE_URL}/groups`);
+                const groups = await response.json();
+                
+                const groupsList = document.getElementById('groupsList');
+                
+                if (groups.length === 0) {
+                    groupsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>暂无监控群组</p>
                         </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button class="edit-group-btn text-primary" 
-                            data-id="${group.id}" 
-                            data-group-id="${group.group_id}"
-                            data-group-name="${group.group_name || ''}"
-                            data-active="${group.is_active}">
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                        <button class="delete-group-btn text-danger" 
-                            data-id="${group.id}" 
-                            data-name="${group.group_name || group.group_id}">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-            
-            // 添加编辑和删除事件监听
-            document.querySelectorAll('.edit-group-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    openGroupModal(
-                        btn.getAttribute('data-id'),
-                        btn.getAttribute('data-group-id'),
-                        btn.getAttribute('data-group-name'),
-                        btn.getAttribute('data-active') === 'true'
-                    );
+                    `;
+                    return;
+                }
+                
+                let html = '<table class="data-table"><thead><tr><th>群组 ID</th><th>群组名称</th><th>创建时间</th><th>操作</th></tr></thead><tbody>';
+                
+                groups.forEach(group => {
+                    const createdAt = new Date(group.created_at).toLocaleString('zh-CN');
+                    html += `
+                        <tr>
+                            <td>${group.group_id}</td>
+                            <td>${group.group_name || '未命名'}</td>
+                            <td>${createdAt}</td>
+                            <td class="actions">
+                                <button class="btn btn-primary btn-icon" onclick="editGroup(${group.id}, ${group.group_id}, '${group.group_name || ''}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-icon" onclick="deleteGroup(${group.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
                 });
-            });
-            
-            document.querySelectorAll('.delete-group-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    openConfirmModal(
-                        '删除群组', 
-                        `确定要删除群组"${btn.getAttribute('data-name')}"吗？`,
-                        'delete-group',
-                        btn.getAttribute('data-id')
-                    );
-                });
-            });
-        }
-        
-        // 打开群组模态框
-        function openGroupModal(id = null, groupId = '', groupName = '', isActive = true) {
-            const modal = document.getElementById('group-modal');
-            const title = document.getElementById('group-modal-title');
-            const groupIdInput = document.getElementById('group-id-input');
-            const groupNameInput = document.getElementById('group-name-input');
-            const groupActiveInput = document.getElementById('group-active-input');
-            const groupIdField = document.getElementById('group-id');
-            
-            if (id) {
-                title.textContent = '编辑群组';
-                groupIdInput.value = groupId;
-                groupNameInput.value = groupName;
-                groupActiveInput.checked = isActive;
-                groupIdField.value = id;
-            } else {
-                title.textContent = '添加群组';
-                groupIdInput.value = '';
-                groupNameInput.value = '';
-                groupActiveInput.checked = true;
-                groupIdField.value = '';
+                
+                html += '</tbody></table>';
+                groupsList.innerHTML = html;
+            } catch (error) {
+                console.error('加载群组列表失败:', error);
+                showToast('加载群组列表失败', 'danger');
             }
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            groupIdInput.focus();
         }
-        
-        // 关闭群组模态框
-        function closeGroupModal() {
-            const modal = document.getElementById('group-modal');
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }
-        
-        // 保存群组
-        async function saveGroup() {
-            const id = document.getElementById('group-id').value;
-            const groupId = document.getElementById('group-id-input').value.trim();
-            const groupName = document.getElementById('group-name-input').value.trim();
-            const isActive = document.getElementById('group-active-input').checked;
+
+        // 添加群组
+        async function addGroup() {
+            const groupIdInput = document.getElementById('newGroupId');
+            const groupNameInput = document.getElementById('newGroupName');
+            const groupId = groupIdInput.value.trim();
+            const groupName = groupNameInput.value.trim();
             
             if (!groupId) {
-                showToast('请输入群组ID');
+                showToast('请输入群组 ID', 'warning');
                 return;
             }
             
-            if (!/^-?\d+$/.test(groupId)) {
-                showToast('群组ID必须是数字');
-                return;
-            }
-            
-            let result;
-            const data = {
-                group_id: parseInt(groupId),
-                group_name: groupName,
-                is_active: isActive
-            };
-            
-            if (id) {
-                result = await apiRequest(`/groups/${id}`, 'PUT', data);
-            } else {
-                result = await apiRequest('/groups', 'POST', data);
-            }
-            
-            if (result) {
-                showToast(id ? '群组更新成功' : '群组添加成功');
-                closeGroupModal();
-                loadGroups();
-                loadDashboard(); // 刷新控制面板数据
+            try {
+                const response = await fetch(`${API_BASE_URL}/groups`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ group_id: parseInt(groupId), group_name: groupName }),
+                });
+                
+                if (response.ok) {
+                    groupIdInput.value = '';
+                    groupNameInput.value = '';
+                    loadGroups();
+                    loadStats();
+                    showToast('群组添加成功', 'success');
+                } else {
+                    const error = await response.json();
+                    showToast(`添加失败: ${error.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('添加群组失败:', error);
+                showToast('添加群组失败', 'danger');
             }
         }
-        
+
+        // 编辑群组
+        function editGroup(id, groupId, groupName) {
+            currentEditId = id;
+            document.getElementById('editGroupIdInput').value = groupId;
+            document.getElementById('editGroupNameInput').value = groupName;
+            document.getElementById('editGroupModal').classList.add('active');
+        }
+
+        // 保存编辑的群组
+        async function saveGroup() {
+            const groupId = document.getElementById('editGroupIdInput').value.trim();
+            const groupName = document.getElementById('editGroupNameInput').value.trim();
+            
+            if (!groupId) {
+                showToast('请输入群组 ID', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/groups?id=${currentEditId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ group_id: parseInt(groupId), group_name: groupName }),
+                });
+                
+                if (response.ok) {
+                    document.getElementById('editGroupModal').classList.remove('active');
+                    loadGroups();
+                    showToast('群组更新成功', 'success');
+                } else {
+                    const error = await response.json();
+                    showToast(`更新失败: ${error.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('更新群组失败:', error);
+                showToast('更新群组失败', 'danger');
+            }
+        }
+
         // 删除群组
         async function deleteGroup(id) {
-            const result = await apiRequest(`/groups/${id}`, 'DELETE');
-            if (result && result.success !== false) {
-                showToast('群组删除成功');
-                loadGroups();
-                loadDashboard(); // 刷新控制面板数据
-            }
-        }
-        
-        // 加载回复消息
-        async function loadReplyMessage() {
-            const message = await apiRequest('/reply-message');
-            const textarea = document.getElementById('reply-content');
-            
-            if (message && message.content) {
-                textarea.value = message.content;
-            } else {
-                textarea.value = '';
-                showToast('加载回复消息失败');
-            }
-        }
-        
-        // 保存回复消息
-        async function saveReplyMessage() {
-            const content = document.getElementById('reply-content').value;
-            
-            if (!content.trim()) {
-                showToast('回复消息不能为空');
+            if (!confirm('确定要删除这个群组吗？')) {
                 return;
             }
             
-            const result = await apiRequest('/reply-message', 'PUT', { content });
-            if (result) {
-                showToast('回复消息保存成功');
-            }
-        }
-        
-        // 加载发送记录
-        async function loadSendRecords() {
-            const records = await apiRequest('/send-records');
-            const container = document.getElementById('send-records-list');
-            
-            if (!records) {
-                container.innerHTML = `
-                    <div class="list-item">
-                        <div class="text-gray-500">加载发送记录失败</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            if (records.length === 0) {
-                container.innerHTML = `
-                    <div class="list-item">
-                        <div class="text-gray-500">暂无发送记录</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = '';
-            records.forEach(record => {
-                const date = new Date(record.created_at).toLocaleString();
-                const item = document.createElement('div');
-                item.className = 'list-item';
-                item.innerHTML = `
-                    <div>
-                        <div class="font-medium">用户 ${record.user_id}</div>
-                        <div class="text-sm text-gray-600">
-                            群组: ${record.group_id} | 
-                            ${record.status === 'success' ? 
-                                '<span class="text-secondary">发送成功</span>' : 
-                                '<span class="text-danger">发送失败</span>'
-                            }
-                        </div>
-                        <div class="text-xs text-gray-500">${date}</div>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-        }
-        
-        // 加载已发送用户
-        async function loadSentUsers() {
-            const users = await apiRequest('/sent-users');
-            const container = document.getElementById('sent-users-list');
-            
-            if (!users) {
-                container.innerHTML = `
-                    <div class="list-item">
-                        <div class="text-gray-500">加载已发送用户失败</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            if (users.length === 0) {
-                container.innerHTML = `
-                    <div class="list-item">
-                        <div class="text-gray-500">暂无已发送用户记录</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = '';
-            users.forEach(user => {
-                const date = new Date(user.created_at).toLocaleString();
-                const item = document.createElement('div');
-                item.className = 'list-item';
-                item.innerHTML = `
-                    <div>
-                        <div class="font-medium">用户ID: ${user.user_id}</div>
-                        <div class="text-xs text-gray-500">发送时间: ${date}</div>
-                    </div>
-                    <button class="delete-sent-user-btn text-danger" data-id="${user.user_id}">
-                        <i class="fa fa-trash"></i>
-                    </button>
-                `;
-                container.appendChild(item);
-            });
-            
-            // 添加删除事件监听
-            document.querySelectorAll('.delete-sent-user-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    openConfirmModal(
-                        '移除已发送记录', 
-                        `确定要移除用户 ${btn.getAttribute('data-id')} 的已发送记录吗？`,
-                        'delete-sent-user',
-                        btn.getAttribute('data-id')
-                    );
+            try {
+                const response = await fetch(`${API_BASE_URL}/groups?id=${id}`, {
+                    method: 'DELETE',
                 });
-            });
-        }
-        
-        // 删除已发送用户记录
-        async function deleteSentUser(userId) {
-            const result = await apiRequest(`/sent-users/${userId}`, 'DELETE');
-            if (result && result.success) {
-                showToast('已发送记录删除成功');
-                loadSentUsers();
-                loadDashboard(); // 刷新控制面板数据
+                
+                if (response.ok) {
+                    loadGroups();
+                    loadStats();
+                    showToast('群组删除成功', 'success');
+                } else {
+                    const error = await response.json();
+                    showToast(`删除失败: ${error.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('删除群组失败:', error);
+                showToast('删除群组失败', 'danger');
             }
         }
-        
-        // 清空已发送用户记录
-        async function clearSentUsers() {
-            const sentUsers = await apiRequest('/sent-users');
-            if (!sentUsers || sentUsers.length === 0) {
-                showToast('没有可清空的记录');
+
+        // 加载回复消息
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/messages`);
+                const messages = await response.json();
+                
+                if (messages.length > 0) {
+                    const activeMessage = messages.find(m => m.is_active) || messages[0];
+                    document.getElementById('replyMessage').value = activeMessage.message_text;
+                    document.getElementById('messageActive').checked = activeMessage.is_active;
+                }
+                
+                const messagesList = document.getElementById('messagesList');
+                
+                if (messages.length === 0) {
+                    messagesList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-comment"></i>
+                            <p>暂无回复消息</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<h3>历史消息</h3><table class="data-table"><thead><tr><th>消息内容</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead><tbody>';
+                
+                messages.forEach(message => {
+                    const createdAt = new Date(message.created_at).toLocaleString('zh-CN');
+                    const statusText = message.is_active ? '启用' : '禁用';
+                    const statusClass = message.is_active ? 'ios-green' : 'ios-gray';
+                    
+                    html += `
+                        <tr>
+                            <td>${message.message_text.substring(0, 50)}${message.message_text.length > 50 ? '...' : ''}</td>
+                            <td><span style="color: var(--${statusClass})">${statusText}</span></td>
+                            <td>${createdAt}</td>
+                            <td class="actions">
+                                <button class="btn btn-primary btn-icon" onclick="editMessage(${message.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                messagesList.innerHTML = html;
+            } catch (error) {
+                console.error('加载回复消息失败:', error);
+                showToast('加载回复消息失败', 'danger');
+            }
+        }
+
+        // 保存回复消息
+        async function saveMessage() {
+            const messageText = document.getElementById('replyMessage').value.trim();
+            const isActive = document.getElementById('messageActive').checked;
+            
+            if (!messageText) {
+                showToast('请输入回复消息内容', 'warning');
                 return;
             }
             
-            // 批量删除所有已发送用户记录
-            let success = true;
-            for (const user of sentUsers) {
-                const result = await apiRequest(`/sent-users/${user.user_id}`, 'DELETE');
-                if (!result || !result.success) {
-                    success = false;
-                    break;
+            try {
+                const response = await fetch(`${API_BASE_URL}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message_text: messageText, is_active: isActive }),
+                });
+                
+                if (response.ok) {
+                    loadMessages();
+                    showToast('消息保存成功', 'success');
+                } else {
+                    const error = await response.json();
+                    showToast(`保存失败: ${error.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('保存回复消息失败:', error);
+                showToast('保存回复消息失败', 'danger');
+            }
+        }
+
+        // 重置回复消息
+        function resetMessage() {
+            loadMessages();
+            showToast('已重置', 'success');
+        }
+
+        // 编辑消息
+        async function editMessage(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/messages`);
+                const messages = await response.json();
+                const message = messages.find(m => m.id === id);
+                
+                if (message) {
+                    document.getElementById('replyMessage').value = message.message_text;
+                    document.getElementById('messageActive').checked = message.is_active;
+                    
+                    // 滚动到消息编辑区域
+                    document.getElementById('messages-tab').scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                console.error('加载消息详情失败:', error);
+                showToast('加载消息详情失败', 'danger');
+            }
+        }
+
+        // 加载监控日志
+        async function loadMonitorLogs(page = 1) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/logs/monitor?page=${page}&limit=10`);
+                const data = await response.json();
+                
+                const monitorLogsList = document.getElementById('monitorLogsList');
+                
+                if (data.data.length === 0) {
+                    monitorLogsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>暂无监控日志</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<table class="data-table"><thead><tr><th>群组 ID</th><th>用户 ID</th><th>消息内容</th><th>匹配关键词</th><th>时间</th></tr></thead><tbody>';
+                
+                data.data.forEach(log => {
+                    const createdAt = new Date(log.created_at).toLocaleString('zh-CN');
+                    const messagePreview = log.message.length > 50 ? log.message.substring(0, 50) + '...' : log.message;
+                    const matchedKeywords = Array.isArray(log.matched_keywords) ? log.matched_keywords.join(', ') : '';
+                    
+                    html += `
+                        <tr>
+                            <td>${log.group_id || '-'}</td>
+                            <td>${log.user_id}</td>
+                            <td title="${log.message}">${messagePreview}</td>
+                            <td>${matchedKeywords}</td>
+                            <td>${createdAt}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                monitorLogsList.innerHTML = html;
+                
+                // 生成分页
+                generatePagination('monitorLogsPagination', data.pagination, loadMonitorLogs);
+            } catch (error) {
+                console.error('加载监控日志失败:', error);
+                showToast('加载监控日志失败', 'danger');
+            }
+        }
+
+        // 加载发送记录
+        async function loadSendLogs(page = 1) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/logs/send?page=${page}&limit=10`);
+                const data = await response.json();
+                
+                const sendLogsList = document.getElementById('sendLogsList');
+                
+                if (data.data.length === 0) {
+                    sendLogsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-paper-plane"></i>
+                            <p>暂无发送记录</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<table class="data-table"><thead><tr><th>用户 ID</th><th>群组 ID</th><th>状态</th><th>时间</th></tr></thead><tbody>';
+                
+                data.data.forEach(log => {
+                    const createdAt = new Date(log.created_at).toLocaleString('zh-CN');
+                    const statusText = log.status === 'success' ? '成功' : '失败';
+                    const statusClass = log.status === 'success' ? 'ios-green' : 'ios-red';
+                    
+                    html += `
+                        <tr>
+                            <td>${log.user_id}</td>
+                            <td>${log.group_id || '-'}</td>
+                            <td><span style="color: var(--${statusClass})">${statusText}</span></td>
+                            <td>${createdAt}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                sendLogsList.innerHTML = html;
+                
+                // 生成分页
+                generatePagination('sendLogsPagination', data.pagination, loadSendLogs);
+            } catch (error) {
+                console.error('加载发送记录失败:', error);
+                showToast('加载发送记录失败', 'danger');
+            }
+        }
+
+        // 生成分页
+        function generatePagination(containerId, pagination, loadFunction) {
+            const container = document.getElementById(containerId);
+            const { page, totalPages } = pagination;
+            
+            let html = '';
+            
+            // 上一页按钮
+            html += `<button ${page === 1 ? 'disabled' : ''} onclick="${loadFunction.name}(${page - 1})"><i class="fas fa-chevron-left"></i></button>`;
+            
+            // 页码按钮
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+                    html += `<button class="${i === page ? 'active' : ''}" onclick="${loadFunction.name}(${i})">${i}</button>`;
+                } else if (i === page - 3 || i === page + 3) {
+                    html += `<button disabled>...</button>`;
                 }
             }
             
-            if (success) {
-                showToast('已清空所有已发送记录');
-                loadSentUsers();
-                loadDashboard(); // 刷新控制面板数据
+            // 下一页按钮
+            html += `<button ${page === totalPages ? 'disabled' : ''} onclick="${loadFunction.name}(${page + 1})"><i class="fas fa-chevron-right"></i></button>`;
+            
+            container.innerHTML = html;
+        }
+
+        // 加载系统设置
+        async function loadSettings() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/settings`);
+                const settings = await response.json();
+                
+                document.getElementById('apiId').value = settings.api_id || '';
+                document.getElementById('apiHash').value = settings.api_hash || '';
+                document.getElementById('sessionFile').value = settings.session_file || '';
+                document.getElementById('monitorStatus').checked = settings.monitor_status === 'running';
+            } catch (error) {
+                console.error('加载系统设置失败:', error);
+                showToast('加载系统设置失败', 'danger');
+            }
+        }
+
+        // 保存系统设置
+        async function saveSettings() {
+            const apiId = document.getElementById('apiId').value.trim();
+            const apiHash = document.getElementById('apiHash').value.trim();
+            const sessionFile = document.getElementById('sessionFile').value.trim();
+            const monitorStatus = document.getElementById('monitorStatus').checked ? 'running' : 'stopped';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        settings: {
+                            api_id: apiId,
+                            api_hash: apiHash,
+                            session_file: sessionFile,
+                            monitor_status: monitorStatus
+                        }
+                    }),
+                });
+                
+                if (response.ok) {
+                    loadStats();
+                    showToast('设置保存成功', 'success');
+                } else {
+                    const error = await response.json();
+                    showToast(`保存失败: ${error.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('保存系统设置失败:', error);
+                showToast('保存系统设置失败', 'danger');
+            }
+        }
+
+        // 重置系统设置
+        function resetSettings() {
+            loadSettings();
+            showToast('已重置', 'success');
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            
+            if (type === 'success') {
+                toast.style.backgroundColor = 'var(--ios-green)';
+            } else if (type === 'danger') {
+                toast.style.backgroundColor = 'var(--ios-red)';
+            } else if (type === 'warning') {
+                toast.style.backgroundColor = 'var(--ios-orange)';
             } else {
-                showToast('清空记录失败，请重试');
-            }
-        }
-        
-        // 打开确认对话框
-        function openConfirmModal(title, message, action, id) {
-            const modal = document.getElementById('confirm-modal');
-            document.getElementById('confirm-title').textContent = title;
-            document.getElementById('confirm-message').textContent = message;
-            document.getElementById('confirm-action').value = action;
-            document.getElementById('confirm-id').value = id;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-        
-        // 关闭确认对话框
-        function closeConfirmModal() {
-            const modal = document.getElementById('confirm-modal');
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }
-        
-        // 执行确认操作
-        function executeConfirmAction() {
-            const action = document.getElementById('confirm-action').value;
-            const id = document.getElementById('confirm-id').value;
-            
-            switch(action) {
-                case 'delete-keyword':
-                    deleteKeyword(id);
-                    break;
-                case 'delete-group':
-                    deleteGroup(id);
-                    break;
-                case 'delete-sent-user':
-                    deleteSentUser(id);
-                    break;
-                case 'clear-sent-users':
-                    clearSentUsers();
-                    break;
+                toast.style.backgroundColor = 'var(--ios-gray-dark)';
             }
             
-            closeConfirmModal();
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
-        
-        // 事件监听
-        document.addEventListener('DOMContentLoaded', () => {
-            // 加载默认页面
-            loadDashboard();
-            
-            // 关键词相关
-            document.getElementById('add-keyword-btn').addEventListener('click', () => openKeywordModal());
-            document.getElementById('close-keyword-modal').addEventListener('click', closeKeywordModal);
-            document.getElementById('cancel-keyword-btn').addEventListener('click', closeKeywordModal);
-            document.getElementById('save-keyword-btn').addEventListener('click', saveKeyword);
-            
-            // 群组相关
-            document.getElementById('add-group-btn').addEventListener('click', () => openGroupModal());
-            document.getElementById('close-group-modal').addEventListener('click', closeGroupModal);
-            document.getElementById('cancel-group-btn').addEventListener('click', closeGroupModal);
-            document.getElementById('save-group-btn').addEventListener('click', saveGroup);
-            
-            // 回复消息相关
-            document.getElementById('save-reply-btn').addEventListener('click', saveReplyMessage);
-            
-            // 已发送用户相关
-            document.getElementById('clear-sent-users-btn').addEventListener('click', () => {
-                openConfirmModal(
-                    '清空已发送记录', 
-                    '确定要清空所有已发送用户记录吗？这将允许重新向这些用户发送消息。',
-                    'clear-sent-users',
-                    ''
-                );
-            });
-            
-            // 确认对话框相关
-            document.getElementById('cancel-confirm-btn').addEventListener('click', closeConfirmModal);
-            document.getElementById('confirm-btn').addEventListener('click', executeConfirmAction);
-            
-            // 设置按钮 - 跳转到已发送用户页面
-            document.getElementById('settings-btn').addEventListener('click', () => {
-                document.querySelector('[data-page="sent-users-page"]').click();
-            });
-        });
     </script>
 </body>
 </html>
