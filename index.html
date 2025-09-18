@@ -419,7 +419,7 @@
             <el-table :data="monitorLogs" border style="width: 100%; margin-bottom: 16px;">
               <el-table-column prop="id" label="ID" width="180" align="center">
                 <template #default="scope">
-                  <span class="text-sm text-ios-gray-600">{{ scope.row.id.slice(0, 8) }}...</span>
+                  <span class="text-sm text-ios-gray-600">{{ scope.row.id?.slice(0, 8) }}...</span>
                 </template>
               </el-table-column>
               <el-table-column prop="created_at" label="时间" width="170" align="center">
@@ -440,7 +440,7 @@
               <el-table-column prop="matched_keywords" label="匹配关键词">
                 <template #default="scope">
                   <div class="flex flex-wrap gap-1">
-                    <span v-for="kw in scope.row.matched_keywords" :key="kw" class="text-xs bg-blue-50 text-ios-blue px-2 py-0.5 rounded-ios-sm">
+                    <span v-for="kw in (scope.row.matched_keywords || [])" :key="kw" class="text-xs bg-blue-50 text-ios-blue px-2 py-0.5 rounded-ios-sm">
                       {{ kw }}
                     </span>
                   </div>
@@ -477,7 +477,7 @@
             <el-table :data="sendRecords" border style="width: 100%; margin-bottom: 16px;">
               <el-table-column prop="id" label="ID" width="180" align="center">
                 <template #default="scope">
-                  <span class="text-sm text-ios-gray-600">{{ scope.row.id.slice(0, 8) }}...</span>
+                  <span class="text-sm text-ios-gray-600">{{ scope.row.id?.slice(0, 8) }}...</span>
                 </template>
               </el-table-column>
               <el-table-column prop="created_at" label="发送时间" width="170" align="center">
@@ -507,7 +507,7 @@
               </el-table-column>
               <el-table-column prop="message" label="发送内容" show-overflow-tooltip>
                 <template #default="scope">
-                  <span class="text-sm">{{ scope.row.message.slice(0, 50) }}...</span>
+                  <span class="text-sm">{{ (scope.row.message || '').slice(0, 50) }}...</span>
                 </template>
               </el-table-column>
             </el-table>
@@ -526,7 +526,7 @@
             <el-table :data="keywords" border style="width: 100%; margin-bottom: 16px;">
               <el-table-column prop="id" label="ID" width="180" align="center">
                 <template #default="scope">
-                  <span class="text-sm text-ios-gray-600">{{ scope.row.id.slice(0, 8) }}...</span>
+                  <span class="text-sm text-ios-gray-600">{{ scope.row.id?.slice(0, 8) }}...</span>
                 </template>
               </el-table-column>
               <el-table-column prop="keyword" label="关键词" width="200" align="center">
@@ -575,7 +575,7 @@
             <el-table :data="groups" border style="width: 100%; margin-bottom: 16px;">
               <el-table-column prop="id" label="ID" width="180" align="center">
                 <template #default="scope">
-                  <span class="text-sm text-ios-gray-600">{{ scope.row.id.slice(0, 8) }}...</span>
+                  <span class="text-sm text-ios-gray-600">{{ scope.row.id?.slice(0, 8) }}...</span>
                 </template>
               </el-table-column>
               <el-table-column prop="group_id" label="群组ID" width="180" align="center">
@@ -702,11 +702,17 @@
   </div>
 
   <script>
-    // 初始化 Vue 实例（修复按钮无效核心）
-    const { createApp, ref, onMounted, reactive, toRefs } = Vue;
+    // 1. 从Element Plus中导入所需组件（修复ElMessageBox未定义）
+    const { 
+      ElMessageBox, 
+      ElMessage 
+    } = ElementPlus;
+
+    // 2. 初始化Vue实例
+    const { createApp, ref, onMounted, reactive, toRefs, watch } = Vue;
     const app = createApp({
       setup() {
-        // 1. 全局状态
+        // 3. 全局状态（初始化所有数组为[]，避免表格数据异常）
         const state = reactive({
           // 页面切换
           currentPage: 'dashboard',
@@ -719,26 +725,26 @@
             totalKeywords: 0,
             activeGroups: 0,
             totalGroups: 0,
-            recentLogs: []
+            recentLogs: [] // 初始化为空数组
           },
           
           // 监控日志数据
-          monitorLogs: [],
+          monitorLogs: [], // 初始化为空数组
           logPage: 1,
           logPageSize: 10,
           logTotal: 0,
           logSearch: '',
           
           // 发送记录数据
-          sendRecords: [],
+          sendRecords: [], // 初始化为空数组
           
           // 关键词数据
-          keywords: [],
+          keywords: [], // 初始化为空数组
           addKeywordVisible: false,
           newKeyword: { keyword: '' },
           
           // 群组数据
-          groups: [],
+          groups: [], // 初始化为空数组
           addGroupVisible: false,
           newGroup: { group_id: '', group_name: '未知群组' },
           
@@ -746,13 +752,14 @@
           systemConfig: {}
         });
 
-        // 2. 接口基础配置
+        // 4. 接口基础配置
         const API_BASE_URL = 'https://wanhua-game.bingkuijing.workers.dev/api';
 
-        // 3. 页面切换方法
+        // 5. 页面切换方法
         const changePage = (page) => {
           state.currentPage = page;
-          // 加载对应页面数据
+          // 加载对应页面数据（添加加载状态提示）
+          ElMessage.info(`加载${getPageName(page)}中...`);
           switch(page) {
             case 'dashboard':
               loadDashboardData();
@@ -775,40 +782,66 @@
           }
         };
 
-        // 4. 工具函数：格式化时间
-        const formatTime = (timeStr) => {
-          if (!timeStr) return '';
-          const date = new Date(timeStr);
-          return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        // 辅助函数：获取页面名称
+        const getPageName = (page) => {
+          const pageMap = {
+            'dashboard': '仪表盘',
+            'monitorLogs': '监控日志',
+            'sendRecords': '发送记录',
+            'keywords': '关键词管理',
+            'groups': '群组管理',
+            'system': '系统配置'
+          };
+          return pageMap[page] || '数据';
         };
 
-        // 5. 仪表盘数据加载
+        // 6. 工具函数：格式化时间（处理null/undefined）
+        const formatTime = (timeStr) => {
+          if (!timeStr) return '暂无时间';
+          try {
+            const date = new Date(timeStr);
+            return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+          } catch (e) {
+            return '时间格式错误';
+          }
+        };
+
+        // 7. 仪表盘数据加载（添加错误处理和数据兜底）
         const loadDashboardData = async () => {
           try {
             // 加载监控日志（最近10条）
             const logRes = await axios.get(`${API_BASE_URL}/logs/monitor?limit=10`);
-            state.dashboardData.recentLogs = logRes.data.logs;
-            state.dashboardData.todayLogs = logRes.data.total;
+            state.dashboardData.recentLogs = Array.isArray(logRes.data.logs) ? logRes.data.logs : [];
+            state.dashboardData.todayLogs = typeof logRes.data.total === 'number' ? logRes.data.total : 0;
             
             // 加载发送记录
             const sendRes = await axios.get(`${API_BASE_URL}/logs/send`);
-            state.dashboardData.todaySends = sendRes.data.length;
+            state.dashboardData.todaySends = Array.isArray(sendRes.data) ? sendRes.data.length : 0;
             
             // 加载关键词
             const keywordRes = await axios.get(`${API_BASE_URL}/config/keywords`);
-            state.dashboardData.totalKeywords = keywordRes.data.length;
-            state.dashboardData.activeKeywords = keywordRes.data.filter(k => k.is_active).length;
+            const keywords = Array.isArray(keywordRes.data) ? keywordRes.data : [];
+            state.dashboardData.totalKeywords = keywords.length;
+            state.dashboardData.activeKeywords = keywords.filter(k => k.is_active).length;
             
             // 加载群组
             const groupRes = await axios.get(`${API_BASE_URL}/config/groups`);
-            state.dashboardData.totalGroups = groupRes.data.length;
-            state.dashboardData.activeGroups = groupRes.data.filter(g => g.is_active).length;
+            const groups = Array.isArray(groupRes.data) ? groupRes.data : [];
+            state.dashboardData.totalGroups = groups.length;
+            state.dashboardData.activeGroups = groups.filter(g => g.is_active).length;
+            
+            ElMessage.success('仪表盘数据加载成功');
           } catch (error) {
-            ElMessageBox.error(`加载仪表盘数据失败: ${error.message}`);
+            console.error('仪表盘加载错误:', error);
+            // 错误时重置数据为安全值
+            state.dashboardData.recentLogs = [];
+            state.dashboardData.todayLogs = 0;
+            state.dashboardData.todaySends = 0;
+            ElMessage.error(`仪表盘加载失败: ${error.message.slice(0, 50)}`);
           }
         };
 
-        // 6. 监控日志加载
+        // 8. 监控日志加载（添加数据格式校验）
         const fetchMonitorLogs = async () => {
           try {
             let url = `${API_BASE_URL}/logs/monitor?page=${state.logPage}&limit=${state.logPageSize}`;
@@ -817,10 +850,16 @@
             }
             
             const res = await axios.get(url);
-            state.monitorLogs = res.data.logs;
-            state.logTotal = res.data.total;
+            // 确保返回数据是数组
+            state.monitorLogs = Array.isArray(res.data.logs) ? res.data.logs : [];
+            state.logTotal = typeof res.data.total === 'number' ? res.data.total : 0;
+            
+            ElMessage.success(`加载到 ${state.monitorLogs.length} 条日志`);
           } catch (error) {
-            ElMessageBox.error(`获取监控日志失败: ${error.message}`);
+            console.error('日志加载错误:', error);
+            state.monitorLogs = []; // 错误时设为空数组
+            state.logTotal = 0;
+            ElMessage.error(`日志加载失败: ${error.message.slice(0, 50)}`);
           }
         };
 
@@ -835,23 +874,30 @@
           fetchMonitorLogs();
         };
 
-        // 7. 发送记录加载
+        // 9. 发送记录加载（修复reduce/is not a function错误）
         const fetchSendRecords = async () => {
           try {
             const res = await axios.get(`${API_BASE_URL}/logs/send`);
-            state.sendRecords = res.data;
+            // 关键修复：确保数据是数组
+            state.sendRecords = Array.isArray(res.data) ? res.data : [];
+            ElMessage.success(`加载到 ${state.sendRecords.length} 条发送记录`);
           } catch (error) {
-            ElMessageBox.error(`获取发送记录失败: ${error.message}`);
+            console.error('发送记录加载错误:', error);
+            state.sendRecords = []; // 错误时设为空数组
+            ElMessage.error(`发送记录加载失败: ${error.message.slice(0, 50)}`);
           }
         };
 
-        // 8. 关键词管理
+        // 10. 关键词管理（添加数据安全处理）
         const fetchKeywords = async () => {
           try {
             const res = await axios.get(`${API_BASE_URL}/config/keywords`);
-            state.keywords = res.data;
+            state.keywords = Array.isArray(res.data) ? res.data : [];
+            ElMessage.success(`加载到 ${state.keywords.length} 个关键词`);
           } catch (error) {
-            ElMessageBox.error(`获取关键词失败: ${error.message}`);
+            console.error('关键词加载错误:', error);
+            state.keywords = [];
+            ElMessage.error(`关键词加载失败: ${error.message.slice(0, 50)}`);
           }
         };
 
@@ -864,7 +910,7 @@
         // 添加关键词
         const addKeyword = async () => {
           if (!state.newKeyword.keyword.trim()) {
-            ElMessageBox.warning('请输入关键词');
+            ElMessage.warning('请输入关键词');
             return;
           }
 
@@ -876,9 +922,10 @@
             
             state.addKeywordVisible = false;
             fetchKeywords();
-            ElMessageBox.success('关键词添加成功');
+            ElMessage.success('关键词添加成功');
           } catch (error) {
-            ElMessageBox.error(`添加关键词失败: ${error.message}`);
+            console.error('添加关键词错误:', error);
+            ElMessage.error(`添加失败: ${error.message.slice(0, 50)}`);
           }
         };
 
@@ -889,10 +936,12 @@
               id: keyword.id,
               is_active: keyword.is_active
             });
+            ElMessage.success('状态更新成功');
           } catch (error) {
+            console.error('更新关键词错误:', error);
             // 回滚状态
             keyword.is_active = !keyword.is_active;
-            ElMessageBox.error(`更新关键词状态失败: ${error.message}`);
+            ElMessage.error(`更新失败: ${error.message.slice(0, 50)}`);
           }
         };
 
@@ -911,21 +960,25 @@
 
             await axios.delete(`${API_BASE_URL}/config/keywords?id=${id}`);
             fetchKeywords();
-            ElMessageBox.success('关键词删除成功');
+            ElMessage.success('关键词删除成功');
           } catch (error) {
             if (error.name !== 'Cancel') {
-              ElMessageBox.error(`删除关键词失败: ${error.message}`);
+              console.error('删除关键词错误:', error);
+              ElMessage.error(`删除失败: ${error.message.slice(0, 50)}`);
             }
           }
         };
 
-        // 9. 群组管理
+        // 11. 群组管理
         const fetchGroups = async () => {
           try {
             const res = await axios.get(`${API_BASE_URL}/config/groups`);
-            state.groups = res.data;
+            state.groups = Array.isArray(res.data) ? res.data : [];
+            ElMessage.success(`加载到 ${state.groups.length} 个群组`);
           } catch (error) {
-            ElMessageBox.error(`获取群组失败: ${error.message}`);
+            console.error('群组加载错误:', error);
+            state.groups = [];
+            ElMessage.error(`群组加载失败: ${error.message.slice(0, 50)}`);
           }
         };
 
@@ -939,7 +992,7 @@
         // 添加群组
         const addGroup = async () => {
           if (!state.newGroup.group_id.trim() || isNaN(Number(state.newGroup.group_id))) {
-            ElMessageBox.warning('请输入有效的群组ID（数字）');
+            ElMessage.warning('请输入有效的群组ID（数字）');
             return;
           }
 
@@ -952,9 +1005,10 @@
             
             state.addGroupVisible = false;
             fetchGroups();
-            ElMessageBox.success('群组添加成功');
+            ElMessage.success('群组添加成功');
           } catch (error) {
-            ElMessageBox.error(`添加群组失败: ${error.message}`);
+            console.error('添加群组错误:', error);
+            ElMessage.error(`添加失败: ${error.message.slice(0, 50)}`);
           }
         };
 
@@ -965,26 +1019,34 @@
               id: group.id,
               is_active: group.is_active
             });
+            ElMessage.success('状态更新成功');
           } catch (error) {
+            console.error('更新群组错误:', error);
             // 回滚状态
             group.is_active = !group.is_active;
-            ElMessageBox.error(`更新群组状态失败: ${error.message}`);
+            ElMessage.error(`更新失败: ${error.message.slice(0, 50)}`);
           }
         };
 
-        // 10. 系统配置
+        // 12. 系统配置
         const fetchSystemConfig = async () => {
           try {
             const res = await axios.get(`${API_BASE_URL}/config/system`);
             const configMap = {};
-            res.data.forEach(item => {
-              configMap[item.config_key] = item.config_value;
-            });
+            // 确保是数组再遍历
+            if (Array.isArray(res.data)) {
+              res.data.forEach(item => {
+                configMap[item.config_key] = item.config_value;
+              });
+            }
             // 设置默认值
             configMap.worker_api_url = configMap.worker_api_url || API_BASE_URL;
             state.systemConfig = configMap;
+            ElMessage.success('系统配置加载成功');
           } catch (error) {
-            ElMessageBox.error(`获取系统配置失败: ${error.message}`);
+            console.error('配置加载错误:', error);
+            state.systemConfig = {};
+            ElMessage.error(`配置加载失败: ${error.message.slice(0, 50)}`);
           }
         };
 
@@ -1000,7 +1062,7 @@
             // 逐个更新配置
             for (const config of configList) {
               const res = await axios.get(`${API_BASE_URL}/config/system?config_key=${config.config_key}`);
-              if (res.data.length > 0) {
+              if (Array.isArray(res.data) && res.data.length > 0) {
                 await axios.patch(`${API_BASE_URL}/config/system`, {
                   id: res.data[0].id,
                   config_value: config.config_value
@@ -1008,13 +1070,14 @@
               }
             }
 
-            ElMessageBox.success('系统配置保存成功');
+            ElMessage.success('系统配置保存成功');
           } catch (error) {
-            ElMessageBox.error(`保存系统配置失败: ${error.message}`);
+            console.error('保存配置错误:', error);
+            ElMessage.error(`保存失败: ${error.message.slice(0, 50)}`);
           }
         };
 
-        // 初始化加载仪表盘数据
+        // 13. 初始化加载仪表盘数据
         onMounted(() => {
           loadDashboardData();
         });
@@ -1043,7 +1106,7 @@
       }
     });
 
-    // 全局注册 Element Plus 组件
+    // 14. 全局注册Element Plus组件
     app.use(ElementPlus);
     app.mount('#app');
   </script>
