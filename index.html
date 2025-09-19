@@ -2,273 +2,326 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>万花楼监控控制台</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram万花楼监听控制系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --ios-blue: #007AFF;
-            --ios-gray: #F2F2F7;
-            --ios-dark-gray: #8E8E93;
-            --ios-light-gray: #FFFFFF;
-            --ios-green: #34C759;
-            --ios-red: #FF3B30;
-            --ios-orange: #FF9500;
-            --ios-purple: #AF52DE;
+            --primary-color: #4F46E5;
+            --secondary-color: #7C3AED;
+            --success-color: #10B981;
+            --danger-color: #EF4444;
+            --warning-color: #F59E0B;
+            --dark-color: #1F2937;
+            --light-color: #F9FAFB;
+            --border-color: #E5E7EB;
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--ios-gray);
-            color: #000;
-            padding-bottom: 70px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F3F4F6;
+            color: var(--dark-color);
         }
         
-        .ios-navbar {
-            background-color: var(--ios-light-gray);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            padding: 10px 15px;
+        .sidebar {
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            height: 100vh;
             position: fixed;
+            left: 0;
             top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            width: 260px;
+            z-index: 10;
+            overflow-y: auto;
         }
         
-        .ios-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #000;
+        .main-content {
+            margin-left: 260px;
+            padding: 24px;
+            min-height: 100vh;
         }
         
-        .ios-tab-bar {
-            background-color: var(--ios-light-gray);
-            box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0;
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
         }
         
-        .ios-tab-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--ios-dark-gray);
-            cursor: pointer;
-            padding: 5px 10px;
-            transition: color 0.2s;
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
-        .ios-tab-item.active {
-            color: var(--ios-blue);
-        }
-        
-        .ios-tab-item i {
-            font-size: 22px;
-            margin-bottom: 2px;
-        }
-        
-        .ios-tab-item span {
-            font-size: 10px;
-        }
-        
-        .ios-card {
-            background-color: var(--ios-light-gray);
-            border-radius: 10px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-            overflow: hidden;
-        }
-        
-        .ios-card-header {
-            background-color: var(--ios-light-gray);
-            padding: 15px;
-            border-bottom: 1px solid #E5E5EA;
-            font-weight: 600;
-            font-size: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .ios-card-body {
-            padding: 15px;
-        }
-        
-        .ios-list-group {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .ios-list-item {
-            background-color: var(--ios-light-gray);
-            padding: 15px;
-            border-bottom: 1px solid #E5E5EA;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .ios-list-item:last-child {
-            border-bottom: none;
-        }
-        
-        .ios-list-item-title {
-            font-weight: 500;
-            color: #000;
-        }
-        
-        .ios-list-item-subtitle {
-            font-size: 13px;
-            color: var(--ios-dark-gray);
-            margin-top: 2px;
-        }
-        
-        .ios-list-item-meta {
-            font-size: 13px;
-            color: var(--ios-dark-gray);
-            text-align: right;
-        }
-        
-        .ios-button {
-            background-color: var(--ios-blue);
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 8px 20px;
-            font-weight: 500;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3), 0 4px 6px -2px rgba(124, 58, 237, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.4), 0 10px 10px -5px rgba(124, 58, 237, 0.3);
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin: 4px 8px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
+            font-weight: 500;
         }
         
-        .ios-button:hover {
-            background-color: #0062CC;
+        .nav-item:hover {
+            background-color: #F3F4F6;
         }
         
-        .ios-button-danger {
-            background-color: var(--ios-red);
+        .nav-item.active {
+            background-color: rgba(79, 70, 229, 0.1);
+            color: var(--primary-color);
         }
         
-        .ios-button-danger:hover {
-            background-color: #D70015;
+        .nav-item i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
         }
         
-        .ios-button-success {
-            background-color: var(--ios-green);
+        .table-container {
+            overflow-x: auto;
         }
         
-        .ios-button-success:hover {
-            background-color: #248A3D;
+        .table {
+            width: 100%;
+            border-collapse: collapse;
         }
         
-        .ios-badge {
-            background-color: var(--ios-red);
-            color: white;
-            border-radius: 10px;
-            padding: 2px 6px;
+        .table th, .table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .table th {
+            background-color: #F9FAFB;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .table tr:hover {
+            background-color: #F9FAFB;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 9999px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
         }
         
-        .ios-badge-success {
-            background-color: var(--ios-green);
+        .badge-success {
+            background-color: #D1FAE5;
+            color: #065F46;
         }
         
-        .ios-badge-warning {
-            background-color: var(--ios-orange);
+        .badge-danger {
+            background-color: #FEE2E2;
+            color: #991B1B;
         }
         
-        .ios-form-group {
-            margin-bottom: 15px;
+        .badge-warning {
+            background-color: #FEF3C7;
+            color: #92400E;
         }
         
-        .ios-form-label {
-            display: block;
-            margin-bottom: 5px;
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 8px;
             font-weight: 500;
             font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
         
-        .ios-form-input {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #D1D1D6;
-            border-radius: 10px;
-            font-size: 16px;
-            background-color: var(--ios-light-gray);
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
         }
         
-        .ios-form-textarea {
+        .btn-primary:hover {
+            background-color: #4338CA;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #DC2626;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--dark-color);
+        }
+        
+        .form-control {
+            display: block;
             width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #D1D1D6;
-            border-radius: 10px;
-            font-size: 16px;
-            background-color: var(--ios-light-gray);
-            min-height: 100px;
+            padding: 10px 14px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--dark-color);
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 120px;
             resize: vertical;
         }
         
-        .ios-alert {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .ios-alert-success {
-            background-color: #D1F2EB;
-            color: #0C5460;
-        }
-        
-        .ios-alert-danger {
-            background-color: #F8D7DA;
-            color: #721C24;
-        }
-        
-        .ios-alert-warning {
-            background-color: #FFF3CD;
-            color: #856404;
-        }
-        
-        .ios-pagination {
+        .pagination {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 24px;
         }
         
-        .ios-page-item {
-            margin: 0 5px;
+        .page-item {
+            margin: 0 4px;
         }
         
-        .ios-page-link {
-            padding: 8px 12px;
-            border-radius: 5px;
-            background-color: var(--ios-light-gray);
-            border: 1px solid #D1D1D6;
-            color: var(--ios-blue);
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            color: var(--dark-color);
+            font-weight: 500;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
         
-        .ios-page-item.active .ios-page-link {
-            background-color: var(--ios-blue);
+        .page-link:hover {
+            background-color: #F3F4F6;
+        }
+        
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
             color: white;
-            border-color: var(--ios-blue);
+            border-color: var(--primary-color);
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .alert-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+        
+        .alert-danger {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+        
+        .alert-warning {
+            background-color: #FEF3C7;
+            color: #92400E;
+            border: 1px solid #FDE68A;
+        }
+        
+        .keyword-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: #EDE9FE;
+            color: #5B21B6;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 2px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .status-online {
+            background-color: var(--success-color);
+        }
+        
+        .status-offline {
+            background-color: var(--danger-color);
+        }
+        
+        .header {
+            background-color: white;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 260px;
+            right: 0;
+            z-index: 5;
         }
         
         .content-section {
             display: none;
-            margin-top: 60px;
-            padding: 15px;
+            margin-top: 80px;
         }
         
         .content-section.active {
@@ -278,156 +331,245 @@
         .loading-spinner {
             display: flex;
             justify-content: center;
-            padding: 20px;
+            align-items: center;
+            height: 200px;
         }
         
         .empty-state {
             text-align: center;
-            padding: 30px 15px;
-            color: var(--ios-dark-gray);
+            padding: 40px 20px;
+            color: #6B7280;
         }
         
         .empty-state i {
-            font-size: 40px;
-            margin-bottom: 10px;
-            color: #C7C7CC;
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #D1D5DB;
         }
         
-        .empty-state p {
-            margin: 0;
-        }
-        
-        .stats-card {
-            background-color: var(--ios-light-gray);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            text-align: center;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        
-        .stats-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--ios-blue);
-        }
-        
-        .stats-label {
-            font-size: 14px;
-            color: var(--ios-dark-gray);
-            margin-top: 5px;
-        }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
-        
-        .status-online {
-            background-color: var(--ios-green);
-        }
-        
-        .status-offline {
-            background-color: var(--ios-red);
-        }
-        
-        .refresh-button {
+        .refresh-btn {
             background: none;
             border: none;
-            color: var(--ios-blue);
+            color: var(--primary-color);
             cursor: pointer;
             font-size: 16px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
         }
         
-        .keyword-tag {
-            display: inline-block;
-            background-color: #E5E5EA;
-            color: #000;
-            border-radius: 15px;
-            padding: 4px 10px;
-            margin: 3px;
-            font-size: 13px;
+        .refresh-btn:hover {
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+        
+        .notification-container {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            z-index: 1000;
+            width: 320px;
+        }
+        
+        .notification {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary-color);
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification.success {
+            border-left-color: var(--success-color);
+        }
+        
+        .notification.danger {
+            border-left-color: var(--danger-color);
+        }
+        
+        .notification.warning {
+            border-left-color: var(--warning-color);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
         
         @media (max-width: 768px) {
-            .ios-card {
-                border-radius: 0;
-                margin-left: -15px;
-                margin-right: -15px;
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+            
+            .header {
+                left: 0;
             }
         }
     </style>
 </head>
 <body>
-    <!-- 顶部导航栏 -->
-    <div class="ios-navbar">
-        <div class="ios-title">万花楼监控控制台</div>
-        <div>
-            <span class="status-indicator status-online"></span>
-            <span id="connection-status">在线</span>
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="p-6">
+            <h1 class="text-xl font-bold text-indigo-700">万花楼-监听</h1>
+            <p class="text-sm text-gray-500 mt-1">Telegram群组监控系统</p>
+        </div>
+        
+        <nav class="mt-8">
+            <div class="nav-item active" onclick="switchTab('dashboard')">
+                <i class="fas fa-home"></i>
+                <span>仪表盘</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('monitor-logs')">
+                <i class="fas fa-list-alt"></i>
+                <span>监控日志</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('send-logs')">
+                <i class="fas fa-paper-plane"></i>
+                <span>发送记录</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('sent-users')">
+                <i class="fas fa-users"></i>
+                <span>已发送用户</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('settings')">
+                <i class="fas fa-cog"></i>
+                <span>系统设置</span>
+            </div>
+        </nav>
+        
+        <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200">
+            <div class="flex items-center">
+                <span class="status-indicator status-online"></span>
+                <span id="connection-status" class="text-sm font-medium">在线</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">系统运行正常</p>
         </div>
     </div>
     
-    <!-- 内容区域 -->
-    <div class="container">
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <h2 id="page-title" class="text-lg font-semibold text-gray-800">仪表盘</h2>
+        <div class="flex items-center">
+            <button class="refresh-btn mr-4" onclick="refreshCurrentPage()">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <div class="relative">
+                <button class="flex items-center text-sm font-medium text-gray-700">
+                    <span class="mr-2">管理员</span>
+                    <i class="fas fa-user-circle text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- 主内容区域 -->
+    <main class="main-content">
         <!-- 仪表盘 -->
         <div id="dashboard" class="content-section active">
-            <div class="row">
-                <div class="col-6 col-md-3">
-                    <div class="stats-card">
-                        <div class="stats-number" id="monitor-count">0</div>
-                        <div class="stats-label">监控日志</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm opacity-80">监控日志</p>
+                            <p class="text-3xl font-bold mt-2" id="monitor-count">0</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                            <i class="fas fa-list-alt text-xl"></i>
+                        </div>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="stats-card">
-                        <div class="stats-number" id="send-count">0</div>
-                        <div class="stats-label">发送记录</div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, #10B981, #059669);">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm opacity-80">发送记录</p>
+                            <p class="text-3xl font-bold mt-2" id="send-count">0</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                            <i class="fas fa-paper-plane text-xl"></i>
+                        </div>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="stats-card">
-                        <div class="stats-number" id="sent-users-count">0</div>
-                        <div class="stats-label">已发送用户</div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm opacity-80">已发送用户</p>
+                            <p class="text-3xl font-bold mt-2" id="sent-users-count">0</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="stats-card">
-                        <div class="stats-number" id="success-rate">0%</div>
-                        <div class="stats-label">发送成功率</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="ios-card">
-                <div class="ios-card-header">
-                    <span>最近监控日志</span>
-                    <button class="refresh-button" onclick="refreshMonitorLogs()"><i class="fas fa-sync-alt"></i></button>
-                </div>
-                <div class="ios-card-body">
-                    <div id="recent-monitor-logs">
-                        <div class="loading-spinner">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">加载中...</span>
-                            </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED);">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm opacity-80">发送成功率</p>
+                            <p class="text-3xl font-bold mt-2" id="success-rate">0%</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                            <i class="fas fa-chart-pie text-xl"></i>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="ios-card">
-                <div class="ios-card-header">
-                    <span>最近发送记录</span>
-                    <button class="refresh-button" onclick="refreshSendLogs()"><i class="fas fa-sync-alt"></i></button>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-800">最近监控日志</h3>
+                            <button class="refresh-btn" onclick="refreshMonitorLogs()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div id="recent-monitor-logs">
+                            <div class="loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="ios-card-body">
-                    <div id="recent-send-logs">
-                        <div class="loading-spinner">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">加载中...</span>
+                
+                <div class="card">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-800">最近发送记录</h3>
+                            <button class="refresh-btn" onclick="refreshSendLogs()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div id="recent-send-logs">
+                            <div class="loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -437,12 +579,16 @@
         
         <!-- 监控日志 -->
         <div id="monitor-logs" class="content-section">
-            <div class="ios-card">
-                <div class="ios-card-header">
-                    <span>监控日志</span>
-                    <button class="refresh-button" onclick="loadMonitorLogs()"><i class="fas fa-sync-alt"></i></button>
+            <div class="card">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-800">监控日志</h3>
+                        <button class="refresh-btn" onclick="loadMonitorLogs()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="ios-card-body">
+                <div class="p-6">
                     <div id="monitor-logs-container">
                         <div class="loading-spinner">
                             <div class="spinner-border text-primary" role="status">
@@ -450,19 +596,23 @@
                             </div>
                         </div>
                     </div>
-                    <div class="ios-pagination" id="monitor-logs-pagination"></div>
+                    <div class="pagination" id="monitor-logs-pagination"></div>
                 </div>
             </div>
         </div>
         
         <!-- 发送记录 -->
         <div id="send-logs" class="content-section">
-            <div class="ios-card">
-                <div class="ios-card-header">
-                    <span>发送记录</span>
-                    <button class="refresh-button" onclick="loadSendLogs()"><i class="fas fa-sync-alt"></i></button>
+            <div class="card">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-800">发送记录</h3>
+                        <button class="refresh-btn" onclick="loadSendLogs()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="ios-card-body">
+                <div class="p-6">
                     <div id="send-logs-container">
                         <div class="loading-spinner">
                             <div class="spinner-border text-primary" role="status">
@@ -470,19 +620,23 @@
                             </div>
                         </div>
                     </div>
-                    <div class="ios-pagination" id="send-logs-pagination"></div>
+                    <div class="pagination" id="send-logs-pagination"></div>
                 </div>
             </div>
         </div>
         
         <!-- 已发送用户 -->
         <div id="sent-users" class="content-section">
-            <div class="ios-card">
-                <div class="ios-card-header">
-                    <span>已发送用户</span>
-                    <button class="refresh-button" onclick="loadSentUsers()"><i class="fas fa-sync-alt"></i></button>
+            <div class="card">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-800">已发送用户</h3>
+                        <button class="refresh-btn" onclick="loadSentUsers()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="ios-card-body">
+                <div class="p-6">
                     <div id="sent-users-container">
                         <div class="loading-spinner">
                             <div class="spinner-border text-primary" role="status">
@@ -490,18 +644,18 @@
                             </div>
                         </div>
                     </div>
-                    <div class="ios-pagination" id="sent-users-pagination"></div>
+                    <div class="pagination" id="sent-users-pagination"></div>
                 </div>
             </div>
         </div>
         
         <!-- 设置 -->
         <div id="settings" class="content-section">
-            <div class="ios-card">
-                <div class="ios-card-header">
-                    <span>系统设置</span>
+            <div class="card">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800">系统设置</h3>
                 </div>
-                <div class="ios-card-body">
+                <div class="p-6">
                     <div id="settings-container">
                         <div class="loading-spinner">
                             <div class="spinner-border text-primary" role="status">
@@ -512,34 +666,10 @@
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- 底部标签栏 -->
-    <div class="ios-tab-bar">
-        <div class="ios-tab-item active" onclick="switchTab('dashboard')">
-            <i class="fas fa-home"></i>
-            <span>仪表盘</span>
-        </div>
-        <div class="ios-tab-item" onclick="switchTab('monitor-logs')">
-            <i class="fas fa-list"></i>
-            <span>监控日志</span>
-        </div>
-        <div class="ios-tab-item" onclick="switchTab('send-logs')">
-            <i class="fas fa-paper-plane"></i>
-            <span>发送记录</span>
-        </div>
-        <div class="ios-tab-item" onclick="switchTab('sent-users')">
-            <i class="fas fa-users"></i>
-            <span>已发送用户</span>
-        </div>
-        <div class="ios-tab-item" onclick="switchTab('settings')">
-            <i class="fas fa-cog"></i>
-            <span>设置</span>
-        </div>
-    </div>
+    </main>
     
     <!-- 通知容器 -->
-    <div id="notification-container" style="position: fixed; top: 60px; right: 15px; z-index: 1050; width: 300px; max-width: 90%;"></div>
+    <div class="notification-container" id="notification-container"></div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -549,6 +679,15 @@
         // 当前页面
         let currentPage = 1;
         let currentSection = 'dashboard';
+        
+        // 页面标题映射
+        const pageTitles = {
+            'dashboard': '仪表盘',
+            'monitor-logs': '监控日志',
+            'send-logs': '发送记录',
+            'sent-users': '已发送用户',
+            'settings': '系统设置'
+        };
         
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
@@ -561,8 +700,8 @@
         
         // 切换标签页
         function switchTab(tabName) {
-            // 更新标签栏状态
-            document.querySelectorAll('.ios-tab-item').forEach(item => {
+            // 更新侧边栏状态
+            document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
             event.currentTarget.classList.add('active');
@@ -576,8 +715,32 @@
             // 更新当前页面
             currentSection = tabName;
             
+            // 更新页面标题
+            document.getElementById('page-title').textContent = pageTitles[tabName];
+            
             // 根据标签页加载相应数据
             switch(tabName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'monitor-logs':
+                    loadMonitorLogs();
+                    break;
+                case 'send-logs':
+                    loadSendLogs();
+                    break;
+                case 'sent-users':
+                    loadSentUsers();
+                    break;
+                case 'settings':
+                    loadSettings();
+                    break;
+            }
+        }
+        
+        // 刷新当前页面
+        function refreshCurrentPage() {
+            switch(currentSection) {
                 case 'dashboard':
                     loadDashboard();
                     break;
@@ -708,32 +871,38 @@
                 const data = await response.json();
                 
                 if (Array.isArray(data) && data.length > 0) {
-                    let html = '<ul class="ios-list-group">';
+                    let html = '<div class="table-container"><table class="table">';
+                    html += '<thead><tr><th>用户</th><th>群组</th><th>时间</th><th>关键词</th></tr></thead><tbody>';
                     
                     data.forEach(item => {
                         const date = new Date(item.created_at);
                         const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
                         
                         html += `
-                            <li class="ios-list-item">
-                                <div>
-                                    <div class="ios-list-item-title">${item.user_name}</div>
-                                    <div class="ios-list-item-subtitle">${item.group_name} · ${formattedDate}</div>
-                                </div>
-                                <div class="ios-list-item-meta">
+                            <tr>
+                                <td>
+                                    <div class="font-medium">${item.user_name}</div>
+                                    <div class="text-sm text-gray-500">ID: ${item.user_id}</div>
+                                </td>
+                                <td>
+                                    <div class="font-medium">${item.group_name}</div>
+                                    <div class="text-sm text-gray-500">ID: ${item.group_id}</div>
+                                </td>
+                                <td>${formattedDate}</td>
+                                <td>
                                     ${item.matched_keywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join('')}
-                                </div>
-                            </li>
+                                </td>
+                            </tr>
                         `;
                     });
                     
-                    html += '</ul>';
+                    html += '</tbody></table></div>';
                     document.getElementById('recent-monitor-logs').innerHTML = html;
                 } else {
                     document.getElementById('recent-monitor-logs').innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无监控日志</p></div>';
                 }
             } catch (error) {
-                document.getElementById('recent-monitor-logs').innerHTML = `<div class="ios-alert ios-alert-danger">加载失败: ${error.message}</div>`;
+                document.getElementById('recent-monitor-logs').innerHTML = `<div class="alert alert-danger">加载失败: ${error.message}</div>`;
             }
         }
         
@@ -754,35 +923,39 @@
                 const data = await response.json();
                 
                 if (Array.isArray(data) && data.length > 0) {
-                    let html = '<ul class="ios-list-group">';
+                    let html = '<div class="table-container"><table class="table">';
+                    html += '<thead><tr><th>用户</th><th>群组</th><th>时间</th><th>状态</th></tr></thead><tbody>';
                     
                     data.forEach(item => {
                         const date = new Date(item.created_at);
                         const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
                         
-                        const statusClass = item.status === 'success' ? 'ios-badge-success' : 'ios-badge-danger';
+                        const statusClass = item.status === 'success' ? 'badge-success' : 'badge-danger';
                         const statusText = item.status === 'success' ? '成功' : '失败';
                         
                         html += `
-                            <li class="ios-list-item">
-                                <div>
-                                    <div class="ios-list-item-title">${item.user_name}</div>
-                                    <div class="ios-list-item-subtitle">${item.group_name} · ${formattedDate}</div>
-                                </div>
-                                <div class="ios-list-item-meta">
-                                    <span class="ios-badge ${statusClass}">${statusText}</span>
-                                </div>
-                            </li>
+                            <tr>
+                                <td>
+                                    <div class="font-medium">${item.user_name}</div>
+                                    <div class="text-sm text-gray-500">ID: ${item.user_id}</div>
+                                </td>
+                                <td>
+                                    <div class="font-medium">${item.group_name}</div>
+                                    <div class="text-sm text-gray-500">ID: ${item.group_id}</div>
+                                </td>
+                                <td>${formattedDate}</td>
+                                <td><span class="badge ${statusClass}">${statusText}</span></td>
+                            </tr>
                         `;
                     });
                     
-                    html += '</ul>';
+                    html += '</tbody></table></div>';
                     document.getElementById('recent-send-logs').innerHTML = html;
                 } else {
                     document.getElementById('recent-send-logs').innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无发送记录</p></div>';
                 }
             } catch (error) {
-                document.getElementById('recent-send-logs').innerHTML = `<div class="ios-alert ios-alert-danger">加载失败: ${error.message}</div>`;
+                document.getElementById('recent-send-logs').innerHTML = `<div class="alert alert-danger">加载失败: ${error.message}</div>`;
             }
         }
         
@@ -803,27 +976,35 @@
                 const data = await response.json();
                 
                 if (Array.isArray(data) && data.length > 0) {
-                    let html = '<ul class="ios-list-group">';
+                    let html = '<div class="table-container"><table class="table">';
+                    html += '<thead><tr><th>用户</th><th>群组</th><th>时间</th><th>消息</th><th>关键词</th></tr></thead><tbody>';
                     
                     data.forEach(item => {
                         const date = new Date(item.created_at);
                         const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
                         
                         html += `
-                            <li class="ios-list-item">
-                                <div>
-                                    <div class="ios-list-item-title">${item.user_name}</div>
-                                    <div class="ios-list-item-subtitle">${item.group_name} · ${formattedDate}</div>
-                                    <div class="mt-2">${item.message}</div>
-                                </div>
-                                <div class="ios-list-item-meta">
+                            <tr>
+                                <td>
+                                    <div class="font-medium">${item.user_name}</div>
+                                    <div class="text-sm text-gray-500">ID: ${item.user_id}</div>
+                                </td>
+                                <td>
+                                    <div class="font-medium">${item.group_name}</div>
+                                    <div class="text-sm text-gray-500">ID: ${item.group_id}</div>
+                                </td>
+                                <td>${formattedDate}</td>
+                                <td>
+                                    <div class="max-w-xs truncate">${item.message}</div>
+                                </td>
+                                <td>
                                     ${item.matched_keywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join('')}
-                                </div>
-                            </li>
+                                </td>
+                            </tr>
                         `;
                     });
                     
-                    html += '</ul>';
+                    html += '</tbody></table></div>';
                     document.getElementById('monitor-logs-container').innerHTML = html;
                     
                     // 生成分页
@@ -833,7 +1014,7 @@
                     document.getElementById('monitor-logs-pagination').innerHTML = '';
                 }
             } catch (error) {
-                document.getElementById('monitor-logs-container').innerHTML = `<div class="ios-alert ios-alert-danger">加载失败: ${error.message}</div>`;
+                document.getElementById('monitor-logs-container').innerHTML = `<div class="alert alert-danger">加载失败: ${error.message}</div>`;
             }
         }
         
@@ -854,29 +1035,33 @@
                 const data = await response.json();
                 
                 if (Array.isArray(data) && data.length > 0) {
-                    let html = '<ul class="ios-list-group">';
+                    let html = '<div class="table-container"><table class="table">';
+                    html += '<thead><tr><th>用户</th><th>群组</th><th>时间</th><th>状态</th></tr></thead><tbody>';
                     
                     data.forEach(item => {
                         const date = new Date(item.created_at);
                         const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
                         
-                        const statusClass = item.status === 'success' ? 'ios-badge-success' : 'ios-badge-danger';
+                        const statusClass = item.status === 'success' ? 'badge-success' : 'badge-danger';
                         const statusText = item.status === 'success' ? '成功' : '失败';
                         
                         html += `
-                            <li class="ios-list-item">
-                                <div>
-                                    <div class="ios-list-item-title">${item.user_name}</div>
-                                    <div class="ios-list-item-subtitle">${item.group_name} · ${formattedDate}</div>
-                                </div>
-                                <div class="ios-list-item-meta">
-                                    <span class="ios-badge ${statusClass}">${statusText}</span>
-                                </div>
-                            </li>
+                            <tr>
+                                <td>
+                                    <div class="font-medium">${item.user_name}</div>
+                                    <div class="text-sm text-gray-500">ID: ${item.user_id}</div>
+                                </td>
+                                <td>
+                                    <div class="font-medium">${item.group_name}</div>
+                                    <div class="text-sm text-gray-500">ID: ${item.group_id}</div>
+                                </td>
+                                <td>${formattedDate}</td>
+                                <td><span class="badge ${statusClass}">${statusText}</span></td>
+                            </tr>
                         `;
                     });
                     
-                    html += '</ul>';
+                    html += '</tbody></table></div>';
                     document.getElementById('send-logs-container').innerHTML = html;
                     
                     // 生成分页
@@ -886,7 +1071,7 @@
                     document.getElementById('send-logs-pagination').innerHTML = '';
                 }
             } catch (error) {
-                document.getElementById('send-logs-container').innerHTML = `<div class="ios-alert ios-alert-danger">加载失败: ${error.message}</div>`;
+                document.getElementById('send-logs-container').innerHTML = `<div class="alert alert-danger">加载失败: ${error.message}</div>`;
             }
         }
         
@@ -907,36 +1092,38 @@
                 const data = await response.json();
                 
                 if (Array.isArray(data) && data.length > 0) {
-                    let html = '<ul class="ios-list-group">';
+                    let html = '<div class="table-container"><table class="table">';
+                    html += '<thead><tr><th>用户</th><th>发送时间</th><th>操作</th></tr></thead><tbody>';
                     
                     data.forEach(item => {
                         const date = new Date(item.created_at);
                         const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
                         
                         html += `
-                            <li class="ios-list-item">
-                                <div>
-                                    <div class="ios-list-item-title">${item.user_name}</div>
-                                    <div class="ios-list-item-subtitle">ID: ${item.user_id} · ${formattedDate}</div>
-                                </div>
-                                <div class="ios-list-item-meta">
-                                    <button class="ios-button ios-button-danger" onclick="deleteSentUser(${item.user_id})">删除</button>
-                                </div>
-                            </li>
+                            <tr>
+                                <td>
+                                    <div class="font-medium">${item.user_name}</div>
+                                    <div class="text-sm text-gray-500">ID: ${item.user_id}</div>
+                                </td>
+                                <td>${formattedDate}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteSentUser(${item.user_id})">删除</button>
+                                </td>
+                            </tr>
                         `;
                     });
                     
-                    html += '</ul>';
+                    html += '</tbody></table></div>';
                     document.getElementById('sent-users-container').innerHTML = html;
                     
                     // 生成分页
                     generatePagination('sent-users-pagination', page, data.length >= 20);
                 } else {
-                    document.getElementById('sent-users-container').innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无已发送用户</p></div>';
+                    document.getElementById('sent-users-container').innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>暂无已发送用户</p></div>';
                     document.getElementById('sent-users-pagination').innerHTML = '';
                 }
             } catch (error) {
-                document.getElementById('sent-users-container').innerHTML = `<div class="ios-alert ios-alert-danger">加载失败: ${error.message}</div>`;
+                document.getElementById('sent-users-container').innerHTML = `<div class="alert alert-danger">加载失败: ${error.message}</div>`;
             }
         }
         
@@ -1020,23 +1207,25 @@
                     
                     const html = `
                         <form id="settings-form">
-                            <div class="ios-form-group">
-                                <label class="ios-form-label">监控关键词（每行一个）</label>
-                                <textarea class="ios-form-textarea" id="keywords" name="keywords" rows="6">${keywords}</textarea>
-                            </div>
-                            
-                            <div class="ios-form-group">
-                                <label class="ios-form-label">回复消息</label>
-                                <textarea class="ios-form-textarea" id="reply-message" name="reply_message" rows="10">${replyMessage}</textarea>
-                            </div>
-                            
-                            <div class="ios-form-group">
-                                <label class="ios-form-label">监控群组ID和名称（每行一个，格式：ID - 名称）</label>
-                                <textarea class="ios-form-textarea" id="monitor-groups" name="monitor_groups" rows="8">${monitorGroups}</textarea>
-                            </div>
-                            
-                            <div class="d-grid">
-                                <button type="submit" class="ios-button">保存设置</button>
+                            <div class="grid grid-cols-1 gap-6">
+                                <div class="form-group">
+                                    <label class="form-label">监控关键词（每行一个）</label>
+                                    <textarea class="form-control form-textarea" id="keywords" name="keywords" rows="6">${keywords}</textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">回复消息</label>
+                                    <textarea class="form-control form-textarea" id="reply-message" name="reply_message" rows="10">${replyMessage}</textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">监控群组ID和名称（每行一个，格式：ID - 名称）</label>
+                                    <textarea class="form-control form-textarea" id="monitor-groups" name="monitor_groups" rows="8">${monitorGroups}</textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">保存设置</button>
+                                </div>
                             </div>
                         </form>
                     `;
@@ -1049,7 +1238,7 @@
                     document.getElementById('settings-container').innerHTML = '<div class="empty-state"><i class="fas fa-cog"></i><p>暂无设置</p></div>';
                 }
             } catch (error) {
-                document.getElementById('settings-container').innerHTML = `<div class="ios-alert ios-alert-danger">加载失败: ${error.message}</div>`;
+                document.getElementById('settings-container').innerHTML = `<div class="alert alert-danger">加载失败: ${error.message}</div>`;
             }
         }
         
@@ -1149,15 +1338,15 @@
             
             // 上一页
             if (currentPage > 1) {
-                html += `<div class="ios-page-item"><a class="ios-page-link" href="#" onclick="changePage(${currentPage - 1})">上一页</a></div>`;
+                html += `<div class="page-item"><a class="page-link" href="#" onclick="changePage(${currentPage - 1})">上一页</a></div>`;
             }
             
             // 当前页
-            html += `<div class="ios-page-item active"><span class="ios-page-link">${currentPage}</span></div>`;
+            html += `<div class="page-item active"><span class="page-link">${currentPage}</span></div>`;
             
             // 下一页
             if (hasNext) {
-                html += `<div class="ios-page-item"><a class="ios-page-link" href="#" onclick="changePage(${currentPage + 1})">下一页</a></div>`;
+                html += `<div class="page-item"><a class="page-link" href="#" onclick="changePage(${currentPage + 1})">下一页</a></div>`;
             }
             
             document.getElementById(containerId).innerHTML = html;
@@ -1182,12 +1371,8 @@
         function showNotification(message, type = 'info') {
             const container = document.getElementById('notification-container');
             
-            const alertClass = type === 'success' ? 'ios-alert-success' : 
-                             type === 'danger' ? 'ios-alert-danger' : 
-                             type === 'warning' ? 'ios-alert-warning' : '';
-            
             const notification = document.createElement('div');
-            notification.className = `ios-alert ${alertClass}`;
+            notification.className = `notification ${type}`;
             notification.innerHTML = message;
             
             container.appendChild(notification);
